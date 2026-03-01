@@ -20,7 +20,7 @@ Compiler pipeline: Source → Lexer → Parser → AST → TypeChecker → IR �
 git branch -M main
 
 # 5. Add remote (update URL with your GitHub username)
-git remote add origin https://github.com/AstraLink99/vitalis.git
+git remote add origin https://github.com/ModernOps888/vitalis.git
 
 # 6. Push
 git push -u origin main
