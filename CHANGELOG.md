@@ -5,6 +5,75 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.0.0] - 2026-03-01
+
+### Added
+
+#### v7.0 Algorithm Libraries (7 modules, 100+ FFI functions)
+- **Signal Processing** (`signal_processing.rs`, 550 LOC) — FFT/IFFT, power spectrum, convolution, cross-correlation, windowing (Hann/Hamming/Blackman), FIR/IIR biquad filters, zero-crossing rate, RMS energy, spectral centroid, autocorrelation, linear resampling
+- **Cryptography** (`crypto.rs`, 440 LOC) — SHA-256, HMAC-SHA256, Base64 encode/decode, CRC-32, FNV-1a 64-bit hash, constant-time comparison, XorShift128+ PRNG
+- **Graph Algorithms** (`graph.rs`, 789 LOC) — BFS, DFS, Dijkstra shortest paths, cycle detection, bipartite check, connected components, topological sort, PageRank, Tarjan SCC
+- **String Algorithms** (`string_algorithms.rs`, 574 LOC) — Levenshtein distance, LCS (length + string), longest common substring, Hamming distance, Jaro-Winkler similarity, Soundex, string rotation check, n-gram counting, KMP/Rabin-Karp/BMH pattern search
+- **Numerical / Linear Algebra** (`numerical.rs`, 709 LOC) — Matrix multiply/determinant/inverse/trace, linear system solver, Simpson's/trapezoidal integration, Horner polynomial evaluation, Lagrange interpolation, power iteration (eigenvalue), dot/cross product, vector norm, Newton/bisection root finding
+- **Compression** (`compression.rs`, 532 LOC) — RLE encode/decode, Huffman encoding, delta encode/decode, LZ77 compression
+- **Probability & Statistics** (`probability.rs`, 653 LOC) — Mean/median/variance/stddev/skewness/kurtosis/mode, normal/exponential/Poisson/binomial distributions, Pearson/Spearman correlation, linear regression, Shannon entropy, chi-squared, Kolmogorov-Smirnov statistic, covariance matrix
+
+#### v9.0 Advanced Modules (7 modules, 170+ FFI functions)
+- **Quantum Simulator** (`quantum.rs`, 813 LOC) — Full statevector quantum register with H/X/Y/Z/CNOT/RX/RY/RZ gates, Bell state preparation, QFT, measurement, Bloch sphere coordinates, fidelity, purity, von Neumann entropy
+- **Quantum Math** (`quantum_math.rs`, 1004 LOC) — Complex arithmetic, gamma/lgamma/beta functions, Bessel J0/J1, Riemann zeta (1000-term + Euler-Maclaurin), Monte Carlo integration, RK4 ODE solver, modular exponentiation, primality testing, GCD/LCM, Haar wavelet, Legendre polynomials, Fibonacci, golden ratio, Euler totient, quaternion multiply/rotate/SLERP, outer/Kronecker products
+- **Advanced Math** (`advanced_math.rs`, 943 LOC) — Factorial, binomial coefficients, Catalan numbers, error function (erf), Mandelbrot iteration, integer partitions, Bell numbers
+- **Science** (`science.rs`, 504 LOC) — Physical constants, kinematics (3 equations), energy (kinetic/potential), pendulum period, orbital/escape velocity, projectile range/height, ideal gas law, Carnot efficiency, radiation power, heat transfer, entropy change, Coulomb force, electric field, Ohm's law, capacitor energy, magnetic force, wavelength, photon energy, Doppler shift, Snell's law, de Broglie wavelength, radioactive decay, mass-energy equivalence, pH/pOH, Arrhenius equation, Nernst equation, dilution, Schwarzschild radius, luminosity, Hubble velocity, redshift, Reynolds number, drag force, Bernoulli pressure, unit conversions (6 types)
+- **Analytics** (`analytics.rs`, 662 LOC) — SMA/EMA/WMA/DEMA moving averages, anomaly detection (z-score/IQR/MAD), linear trend, turning points, SES/Holt forecasting, min-max/z-score normalization, SLA uptime, error rate, throughput, Apdex score, MTBF, MTTR, cardinality
+- **Security** (`security.rs`, 421 LOC) — Email/IPv4/URL validation, length/range validation, SQL injection/XSS/path traversal/command injection detection, password strength/entropy scoring, memory/time/recursion quota checks, resource utilization, code safety scoring, audit hashing, hash chains, token bucket/sliding window rate limiting, capability-based sandbox (grant/revoke/check), HTML escaping
+- **Scoring** (`scoring.rs`, 470 LOC) — Maintainability index, tech debt ratio, composite code quality, Halstead metrics, weighted fitness, Pareto dominance/ranking, Elo rating (update/expected), Welch's t-test, Cohen's d, Mann-Whitney U, Wilson score conversion rate, Bayesian A/B testing, regression scoring, geometric/harmonic/power mean, latency scoring, efficiency ratios, system health composite, decay/sigmoid/tournament fitness functions
+
+#### Python Wrapper Overhaul
+- `python/vitalis.py` expanded from 930 → 3,036 lines
+- 304 Python functions exposed via `__all__`
+- `QuantumRegister` Python class with gate chaining, measurement, entropy
+- Full ctypes coverage for all 269 C FFI functions across 14 modules
+- Helper utilities: `_str_buf()`, `_edges_flat_sz()`, `_to_double_array()`
+
+### Changed
+- `Cargo.toml` version bumped from 0.1.0 → 9.0.0
+- `lib.rs` expanded from 17 → 28 public modules (10 organized sections)
+- `bridge.rs` version string updated to "9.0.0"
+
+### Metrics
+| Metric | v0.1.0 | v9.0.0 | Delta |
+|--------|--------|--------|-------|
+| Rust source files | 17 | 31 | +14 |
+| Rust LOC (total) | ~13,500 | 24,769 | +11,269 |
+| Test cases | 234 | 470 | +236 |
+| FFI exports | ~50 | 405 | +355 |
+| Python wrapper LOC | 930 | 3,036 | +2,106 |
+| Python `__all__` exports | ~50 | 304 | +254 |
+| Stdlib functions | 97 | 97 | — |
+| Hot-path ops | 44 | 44 | — |
+| Algorithm modules | 0 | 14 | +14 |
+
+### Benchmark Scores (v9.0.0, 74 benchmarks, all passing)
+
+| Category | Avg Throughput | Peak Function | Peak ops/sec |
+|----------|---------------|---------------|-------------|
+| Core Compiler | 18.4K ops/sec | `lex` | 46.1K |
+| Signal Processing | 22.7K ops/sec | `rms_energy` | 31.6K |
+| Crypto | 91.4K ops/sec | `fnv1a_64` | 163.0K |
+| Graph Algorithms | 10.3K ops/sec | `is_bipartite` | 12.6K |
+| String Algorithms | 294.2K ops/sec | `jaro_winkler` | 443.5K |
+| Numerical | 292.0K ops/sec | `horner` | 574.7K |
+| Compression | 104.7K ops/sec | `rle_encode` | 245.5K |
+| Statistics | 413.7K ops/sec | `normal_pdf` | 716.6K |
+| Quantum Simulator | 203.2K ops/sec | `bell_state` | 246.1K |
+| Quantum Math | 1.04M ops/sec | `golden_ratio` | 2.12M |
+| Advanced Math | 1.17M ops/sec | `math_erf` | 2.03M |
+| Science | 1.50M ops/sec | `celsius_to_kelvin` | 2.14M |
+| Analytics | 255.0K ops/sec | `apdex` | 1.23M |
+| Security | 154.6K ops/sec | `password_entropy` | 290.7K |
+| Scoring | 1.06M ops/sec | `elo_expected` | 1.55M |
+
+[9.0.0]: https://github.com/ModernOps888/vitalis/compare/v0.1.0...HEAD
+
 ## [0.1.0] - 2025-03-01
 
 ### Added
