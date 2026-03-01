@@ -13,7 +13,7 @@ Thank you for considering contributing to Vitalis! This document provides guidel
 ### Building from Source
 
 ```bash
-git clone https://github.com/AstraLink99/vitalis.git
+git clone https://github.com/ModernOps888/vitalis.git
 cd vitalis
 cargo build
 ```

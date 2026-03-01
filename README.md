@@ -97,7 +97,7 @@ scores = vitalis.hotpath_softmax([1.0, 2.0, 3.0])
 
 ### Build
 ```bash
-git clone https://github.com/AstraLink99/vitalis.git
+git clone https://github.com/ModernOps888/vitalis.git
 cd vitalis
 cargo build
 ```
