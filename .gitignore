@@ -1,0 +1,31 @@
+# Build artifacts
+/target/
+**/*.exe
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Rust
+Cargo.lock
