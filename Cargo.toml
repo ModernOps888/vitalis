@@ -1,0 +1,46 @@
+[package]
+name = "vitalis"
+version = "0.1.0"
+edition = "2024"
+description = "Vitalis — a JIT-compiled programming language with built-in code evolution"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AstraLink99/vitalis"
+homepage = "https://github.com/AstraLink99/vitalis"
+readme = "README.md"
+keywords = ["compiler", "jit", "evolution", "cranelift", "language"]
+categories = ["compilers", "development-tools"]
+
+[lib]
+name = "vitalis"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "vtc"
+path = "src/main.rs"
+
+[dependencies]
+# Lexer — zero-copy, derive-based token definitions
+logos = "0.14"
+
+# Code generation — fast JIT/AOT compilation
+cranelift = "0.116"
+cranelift-module = "0.116"
+cranelift-jit = "0.116"
+cranelift-codegen = "0.116"
+cranelift-frontend = "0.116"
+cranelift-native = "0.116"
+target-lexicon = "0.13"
+
+# Error reporting
+miette = { version = "7", features = ["fancy"] }
+thiserror = "2"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Utilities
+indexmap = "2"
+
+[profile.release]
+opt-level = 3
+lto = true
