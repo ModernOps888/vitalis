@@ -1,8 +1,8 @@
 [package]
 name = "vitalis"
-version = "13.0.0"
+version = "15.0.0"
 edition = "2024"
-description = "Vitalis v13.0 — a JIT-compiled programming language with self-evolving functions, 24 algorithm libraries (quantum algorithms, bioinformatics, chemistry/physics, neuromorphic computing, evolutionary computation, ML, geometry, sorting, signal processing, cryptography, graph theory, and more), 634 tests, 482 Python FFI exports — all with native Cranelift JIT performance"
+description = "Vitalis v15.0 — a JIT-compiled language with working closures, 46 new stdlib functions (strings, file I/O, maps, error handling, JSON, system), 24 algorithm libraries, self-evolving @evolvable functions — native Cranelift JIT performance"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ModernOps888/vitalis"
 homepage = "https://github.com/ModernOps888/vitalis"

@@ -152,6 +152,63 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "sinc".into(), params: vec![("x", IrType::F64)], ret: IrType::F64, runtime_name: "slang_sinc_f64".into() },
         BuiltinFn { name: "inv_sqrt_approx".into(), params: vec![("x", IrType::F64)], ret: IrType::F64, runtime_name: "slang_inv_sqrt_approx_f64".into() },
         BuiltinFn { name: "logit".into(), params: vec![("x", IrType::F64)], ret: IrType::F64, runtime_name: "slang_logit_f64".into() },
+
+        // ── v15: String operations ────────────────────────────────────
+        BuiltinFn { name: "str_upper".into(),       params: vec![("s", IrType::Ptr)],                                              ret: IrType::Ptr,  runtime_name: "slang_str_upper".into() },
+        BuiltinFn { name: "str_lower".into(),       params: vec![("s", IrType::Ptr)],                                              ret: IrType::Ptr,  runtime_name: "slang_str_lower".into() },
+        BuiltinFn { name: "str_trim".into(),        params: vec![("s", IrType::Ptr)],                                              ret: IrType::Ptr,  runtime_name: "slang_str_trim".into() },
+        BuiltinFn { name: "str_contains".into(),    params: vec![("s", IrType::Ptr), ("sub", IrType::Ptr)],                        ret: IrType::Bool, runtime_name: "slang_str_contains".into() },
+        BuiltinFn { name: "str_starts_with".into(), params: vec![("s", IrType::Ptr), ("pfx", IrType::Ptr)],                        ret: IrType::Bool, runtime_name: "slang_str_starts_with".into() },
+        BuiltinFn { name: "str_ends_with".into(),   params: vec![("s", IrType::Ptr), ("sfx", IrType::Ptr)],                        ret: IrType::Bool, runtime_name: "slang_str_ends_with".into() },
+        BuiltinFn { name: "str_char_at".into(),     params: vec![("s", IrType::Ptr), ("i", IrType::I64)],                          ret: IrType::Ptr,  runtime_name: "slang_str_char_at".into() },
+        BuiltinFn { name: "str_substr".into(),      params: vec![("s", IrType::Ptr), ("start", IrType::I64), ("len", IrType::I64)], ret: IrType::Ptr,  runtime_name: "slang_str_substr".into() },
+        BuiltinFn { name: "str_index_of".into(),    params: vec![("s", IrType::Ptr), ("sub", IrType::Ptr)],                        ret: IrType::I64,  runtime_name: "slang_str_index_of".into() },
+        BuiltinFn { name: "str_replace".into(),     params: vec![("s", IrType::Ptr), ("old", IrType::Ptr), ("new", IrType::Ptr)],  ret: IrType::Ptr,  runtime_name: "slang_str_replace".into() },
+        BuiltinFn { name: "str_repeat".into(),      params: vec![("s", IrType::Ptr), ("n", IrType::I64)],                          ret: IrType::Ptr,  runtime_name: "slang_str_repeat".into() },
+        BuiltinFn { name: "str_reverse".into(),     params: vec![("s", IrType::Ptr)],                                              ret: IrType::Ptr,  runtime_name: "slang_str_reverse".into() },
+        BuiltinFn { name: "str_split_count".into(), params: vec![("s", IrType::Ptr), ("delim", IrType::Ptr)],                      ret: IrType::I64,  runtime_name: "slang_str_split_count".into() },
+        BuiltinFn { name: "str_split_get".into(),   params: vec![("s", IrType::Ptr), ("delim", IrType::Ptr), ("i", IrType::I64)],  ret: IrType::Ptr,  runtime_name: "slang_str_split_get".into() },
+        BuiltinFn { name: "to_string_i64".into(),   params: vec![("x", IrType::I64)],                                              ret: IrType::Ptr,  runtime_name: "slang_to_string_i64".into() },
+        BuiltinFn { name: "to_string_f64".into(),   params: vec![("x", IrType::F64)],                                              ret: IrType::Ptr,  runtime_name: "slang_to_string_f64".into() },
+        BuiltinFn { name: "to_string_bool".into(),  params: vec![("x", IrType::Bool)],                                             ret: IrType::Ptr,  runtime_name: "slang_to_string_bool".into() },
+        BuiltinFn { name: "parse_int".into(),       params: vec![("s", IrType::Ptr)],                                              ret: IrType::I64,  runtime_name: "slang_parse_int".into() },
+        BuiltinFn { name: "parse_float".into(),     params: vec![("s", IrType::Ptr)],                                              ret: IrType::F64,  runtime_name: "slang_parse_float".into() },
+
+        // ── v15: File I/O ─────────────────────────────────────────────
+        BuiltinFn { name: "file_read".into(),       params: vec![("path", IrType::Ptr)],                              ret: IrType::Ptr,  runtime_name: "slang_file_read".into() },
+        BuiltinFn { name: "file_write".into(),      params: vec![("path", IrType::Ptr), ("content", IrType::Ptr)],    ret: IrType::Bool, runtime_name: "slang_file_write".into() },
+        BuiltinFn { name: "file_append".into(),     params: vec![("path", IrType::Ptr), ("content", IrType::Ptr)],    ret: IrType::Bool, runtime_name: "slang_file_append".into() },
+        BuiltinFn { name: "file_exists".into(),     params: vec![("path", IrType::Ptr)],                              ret: IrType::Bool, runtime_name: "slang_file_exists".into() },
+        BuiltinFn { name: "file_delete".into(),     params: vec![("path", IrType::Ptr)],                              ret: IrType::Bool, runtime_name: "slang_file_delete".into() },
+        BuiltinFn { name: "file_size".into(),       params: vec![("path", IrType::Ptr)],                              ret: IrType::I64,  runtime_name: "slang_file_size".into() },
+
+        // ── v15: Map operations ───────────────────────────────────────
+        BuiltinFn { name: "map_new".into(),         params: vec![],                                                   ret: IrType::I64,  runtime_name: "slang_map_new".into() },
+        BuiltinFn { name: "map_set".into(),         params: vec![("m", IrType::I64), ("k", IrType::Ptr), ("v", IrType::I64)], ret: IrType::Void, runtime_name: "slang_map_set".into() },
+        BuiltinFn { name: "map_get".into(),         params: vec![("m", IrType::I64), ("k", IrType::Ptr)],             ret: IrType::I64,  runtime_name: "slang_map_get".into() },
+        BuiltinFn { name: "map_has".into(),         params: vec![("m", IrType::I64), ("k", IrType::Ptr)],             ret: IrType::Bool, runtime_name: "slang_map_has".into() },
+        BuiltinFn { name: "map_remove".into(),      params: vec![("m", IrType::I64), ("k", IrType::Ptr)],             ret: IrType::Void, runtime_name: "slang_map_remove".into() },
+        BuiltinFn { name: "map_len".into(),         params: vec![("m", IrType::I64)],                                 ret: IrType::I64,  runtime_name: "slang_map_len".into() },
+        BuiltinFn { name: "map_keys".into(),        params: vec![("m", IrType::I64)],                                 ret: IrType::Ptr,  runtime_name: "slang_map_keys".into() },
+
+        // ── v15: Error handling ───────────────────────────────────────
+        BuiltinFn { name: "error_set".into(),       params: vec![("code", IrType::I64), ("msg", IrType::Ptr)],        ret: IrType::Void, runtime_name: "slang_error_set".into() },
+        BuiltinFn { name: "error_check".into(),     params: vec![],                                                   ret: IrType::I64,  runtime_name: "slang_error_check".into() },
+        BuiltinFn { name: "error_msg".into(),       params: vec![],                                                   ret: IrType::Ptr,  runtime_name: "slang_error_msg".into() },
+        BuiltinFn { name: "error_clear".into(),     params: vec![],                                                   ret: IrType::Void, runtime_name: "slang_error_clear".into() },
+
+        // ── v15: Environment & System ─────────────────────────────────
+        BuiltinFn { name: "env_get".into(),         params: vec![("key", IrType::Ptr)],                               ret: IrType::Ptr,  runtime_name: "slang_env_get".into() },
+        BuiltinFn { name: "sleep_ms".into(),        params: vec![("ms", IrType::I64)],                                ret: IrType::Void, runtime_name: "slang_sleep_ms".into() },
+        BuiltinFn { name: "eprint".into(),          params: vec![("s", IrType::Ptr)],                                 ret: IrType::Void, runtime_name: "slang_eprint".into() },
+        BuiltinFn { name: "eprintln".into(),        params: vec![("s", IrType::Ptr)],                                 ret: IrType::Void, runtime_name: "slang_eprintln".into() },
+        BuiltinFn { name: "pid".into(),             params: vec![],                                                   ret: IrType::I64,  runtime_name: "slang_pid".into() },
+        BuiltinFn { name: "format_int".into(),      params: vec![("fmt", IrType::Ptr), ("val", IrType::I64)],         ret: IrType::Ptr,  runtime_name: "slang_format_int".into() },
+        BuiltinFn { name: "format_float".into(),    params: vec![("fmt", IrType::Ptr), ("val", IrType::F64)],         ret: IrType::Ptr,  runtime_name: "slang_format_float".into() },
+
+        // ── v15: JSON ─────────────────────────────────────────────────
+        BuiltinFn { name: "json_encode".into(),     params: vec![("m", IrType::I64)],                                 ret: IrType::Ptr,  runtime_name: "slang_json_encode".into() },
+        BuiltinFn { name: "json_decode".into(),     params: vec![("s", IrType::Ptr)],                                 ret: IrType::I64,  runtime_name: "slang_json_decode".into() },
     ]
 }
 

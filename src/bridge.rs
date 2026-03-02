@@ -778,7 +778,7 @@ mod tests {
         let ver = slang_version();
         assert!(!ver.is_null());
         let s = unsafe { CStr::from_ptr(ver) }.to_str().unwrap();
-        assert_eq!(s, "13.0.0");
+        assert_eq!(s, "15.0.0");
         unsafe { slang_free_string(ver) };
     }
 
@@ -799,5 +799,47 @@ mod tests {
         assert!(s.starts_with('['));
         assert!(s.contains("Fn"));
         unsafe { slang_free_string(result) };
+    }
+
+    // ── v15 FFI Bridge Tests ──────────────────────────────────────────
+
+    #[test]
+    fn test_v15_strings_bridge() {
+        // str_len returns i64 directly
+        let r = crate::codegen::compile_and_run(r#"fn main() -> i64 { str_len("hello") }"#);
+        assert_eq!(r.unwrap(), 5);
+        // str_contains returns bool — convert via if/else
+        let r2 = crate::codegen::compile_and_run(
+            r#"fn main() -> i64 { if str_contains("hello world", "world") { 1 } else { 0 } }"#,
+        );
+        assert_eq!(r2.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_v15_maps_bridge() {
+        let r = crate::codegen::compile_and_run(
+            r#"fn main() -> i64 { let m: i64 = map_new(); map_set(m, "key", 42); map_get(m, "key") }"#,
+        );
+        assert_eq!(r.unwrap(), 42);
+    }
+
+    #[test]
+    fn test_v15_file_io_bridge() {
+        let r = crate::codegen::compile_and_run(r#"fn main() -> i64 {
+            file_write("_v15_bridge_test.tmp", "hello");
+            let len: i64 = str_len(file_read("_v15_bridge_test.tmp"));
+            file_delete("_v15_bridge_test.tmp");
+            len
+        }"#);
+        assert_eq!(r.unwrap(), 5);
+    }
+
+    #[test]
+    fn test_v15_error_handling_bridge() {
+        // Clear any residual error state from parallel tests, then set + check
+        let r = crate::codegen::compile_and_run(
+            r#"fn main() -> i64 { error_clear(); error_set(99, "oops"); error_check() }"#,
+        );
+        assert_eq!(r.unwrap(), 99);
     }
 }

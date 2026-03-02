@@ -299,6 +299,62 @@ impl IrBuilder {
         fn_sigs.insert("slang_array_set_f64".into(),  (vec![IrType::Ptr, IrType::I64, IrType::F64], IrType::Void));
         fn_sigs.insert("slang_array_len".into(),      (vec![IrType::Ptr], IrType::I64));
 
+        // ── v15: String operations ────────────────────────────────────
+        for name in &["str_upper", "str_lower", "str_trim", "str_reverse"] {
+            fn_sigs.insert(name.to_string(), (vec![IrType::Ptr], IrType::Ptr));
+        }
+        for name in &["str_contains", "str_starts_with", "str_ends_with"] {
+            fn_sigs.insert(name.to_string(), (vec![IrType::Ptr, IrType::Ptr], IrType::Bool));
+        }
+        fn_sigs.insert("str_char_at".into(),      (vec![IrType::Ptr, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("str_substr".into(),        (vec![IrType::Ptr, IrType::I64, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("str_index_of".into(),      (vec![IrType::Ptr, IrType::Ptr], IrType::I64));
+        fn_sigs.insert("str_replace".into(),       (vec![IrType::Ptr, IrType::Ptr, IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("str_repeat".into(),        (vec![IrType::Ptr, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("str_split_count".into(),   (vec![IrType::Ptr, IrType::Ptr], IrType::I64));
+        fn_sigs.insert("str_split_get".into(),     (vec![IrType::Ptr, IrType::Ptr, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("to_string_i64".into(),     (vec![IrType::I64], IrType::Ptr));
+        fn_sigs.insert("to_string_f64".into(),     (vec![IrType::F64], IrType::Ptr));
+        fn_sigs.insert("to_string_bool".into(),    (vec![IrType::Bool], IrType::Ptr));
+        fn_sigs.insert("parse_int".into(),         (vec![IrType::Ptr], IrType::I64));
+        fn_sigs.insert("parse_float".into(),       (vec![IrType::Ptr], IrType::F64));
+
+        // ── v15: File I/O ─────────────────────────────────────────────
+        fn_sigs.insert("file_read".into(),         (vec![IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("file_write".into(),        (vec![IrType::Ptr, IrType::Ptr], IrType::Bool));
+        fn_sigs.insert("file_append".into(),       (vec![IrType::Ptr, IrType::Ptr], IrType::Bool));
+        fn_sigs.insert("file_exists".into(),       (vec![IrType::Ptr], IrType::Bool));
+        fn_sigs.insert("file_delete".into(),       (vec![IrType::Ptr], IrType::Bool));
+        fn_sigs.insert("file_size".into(),         (vec![IrType::Ptr], IrType::I64));
+
+        // ── v15: Map operations ───────────────────────────────────────
+        fn_sigs.insert("map_new".into(),           (vec![], IrType::I64));
+        fn_sigs.insert("map_set".into(),           (vec![IrType::I64, IrType::Ptr, IrType::I64], IrType::Void));
+        fn_sigs.insert("map_get".into(),           (vec![IrType::I64, IrType::Ptr], IrType::I64));
+        fn_sigs.insert("map_has".into(),            (vec![IrType::I64, IrType::Ptr], IrType::Bool));
+        fn_sigs.insert("map_remove".into(),        (vec![IrType::I64, IrType::Ptr], IrType::Void));
+        fn_sigs.insert("map_len".into(),           (vec![IrType::I64], IrType::I64));
+        fn_sigs.insert("map_keys".into(),          (vec![IrType::I64], IrType::Ptr));
+
+        // ── v15: Error handling ───────────────────────────────────────
+        fn_sigs.insert("error_set".into(),         (vec![IrType::I64, IrType::Ptr], IrType::Void));
+        fn_sigs.insert("error_check".into(),       (vec![], IrType::I64));
+        fn_sigs.insert("error_msg".into(),         (vec![], IrType::Ptr));
+        fn_sigs.insert("error_clear".into(),       (vec![], IrType::Void));
+
+        // ── v15: Environment & System ─────────────────────────────────
+        fn_sigs.insert("env_get".into(),           (vec![IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("sleep_ms".into(),          (vec![IrType::I64], IrType::Void));
+        fn_sigs.insert("eprint".into(),            (vec![IrType::Ptr], IrType::Void));
+        fn_sigs.insert("eprintln".into(),          (vec![IrType::Ptr], IrType::Void));
+        fn_sigs.insert("pid".into(),               (vec![], IrType::I64));
+        fn_sigs.insert("format_int".into(),        (vec![IrType::Ptr, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("format_float".into(),      (vec![IrType::Ptr, IrType::F64], IrType::Ptr));
+
+        // ── v15: JSON ─────────────────────────────────────────────────
+        fn_sigs.insert("json_encode".into(),       (vec![IrType::I64], IrType::Ptr));
+        fn_sigs.insert("json_decode".into(),       (vec![IrType::Ptr], IrType::I64));
+
         Self {
             module: IrModule::new(),
             current_blocks: Vec::new(),
@@ -1114,17 +1170,68 @@ impl IrBuilder {
                 result
             }
 
-            // ── Phase 5: Lambda / closure ───────────────────────────────────────
-            ast::Expr::Lambda { params, body: _, .. } => {
-                // Phase 5 scaffolding: register as anonymous inline function,
-                // emit ClosureAlloc with no captures (full capture analysis in Phase 5).
+            // ── Phase 5 → v15: Lambda / closure ──────────────────────────────
+            ast::Expr::Lambda { params, body, .. } => {
                 let anon_name = format!("__lambda_{}", self.next_value);
-                // Lower the lambda body as a separate IrFunction.
-                let _lambda_params: Vec<(String, IrType)> = params.iter()
+                let lambda_params: Vec<(String, IrType)> = params.iter()
                     .map(|p| (p.name.clone(), self.type_expr_to_ir(&p.ty)))
                     .collect();
-                // Lower body in the context of a separate implicit function (no recursion guard
-                // needed for Phase 5 scaffolding; full closure lowering revisited in Phase 5).
+                // Infer return type as I64 (default); proper inference would
+                // require full type unification which is a future enhancement.
+                let lambda_ret = IrType::I64;
+
+                // Save outer function state
+                let saved_blocks  = std::mem::take(&mut self.current_blocks);
+                let saved_block   = self.current_block;
+                let saved_nv      = self.next_value;
+                let saved_nb      = self.next_block;
+                let saved_locals  = std::mem::take(&mut self.locals);
+                let saved_muts    = std::mem::take(&mut self.mutables);
+                let saved_vtypes  = std::mem::take(&mut self.value_types);
+                let saved_mvtypes = std::mem::take(&mut self.mutable_var_types);
+
+                // Initialize lambda function state
+                self.next_value = 0;
+                self.next_block = 0;
+                let entry = self.fresh_block();
+                let bb = BasicBlock::new(entry);
+                self.current_blocks = vec![bb];
+                self.current_block = 0;
+
+                // Bind lambda params
+                for (name, ty) in &lambda_params {
+                    let v = self.fresh_value();
+                    self.locals.insert(name.clone(), v);
+                    self.record_type(v, ty.clone());
+                }
+
+                // Register lambda in fn_sigs so nested calls resolve
+                self.fn_sigs.insert(anon_name.clone(),
+                    (lambda_params.iter().map(|(_, t)| t.clone()).collect(), lambda_ret.clone()));
+
+                // Lower body — it's an Expr, not a Block
+                let body_val = self.lower_expr(body);
+                self.emit(Inst::Return { value: Some(body_val) });
+
+                let ir_func = IrFunction {
+                    name: anon_name.clone(),
+                    params: lambda_params,
+                    ret_type: lambda_ret,
+                    blocks: std::mem::take(&mut self.current_blocks),
+                    entry,
+                };
+                self.module.functions.push(ir_func);
+
+                // Restore outer function state
+                self.current_blocks  = saved_blocks;
+                self.current_block   = saved_block;
+                self.next_value      = saved_nv;
+                self.next_block      = saved_nb;
+                self.locals          = saved_locals;
+                self.mutables        = saved_muts;
+                self.value_types     = saved_vtypes;
+                self.mutable_var_types = saved_mvtypes;
+
                 let result = self.fresh_value();
                 self.emit(Inst::ClosureAlloc {
                     result,

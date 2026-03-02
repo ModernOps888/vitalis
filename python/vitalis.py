@@ -4902,5 +4902,12 @@ __all__ = [
     "evo_island_migrate", "evo_simulated_annealing",
     "evo_coevolution_fitness", "evo_adapt_f", "evo_adapt_cr",
     "evo_fitness_distance_correlation",
+    # v15.0: JIT stdlib wrappers
+    "v15_str_upper", "v15_str_lower", "v15_str_contains", "v15_str_len",
+    "v15_str_index_of", "v15_str_split_count", "v15_parse_int",
+    "v15_map_new_set_get", "v15_map_len",
+    "v15_error_set_check", "v15_file_roundtrip",
+    "v15_pid", "v15_epoch_secs",
+    "v15_fibonacci", "v15_factorial", "v15_is_prime", "v15_gcd",
 ]
 

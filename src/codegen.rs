@@ -504,6 +504,409 @@ extern "C" fn slang_logit_f64(x: f64) -> f64 {
     (x / (1.0 - x)).ln()
 }
 
+// ── v15: String Operations ──────────────────────────────────────────────
+
+/// Convert string to uppercase
+extern "C" fn slang_str_upper(ptr: *const i8) -> *const i8 {
+    if ptr.is_null() { return intern_cstr("") as *const i8; }
+    let s = unsafe { std::ffi::CStr::from_ptr(ptr).to_string_lossy().into_owned() };
+    intern_cstr(&s.to_uppercase()) as *const i8
+}
+
+/// Convert string to lowercase
+extern "C" fn slang_str_lower(ptr: *const i8) -> *const i8 {
+    if ptr.is_null() { return intern_cstr("") as *const i8; }
+    let s = unsafe { std::ffi::CStr::from_ptr(ptr).to_string_lossy().into_owned() };
+    intern_cstr(&s.to_lowercase()) as *const i8
+}
+
+/// Trim whitespace from both sides
+extern "C" fn slang_str_trim(ptr: *const i8) -> *const i8 {
+    if ptr.is_null() { return intern_cstr("") as *const i8; }
+    let s = unsafe { std::ffi::CStr::from_ptr(ptr).to_string_lossy().into_owned() };
+    intern_cstr(s.trim()) as *const i8
+}
+
+/// Check if string contains substring → i8 bool
+extern "C" fn slang_str_contains(haystack: *const i8, needle: *const i8) -> i8 {
+    if haystack.is_null() || needle.is_null() { return 0; }
+    let h = unsafe { std::ffi::CStr::from_ptr(haystack).to_string_lossy() };
+    let n = unsafe { std::ffi::CStr::from_ptr(needle).to_string_lossy() };
+    if h.contains(n.as_ref()) { 1 } else { 0 }
+}
+
+/// Check if string starts with prefix → i8 bool
+extern "C" fn slang_str_starts_with(s: *const i8, prefix: *const i8) -> i8 {
+    if s.is_null() || prefix.is_null() { return 0; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy() };
+    let pv = unsafe { std::ffi::CStr::from_ptr(prefix).to_string_lossy() };
+    if sv.starts_with(pv.as_ref()) { 1 } else { 0 }
+}
+
+/// Check if string ends with suffix → i8 bool
+extern "C" fn slang_str_ends_with(s: *const i8, suffix: *const i8) -> i8 {
+    if s.is_null() || suffix.is_null() { return 0; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy() };
+    let sv2 = unsafe { std::ffi::CStr::from_ptr(suffix).to_string_lossy() };
+    if sv.ends_with(sv2.as_ref()) { 1 } else { 0 }
+}
+
+/// Get character at index (returns single-char string, or "" if OOB)
+extern "C" fn slang_str_char_at(s: *const i8, index: i64) -> *const i8 {
+    if s.is_null() { return intern_cstr("") as *const i8; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    if index < 0 || (index as usize) >= sv.len() { return intern_cstr("") as *const i8; }
+    let ch = sv.chars().nth(index as usize).unwrap_or('\0');
+    intern_cstr(&ch.to_string()) as *const i8
+}
+
+/// Substring: str_substr(s, start, len)
+extern "C" fn slang_str_substr(s: *const i8, start: i64, len: i64) -> *const i8 {
+    if s.is_null() { return intern_cstr("") as *const i8; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    let st = (start.max(0) as usize).min(sv.len());
+    let end = (st + (len.max(0) as usize)).min(sv.len());
+    intern_cstr(&sv[st..end]) as *const i8
+}
+
+/// Find index of substring (-1 if not found)
+extern "C" fn slang_str_index_of(haystack: *const i8, needle: *const i8) -> i64 {
+    if haystack.is_null() || needle.is_null() { return -1; }
+    let h = unsafe { std::ffi::CStr::from_ptr(haystack).to_string_lossy().into_owned() };
+    let n = unsafe { std::ffi::CStr::from_ptr(needle).to_string_lossy().into_owned() };
+    h.find(&n).map(|i| i as i64).unwrap_or(-1)
+}
+
+/// Replace all occurrences of `old` with `new_s`
+extern "C" fn slang_str_replace(s: *const i8, old: *const i8, new_s: *const i8) -> *const i8 {
+    if s.is_null() { return intern_cstr("") as *const i8; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    let ov = if old.is_null() { String::new() } else { unsafe { std::ffi::CStr::from_ptr(old).to_string_lossy().into_owned() } };
+    let nv = if new_s.is_null() { String::new() } else { unsafe { std::ffi::CStr::from_ptr(new_s).to_string_lossy().into_owned() } };
+    if ov.is_empty() { return intern_cstr(&sv) as *const i8; }
+    intern_cstr(&sv.replace(&ov, &nv)) as *const i8
+}
+
+/// Repeat string n times
+extern "C" fn slang_str_repeat(s: *const i8, n: i64) -> *const i8 {
+    if s.is_null() || n <= 0 { return intern_cstr("") as *const i8; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    intern_cstr(&sv.repeat(n.min(100_000) as usize)) as *const i8
+}
+
+/// Reverse a string
+extern "C" fn slang_str_reverse(s: *const i8) -> *const i8 {
+    if s.is_null() { return intern_cstr("") as *const i8; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    let reversed: String = sv.chars().rev().collect();
+    intern_cstr(&reversed) as *const i8
+}
+
+/// Split string by delimiter, return count of parts
+extern "C" fn slang_str_split_count(s: *const i8, delim: *const i8) -> i64 {
+    if s.is_null() { return 0; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    let dv = if delim.is_null() { " ".to_string() } else { unsafe { std::ffi::CStr::from_ptr(delim).to_string_lossy().into_owned() } };
+    if dv.is_empty() { return sv.len() as i64; }
+    sv.split(&dv).count() as i64
+}
+
+/// Get the n-th part after splitting by delimiter
+extern "C" fn slang_str_split_get(s: *const i8, delim: *const i8, index: i64) -> *const i8 {
+    if s.is_null() { return intern_cstr("") as *const i8; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    let dv = if delim.is_null() { " ".to_string() } else { unsafe { std::ffi::CStr::from_ptr(delim).to_string_lossy().into_owned() } };
+    if dv.is_empty() { return intern_cstr("") as *const i8; }
+    let parts: Vec<&str> = sv.split(&dv).collect();
+    if index < 0 || (index as usize) >= parts.len() { return intern_cstr("") as *const i8; }
+    intern_cstr(parts[index as usize]) as *const i8
+}
+
+/// Join: not a stdlib call (needs arrays), but convert int to string
+extern "C" fn slang_to_string_i64(val: i64) -> *const i8 {
+    intern_cstr(&val.to_string()) as *const i8
+}
+
+/// Convert f64 to string
+extern "C" fn slang_to_string_f64(val: f64) -> *const i8 {
+    intern_cstr(&val.to_string()) as *const i8
+}
+
+/// Convert bool to string
+extern "C" fn slang_to_string_bool(val: i8) -> *const i8 {
+    intern_cstr(if val != 0 { "true" } else { "false" }) as *const i8
+}
+
+/// Parse string to i64 (0 on failure)
+extern "C" fn slang_parse_int(s: *const i8) -> i64 {
+    if s.is_null() { return 0; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    sv.trim().parse::<i64>().unwrap_or(0)
+}
+
+/// Parse string to f64 (0.0 on failure)
+extern "C" fn slang_parse_float(s: *const i8) -> f64 {
+    if s.is_null() { return 0.0; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    sv.trim().parse::<f64>().unwrap_or(0.0)
+}
+
+// ── v15: File I/O ───────────────────────────────────────────────────────
+
+/// Read entire file to string. Returns "" on error.
+extern "C" fn slang_file_read(path: *const i8) -> *const i8 {
+    if path.is_null() { return intern_cstr("") as *const i8; }
+    let p = unsafe { std::ffi::CStr::from_ptr(path).to_string_lossy().into_owned() };
+    match std::fs::read_to_string(&p) {
+        Ok(content) => intern_cstr(&content) as *const i8,
+        Err(_) => intern_cstr("") as *const i8,
+    }
+}
+
+/// Write string to file. Returns 1 on success, 0 on failure.
+extern "C" fn slang_file_write(path: *const i8, content: *const i8) -> i8 {
+    if path.is_null() { return 0; }
+    let p = unsafe { std::ffi::CStr::from_ptr(path).to_string_lossy().into_owned() };
+    let c = if content.is_null() { String::new() } else { unsafe { std::ffi::CStr::from_ptr(content).to_string_lossy().into_owned() } };
+    match std::fs::write(&p, &c) {
+        Ok(_) => 1,
+        Err(_) => 0,
+    }
+}
+
+/// Append string to file. Returns 1 on success, 0 on failure.
+extern "C" fn slang_file_append(path: *const i8, content: *const i8) -> i8 {
+    if path.is_null() { return 0; }
+    let p = unsafe { std::ffi::CStr::from_ptr(path).to_string_lossy().into_owned() };
+    let c = if content.is_null() { String::new() } else { unsafe { std::ffi::CStr::from_ptr(content).to_string_lossy().into_owned() } };
+    use std::io::Write;
+    match std::fs::OpenOptions::new().append(true).create(true).open(&p) {
+        Ok(mut f) => if f.write_all(c.as_bytes()).is_ok() { 1 } else { 0 },
+        Err(_) => 0,
+    }
+}
+
+/// Check if file exists → i8 bool
+extern "C" fn slang_file_exists(path: *const i8) -> i8 {
+    if path.is_null() { return 0; }
+    let p = unsafe { std::ffi::CStr::from_ptr(path).to_string_lossy().into_owned() };
+    if std::path::Path::new(&p).exists() { 1 } else { 0 }
+}
+
+/// Delete a file. Returns 1 on success, 0 on failure.
+extern "C" fn slang_file_delete(path: *const i8) -> i8 {
+    if path.is_null() { return 0; }
+    let p = unsafe { std::ffi::CStr::from_ptr(path).to_string_lossy().into_owned() };
+    if std::fs::remove_file(&p).is_ok() { 1 } else { 0 }
+}
+
+/// Get file size in bytes (-1 on error)
+extern "C" fn slang_file_size(path: *const i8) -> i64 {
+    if path.is_null() { return -1; }
+    let p = unsafe { std::ffi::CStr::from_ptr(path).to_string_lossy().into_owned() };
+    match std::fs::metadata(&p) {
+        Ok(m) => m.len() as i64,
+        Err(_) => -1,
+    }
+}
+
+// ── v15: HashMap Runtime ────────────────────────────────────────────────
+// Maps are stored as opaque pointers to a Box<HashMap<String, i64>>
+// arena-managed to prevent drops.
+
+use std::collections::BTreeMap;
+
+static VITALIS_MAP_ARENA: Mutex<Vec<Box<BTreeMap<String, i64>>>> = Mutex::new(Vec::new());
+static VITALIS_FMAP_ARENA: Mutex<Vec<Box<BTreeMap<String, f64>>>> = Mutex::new(Vec::new());
+
+/// Create a new empty map, return opaque handle (i64)
+extern "C" fn slang_map_new() -> i64 {
+    let map: Box<BTreeMap<String, i64>> = Box::new(BTreeMap::new());
+    let ptr = Box::into_raw(map);
+    VITALIS_MAP_ARENA.lock().unwrap().push(unsafe { Box::from_raw(ptr) });
+    let arena = VITALIS_MAP_ARENA.lock().unwrap();
+    (arena.len() - 1) as i64
+}
+
+/// Set key-value in map
+extern "C" fn slang_map_set(handle: i64, key: *const i8, value: i64) {
+    if key.is_null() { return; }
+    let k = unsafe { std::ffi::CStr::from_ptr(key).to_string_lossy().into_owned() };
+    let mut arena = VITALIS_MAP_ARENA.lock().unwrap();
+    if let Some(map) = arena.get_mut(handle as usize) {
+        map.insert(k, value);
+    }
+}
+
+/// Get value from map (returns 0 if key not found)
+extern "C" fn slang_map_get(handle: i64, key: *const i8) -> i64 {
+    if key.is_null() { return 0; }
+    let k = unsafe { std::ffi::CStr::from_ptr(key).to_string_lossy().into_owned() };
+    let arena = VITALIS_MAP_ARENA.lock().unwrap();
+    arena.get(handle as usize).and_then(|m| m.get(&k).copied()).unwrap_or(0)
+}
+
+/// Check if key exists in map → bool
+extern "C" fn slang_map_has(handle: i64, key: *const i8) -> i8 {
+    if key.is_null() { return 0; }
+    let k = unsafe { std::ffi::CStr::from_ptr(key).to_string_lossy().into_owned() };
+    let arena = VITALIS_MAP_ARENA.lock().unwrap();
+    if arena.get(handle as usize).map(|m| m.contains_key(&k)).unwrap_or(false) { 1 } else { 0 }
+}
+
+/// Remove key from map
+extern "C" fn slang_map_remove(handle: i64, key: *const i8) {
+    if key.is_null() { return; }
+    let k = unsafe { std::ffi::CStr::from_ptr(key).to_string_lossy().into_owned() };
+    let mut arena = VITALIS_MAP_ARENA.lock().unwrap();
+    if let Some(map) = arena.get_mut(handle as usize) {
+        map.remove(&k);
+    }
+}
+
+/// Count of entries in map
+extern "C" fn slang_map_len(handle: i64) -> i64 {
+    let arena = VITALIS_MAP_ARENA.lock().unwrap();
+    arena.get(handle as usize).map(|m| m.len() as i64).unwrap_or(0)
+}
+
+/// Get all keys as a joined string (delimiter = ",")
+extern "C" fn slang_map_keys(handle: i64) -> *const i8 {
+    let arena = VITALIS_MAP_ARENA.lock().unwrap();
+    match arena.get(handle as usize) {
+        Some(map) => {
+            let keys: Vec<&str> = map.keys().map(|k| k.as_str()).collect();
+            intern_cstr(&keys.join(",")) as *const i8
+        }
+        None => intern_cstr("") as *const i8,
+    }
+}
+
+// ── v15: Error Handling Runtime ─────────────────────────────────────────
+// Simple error flag mechanism: functions can set an error, callers can check/clear it.
+
+static VITALIS_ERROR_FLAG: AtomicU64 = AtomicU64::new(0);
+static VITALIS_ERROR_MSG: Mutex<String> = Mutex::new(String::new());
+
+/// Set error with code
+extern "C" fn slang_error_set(code: i64, msg: *const i8) {
+    VITALIS_ERROR_FLAG.store(code as u64, Ordering::SeqCst);
+    if !msg.is_null() {
+        let m = unsafe { std::ffi::CStr::from_ptr(msg).to_string_lossy().into_owned() };
+        *VITALIS_ERROR_MSG.lock().unwrap() = m;
+    }
+}
+
+/// Check if error is set → error code (0 = no error)
+extern "C" fn slang_error_check() -> i64 {
+    VITALIS_ERROR_FLAG.load(Ordering::SeqCst) as i64
+}
+
+/// Get error message
+extern "C" fn slang_error_msg() -> *const i8 {
+    let msg = VITALIS_ERROR_MSG.lock().unwrap().clone();
+    intern_cstr(&msg) as *const i8
+}
+
+/// Clear error
+extern "C" fn slang_error_clear() {
+    VITALIS_ERROR_FLAG.store(0, Ordering::SeqCst);
+    *VITALIS_ERROR_MSG.lock().unwrap() = String::new();
+}
+
+// ── v15: Environment & System ───────────────────────────────────────────
+
+/// Get environment variable (returns "" if not set)
+extern "C" fn slang_env_get(key: *const i8) -> *const i8 {
+    if key.is_null() { return intern_cstr("") as *const i8; }
+    let k = unsafe { std::ffi::CStr::from_ptr(key).to_string_lossy().into_owned() };
+    match std::env::var(&k) {
+        Ok(v) => intern_cstr(&v) as *const i8,
+        Err(_) => intern_cstr("") as *const i8,
+    }
+}
+
+/// Sleep for N milliseconds
+extern "C" fn slang_sleep_ms(ms: i64) {
+    if ms > 0 {
+        std::thread::sleep(std::time::Duration::from_millis(ms as u64));
+    }
+}
+
+/// Print to stderr
+extern "C" fn slang_eprint(ptr: *const i8) {
+    if ptr.is_null() { return; }
+    let s = unsafe { std::ffi::CStr::from_ptr(ptr) };
+    eprint!("{}", s.to_string_lossy());
+}
+
+/// Print to stderr with newline
+extern "C" fn slang_eprintln(ptr: *const i8) {
+    if ptr.is_null() { return; }
+    let s = unsafe { std::ffi::CStr::from_ptr(ptr) };
+    eprintln!("{}", s.to_string_lossy());
+}
+
+/// Get process ID
+extern "C" fn slang_pid() -> i64 {
+    std::process::id() as i64
+}
+
+/// Format string: sprintf-lite. Replaces {} with i64 value.
+extern "C" fn slang_format_int(template: *const i8, val: i64) -> *const i8 {
+    if template.is_null() { return intern_cstr("") as *const i8; }
+    let t = unsafe { std::ffi::CStr::from_ptr(template).to_string_lossy().into_owned() };
+    intern_cstr(&t.replacen("{}", &val.to_string(), 1)) as *const i8
+}
+
+/// Format string: replaces {} with f64 value.
+extern "C" fn slang_format_float(template: *const i8, val: f64) -> *const i8 {
+    if template.is_null() { return intern_cstr("") as *const i8; }
+    let t = unsafe { std::ffi::CStr::from_ptr(template).to_string_lossy().into_owned() };
+    intern_cstr(&t.replacen("{}", &format!("{:.6}", val), 1)) as *const i8
+}
+
+// ── v15: JSON Runtime ───────────────────────────────────────────────────
+// Minimal JSON: map handles can be serialized/deserialized
+
+/// Serialize a map handle to JSON string
+extern "C" fn slang_json_encode(handle: i64) -> *const i8 {
+    let arena = VITALIS_MAP_ARENA.lock().unwrap();
+    match arena.get(handle as usize) {
+        Some(map) => {
+            let entries: Vec<String> = map.iter()
+                .map(|(k, v)| format!("\"{}\":{}", k, v))
+                .collect();
+            let json = format!("{{{}}}", entries.join(","));
+            intern_cstr(&json) as *const i8
+        }
+        None => intern_cstr("{}") as *const i8,
+    }
+}
+
+/// Deserialize JSON string to a new map handle (basic int-valued objects only)
+extern "C" fn slang_json_decode(s: *const i8) -> i64 {
+    let handle = slang_map_new();
+    if s.is_null() { return handle; }
+    let sv = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().into_owned() };
+    // Simple parser for {"key":123, ...}
+    let sv = sv.trim();
+    if !sv.starts_with('{') || !sv.ends_with('}') { return handle; }
+    let inner = &sv[1..sv.len()-1];
+    for pair in inner.split(',') {
+        let pair = pair.trim();
+        if let Some(colon) = pair.find(':') {
+            let key = pair[..colon].trim().trim_matches('"');
+            let val = pair[colon+1..].trim();
+            if let Ok(v) = val.parse::<i64>() {
+                let key_cstr = intern_cstr(key);
+                slang_map_set(handle, key_cstr as *const i8, v);
+            }
+        }
+    }
+    handle
+}
+
 // ─── JIT Compiler ───────────────────────────────────────────────────────
 pub struct JitCompiler {
     module: JITModule,
@@ -652,6 +1055,57 @@ impl JitCompiler {
         builder.symbol("slang_sinc_f64",          slang_sinc_f64          as *const u8);
         builder.symbol("slang_inv_sqrt_approx_f64", slang_inv_sqrt_approx_f64 as *const u8);
         builder.symbol("slang_logit_f64",         slang_logit_f64         as *const u8);
+        // ── v15: String operations ───────────────────────────────────────
+        builder.symbol("slang_str_upper",        slang_str_upper        as *const u8);
+        builder.symbol("slang_str_lower",        slang_str_lower        as *const u8);
+        builder.symbol("slang_str_trim",         slang_str_trim         as *const u8);
+        builder.symbol("slang_str_contains",     slang_str_contains     as *const u8);
+        builder.symbol("slang_str_starts_with",  slang_str_starts_with  as *const u8);
+        builder.symbol("slang_str_ends_with",    slang_str_ends_with    as *const u8);
+        builder.symbol("slang_str_char_at",      slang_str_char_at      as *const u8);
+        builder.symbol("slang_str_substr",       slang_str_substr       as *const u8);
+        builder.symbol("slang_str_index_of",     slang_str_index_of     as *const u8);
+        builder.symbol("slang_str_replace",      slang_str_replace      as *const u8);
+        builder.symbol("slang_str_repeat",       slang_str_repeat       as *const u8);
+        builder.symbol("slang_str_reverse",      slang_str_reverse      as *const u8);
+        builder.symbol("slang_str_split_count",  slang_str_split_count  as *const u8);
+        builder.symbol("slang_str_split_get",    slang_str_split_get    as *const u8);
+        builder.symbol("slang_to_string_i64",    slang_to_string_i64    as *const u8);
+        builder.symbol("slang_to_string_f64",    slang_to_string_f64    as *const u8);
+        builder.symbol("slang_to_string_bool",   slang_to_string_bool   as *const u8);
+        builder.symbol("slang_parse_int",        slang_parse_int        as *const u8);
+        builder.symbol("slang_parse_float",      slang_parse_float      as *const u8);
+        // ── v15: File I/O ────────────────────────────────────────────────
+        builder.symbol("slang_file_read",        slang_file_read        as *const u8);
+        builder.symbol("slang_file_write",       slang_file_write       as *const u8);
+        builder.symbol("slang_file_append",      slang_file_append      as *const u8);
+        builder.symbol("slang_file_exists",      slang_file_exists      as *const u8);
+        builder.symbol("slang_file_delete",      slang_file_delete      as *const u8);
+        builder.symbol("slang_file_size",        slang_file_size        as *const u8);
+        // ── v15: Map operations ──────────────────────────────────────────
+        builder.symbol("slang_map_new",          slang_map_new          as *const u8);
+        builder.symbol("slang_map_set",          slang_map_set          as *const u8);
+        builder.symbol("slang_map_get",          slang_map_get          as *const u8);
+        builder.symbol("slang_map_has",          slang_map_has          as *const u8);
+        builder.symbol("slang_map_remove",       slang_map_remove       as *const u8);
+        builder.symbol("slang_map_len",          slang_map_len          as *const u8);
+        builder.symbol("slang_map_keys",         slang_map_keys         as *const u8);
+        // ── v15: Error handling ──────────────────────────────────────────
+        builder.symbol("slang_error_set",        slang_error_set        as *const u8);
+        builder.symbol("slang_error_check",      slang_error_check      as *const u8);
+        builder.symbol("slang_error_msg",        slang_error_msg        as *const u8);
+        builder.symbol("slang_error_clear",      slang_error_clear      as *const u8);
+        // ── v15: Environment & System ────────────────────────────────────
+        builder.symbol("slang_env_get",          slang_env_get          as *const u8);
+        builder.symbol("slang_sleep_ms",         slang_sleep_ms         as *const u8);
+        builder.symbol("slang_eprint",           slang_eprint           as *const u8);
+        builder.symbol("slang_eprintln",         slang_eprintln         as *const u8);
+        builder.symbol("slang_pid",              slang_pid              as *const u8);
+        builder.symbol("slang_format_int",       slang_format_int       as *const u8);
+        builder.symbol("slang_format_float",     slang_format_float     as *const u8);
+        // ── v15: JSON ────────────────────────────────────────────────────
+        builder.symbol("slang_json_encode",      slang_json_encode      as *const u8);
+        builder.symbol("slang_json_decode",      slang_json_decode      as *const u8);
 
         let module = JITModule::new(builder);
         let ctx = module.make_context();
@@ -854,6 +1308,57 @@ impl JitCompiler {
         decl_fn!("slang_sinc_f64",          [types::F64],                  types::F64);
         decl_fn!("slang_inv_sqrt_approx_f64", [types::F64],                types::F64);
         decl_fn!("slang_logit_f64",         [types::F64],                  types::F64);
+        // ── v15: String operations ───────────────────────────────────────
+        decl_fn!("slang_str_upper",        [ptr_type],                    ptr_type);
+        decl_fn!("slang_str_lower",        [ptr_type],                    ptr_type);
+        decl_fn!("slang_str_trim",         [ptr_type],                    ptr_type);
+        decl_fn!("slang_str_contains",     [ptr_type, ptr_type],          types::I8);
+        decl_fn!("slang_str_starts_with",  [ptr_type, ptr_type],          types::I8);
+        decl_fn!("slang_str_ends_with",    [ptr_type, ptr_type],          types::I8);
+        decl_fn!("slang_str_char_at",      [ptr_type, types::I64],        ptr_type);
+        decl_fn!("slang_str_substr",       [ptr_type, types::I64, types::I64], ptr_type);
+        decl_fn!("slang_str_index_of",     [ptr_type, ptr_type],          types::I64);
+        decl_fn!("slang_str_replace",      [ptr_type, ptr_type, ptr_type], ptr_type);
+        decl_fn!("slang_str_repeat",       [ptr_type, types::I64],        ptr_type);
+        decl_fn!("slang_str_reverse",      [ptr_type],                    ptr_type);
+        decl_fn!("slang_str_split_count",  [ptr_type, ptr_type],          types::I64);
+        decl_fn!("slang_str_split_get",    [ptr_type, ptr_type, types::I64], ptr_type);
+        decl_fn!("slang_to_string_i64",    [types::I64],                  ptr_type);
+        decl_fn!("slang_to_string_f64",    [types::F64],                  ptr_type);
+        decl_fn!("slang_to_string_bool",   [types::I8],                   ptr_type);
+        decl_fn!("slang_parse_int",        [ptr_type],                    types::I64);
+        decl_fn!("slang_parse_float",      [ptr_type],                    types::F64);
+        // ── v15: File I/O ────────────────────────────────────────────────
+        decl_fn!("slang_file_read",        [ptr_type],                    ptr_type);
+        decl_fn!("slang_file_write",       [ptr_type, ptr_type],          types::I8);
+        decl_fn!("slang_file_append",      [ptr_type, ptr_type],          types::I8);
+        decl_fn!("slang_file_exists",      [ptr_type],                    types::I8);
+        decl_fn!("slang_file_delete",      [ptr_type],                    types::I8);
+        decl_fn!("slang_file_size",        [ptr_type],                    types::I64);
+        // ── v15: Map operations ──────────────────────────────────────────
+        decl_fn!("slang_map_new",          [],                            types::I64);
+        decl_fn!("slang_map_set",          [types::I64, ptr_type, types::I64], types::INVALID);
+        decl_fn!("slang_map_get",          [types::I64, ptr_type],        types::I64);
+        decl_fn!("slang_map_has",          [types::I64, ptr_type],        types::I8);
+        decl_fn!("slang_map_remove",       [types::I64, ptr_type],        types::INVALID);
+        decl_fn!("slang_map_len",          [types::I64],                  types::I64);
+        decl_fn!("slang_map_keys",         [types::I64],                  ptr_type);
+        // ── v15: Error handling ──────────────────────────────────────────
+        decl_fn!("slang_error_set",        [types::I64, ptr_type],        types::INVALID);
+        decl_fn!("slang_error_check",      [],                            types::I64);
+        decl_fn!("slang_error_msg",        [],                            ptr_type);
+        decl_fn!("slang_error_clear",      [],                            types::INVALID);
+        // ── v15: Environment & System ────────────────────────────────────
+        decl_fn!("slang_env_get",          [ptr_type],                    ptr_type);
+        decl_fn!("slang_sleep_ms",         [types::I64],                  types::INVALID);
+        decl_fn!("slang_eprint",           [ptr_type],                    types::INVALID);
+        decl_fn!("slang_eprintln",         [ptr_type],                    types::INVALID);
+        decl_fn!("slang_pid",              [],                            types::I64);
+        decl_fn!("slang_format_int",       [ptr_type, types::I64],        ptr_type);
+        decl_fn!("slang_format_float",     [ptr_type, types::F64],        ptr_type);
+        // ── v15: JSON ────────────────────────────────────────────────────
+        decl_fn!("slang_json_encode",      [types::I64],                  ptr_type);
+        decl_fn!("slang_json_decode",      [ptr_type],                    types::I64);
 
         Ok(())
     }
@@ -1274,6 +1779,57 @@ impl JitCompiler {
                     "sinc"            => "slang_sinc_f64".into(),
                     "inv_sqrt_approx" => "slang_inv_sqrt_approx_f64".into(),
                     "logit"           => "slang_logit_f64".into(),
+                    // ── v15: String operations ───────────────────────────
+                    "str_upper"       => "slang_str_upper".into(),
+                    "str_lower"       => "slang_str_lower".into(),
+                    "str_trim"        => "slang_str_trim".into(),
+                    "str_contains"    => "slang_str_contains".into(),
+                    "str_starts_with" => "slang_str_starts_with".into(),
+                    "str_ends_with"   => "slang_str_ends_with".into(),
+                    "str_char_at"     => "slang_str_char_at".into(),
+                    "str_substr"      => "slang_str_substr".into(),
+                    "str_index_of"    => "slang_str_index_of".into(),
+                    "str_replace"     => "slang_str_replace".into(),
+                    "str_repeat"      => "slang_str_repeat".into(),
+                    "str_reverse"     => "slang_str_reverse".into(),
+                    "str_split_count" => "slang_str_split_count".into(),
+                    "str_split_get"   => "slang_str_split_get".into(),
+                    "to_string_i64"   => "slang_to_string_i64".into(),
+                    "to_string_f64"   => "slang_to_string_f64".into(),
+                    "to_string_bool"  => "slang_to_string_bool".into(),
+                    "parse_int"       => "slang_parse_int".into(),
+                    "parse_float"     => "slang_parse_float".into(),
+                    // ── v15: File I/O ────────────────────────────────────
+                    "file_read"       => "slang_file_read".into(),
+                    "file_write"      => "slang_file_write".into(),
+                    "file_append"     => "slang_file_append".into(),
+                    "file_exists"     => "slang_file_exists".into(),
+                    "file_delete"     => "slang_file_delete".into(),
+                    "file_size"       => "slang_file_size".into(),
+                    // ── v15: Map operations ──────────────────────────────
+                    "map_new"         => "slang_map_new".into(),
+                    "map_set"         => "slang_map_set".into(),
+                    "map_get"         => "slang_map_get".into(),
+                    "map_has"         => "slang_map_has".into(),
+                    "map_remove"      => "slang_map_remove".into(),
+                    "map_len"         => "slang_map_len".into(),
+                    "map_keys"        => "slang_map_keys".into(),
+                    // ── v15: Error handling ──────────────────────────────
+                    "error_set"       => "slang_error_set".into(),
+                    "error_check"     => "slang_error_check".into(),
+                    "error_msg"       => "slang_error_msg".into(),
+                    "error_clear"     => "slang_error_clear".into(),
+                    // ── v15: Environment & System ────────────────────────
+                    "env_get"         => "slang_env_get".into(),
+                    "sleep_ms"        => "slang_sleep_ms".into(),
+                    "eprint"          => "slang_eprint".into(),
+                    "eprintln"        => "slang_eprintln".into(),
+                    "pid"             => "slang_pid".into(),
+                    "format_int"      => "slang_format_int".into(),
+                    "format_float"    => "slang_format_float".into(),
+                    // ── v15: JSON ────────────────────────────────────────
+                    "json_encode"     => "slang_json_encode".into(),
+                    "json_decode"     => "slang_json_decode".into(),
                     other       => other.to_string(),
                 };
 
@@ -1445,10 +2001,16 @@ impl JitCompiler {
                 }
                 type_map.insert(*result, IrType::I64);
             }
-            // ── Phase 5: Closure scaffolding ────────────────────────────────────
-            Inst::ClosureAlloc { result, .. } => {
-                // Returns null ptr until Phase 5 capture analysis is complete.
-                value_map.insert(*result, builder.ins().iconst(pointer_type, 0));
+            // ── Phase 5 → v15: Closure — return real function pointer ────────
+            Inst::ClosureAlloc { result, func, .. } => {
+                if let Some(func_id) = func_ids.get(func) {
+                    let func_ref = module.declare_func_in_func(*func_id, builder.func);
+                    let ptr = builder.ins().func_addr(pointer_type, func_ref);
+                    value_map.insert(*result, ptr);
+                } else {
+                    // Fallback: unknown lambda — null sentinel
+                    value_map.insert(*result, builder.ins().iconst(pointer_type, 0));
+                }
                 type_map.insert(*result, IrType::Ptr);
             }
             // ── Phase 6: Struct scaffolding ────────────────────────────────────
@@ -1706,5 +2268,98 @@ mod tests {
             "fn add1(x: i64) -> i64 { x + 1 } fn double(x: i64) -> i64 { x * 2 } fn main() -> i64 { 5 |> add1 |> double }"
         );
         assert_eq!(result.unwrap(), 12);
+    }
+
+    // ── v15: String stdlib tests ──────────────────────────────────────
+    #[test]
+    fn test_v15_str_len() {
+        let r = compile_and_run(r#"fn main() -> i64 { str_len("hello") }"#);
+        assert_eq!(r.unwrap(), 5);
+    }
+
+    #[test]
+    fn test_v15_str_contains() {
+        let r = compile_and_run(r#"fn main() -> i64 { if str_contains("hello world", "world") { 1 } else { 0 } }"#);
+        assert_eq!(r.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_v15_str_index_of() {
+        let r = compile_and_run(r#"fn main() -> i64 { str_index_of("hello world", "world") }"#);
+        assert_eq!(r.unwrap(), 6);
+    }
+
+    #[test]
+    fn test_v15_str_split_count() {
+        let r = compile_and_run(r#"fn main() -> i64 { str_split_count("a,b,c,d", ",") }"#);
+        assert_eq!(r.unwrap(), 4);
+    }
+
+    #[test]
+    fn test_v15_parse_int() {
+        let r = compile_and_run(r#"fn main() -> i64 { parse_int("42") }"#);
+        assert_eq!(r.unwrap(), 42);
+    }
+
+    // ── v15: Map tests ────────────────────────────────────────────────
+    #[test]
+    fn test_v15_map_new_len() {
+        let r = compile_and_run(r#"fn main() -> i64 { let m: i64 = map_new(); map_len(m) }"#);
+        assert_eq!(r.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_v15_map_set_get() {
+        let r = compile_and_run(r#"fn main() -> i64 { let m: i64 = map_new(); map_set(m, "key", 42); map_get(m, "key") }"#);
+        assert_eq!(r.unwrap(), 42);
+    }
+
+    #[test]
+    fn test_v15_map_len_after_insert() {
+        let r = compile_and_run(r#"fn main() -> i64 { let m: i64 = map_new(); map_set(m, "a", 1); map_set(m, "b", 2); map_len(m) }"#);
+        assert_eq!(r.unwrap(), 2);
+    }
+
+    // ── v15: Error handling tests ─────────────────────────────────────
+    #[test]
+    fn test_v15_error_check_initial() {
+        let r = compile_and_run("fn main() -> i64 { error_clear(); error_check() }");
+        assert_eq!(r.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_v15_error_set_check() {
+        let r = compile_and_run(r#"fn main() -> i64 { error_set(99, "oops"); error_check() }"#);
+        assert_eq!(r.unwrap(), 99);
+    }
+
+    // ── v15: System tests ─────────────────────────────────────────────
+    #[test]
+    fn test_v15_pid() {
+        let r = compile_and_run("fn main() -> i64 { pid() }");
+        assert!(r.unwrap() > 0);
+    }
+
+    // ── v15: File I/O tests ───────────────────────────────────────────
+    #[test]
+    fn test_v15_file_write_read() {
+        let r = compile_and_run(r#"fn main() -> i64 {
+            file_write("_v15_test.tmp", "hello");
+            let len: i64 = str_len(file_read("_v15_test.tmp"));
+            file_delete("_v15_test.tmp");
+            len
+        }"#);
+        assert_eq!(r.unwrap(), 5);
+    }
+
+    #[test]
+    fn test_v15_file_exists() {
+        let r = compile_and_run(r#"fn main() -> i64 {
+            file_write("_v15_exist.tmp", "x");
+            let e: i64 = if file_exists("_v15_exist.tmp") { 1 } else { 0 };
+            file_delete("_v15_exist.tmp");
+            e
+        }"#);
+        assert_eq!(r.unwrap(), 1);
     }
 }

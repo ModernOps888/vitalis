@@ -1,5 +1,6 @@
-//! Vitalis v13.0 — A JIT-compiled programming language with built-in code evolution,
-//! multi-domain algorithm libraries, and native performance via Cranelift.
+//! Vitalis v15.0 — A JIT-compiled programming language with working closures, 46 new
+//! stdlib functions (strings, file I/O, maps, error handling, JSON, system), built-in
+//! code evolution, multi-domain algorithm libraries, and native Cranelift JIT performance.
 //!
 //! Enterprise-grade release with 38 modules spanning quantum computing, bioinformatics,
 //! neuromorphic computation, advanced evolutionary algorithms, and physical sciences.
