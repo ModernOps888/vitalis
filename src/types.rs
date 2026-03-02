@@ -293,6 +293,15 @@ impl TypeChecker {
                     self.collect_signatures(sub);
                 }
             }
+            TopLevel::Impl(imp) => {
+                // Collect impl method signatures as TypeName_method
+                for method in &imp.methods {
+                    let mangled = format!("{}_{}", imp.type_name, method.name);
+                    let params: Vec<Type> = method.params.iter().map(|p| self.resolve_type_expr(&p.ty)).collect();
+                    let ret = method.return_type.as_ref().map(|t| self.resolve_type_expr(t)).unwrap_or(Type::Void);
+                    self.fn_sigs.insert(mangled.clone(), (params.clone(), ret.clone()));
+                }
+            }
             _ => {}
         }
     }
@@ -735,6 +744,20 @@ impl TypeChecker {
                     Type::Option(inner) => *inner,
                     _ => t, // Permissive for Phase 0
                 }
+            }
+
+            Expr::TryCatch { try_body, catch_body, .. } => {
+                let try_ty = self.check_block(try_body);
+                let catch_ty = self.check_block(catch_body);
+                // Both branches should have compatible types
+                self.unify(&try_ty, &catch_ty, &try_body.span);
+                try_ty
+            }
+
+            Expr::Throw { code, message, .. } => {
+                self.check_expr(code);
+                self.check_expr(message);
+                Type::Void // throw never produces a value
             }
 
             Expr::Return { value, .. } => {

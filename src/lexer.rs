@@ -103,6 +103,16 @@ pub enum Token {
     #[token("as")]
     As,
 
+    // ── Error handling keywords ───────────────────────────────────────
+    #[token("try")]
+    Try,
+
+    #[token("catch")]
+    Catch,
+
+    #[token("throw")]
+    Throw,
+
     // ── Evolution keywords ────────────────────────────────────────────
     #[token("evolve")]
     Evolve,

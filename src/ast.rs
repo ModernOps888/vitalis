@@ -57,6 +57,8 @@ pub enum TopLevel {
     Import(ImportDecl),
     Const(ConstDecl),
     ExternBlock(ExternBlock),
+    /// Impl block: impl TypeName { fn methods... }
+    Impl(ImplBlock),
     /// An annotation applied to the next item
     Annotated {
         annotations: Vec<Annotation>,
@@ -295,6 +297,19 @@ pub enum Expr {
         expr: Box<Expr>,
         span: Span,
     },
+    /// Try/catch block: try { ... } catch e { ... }
+    TryCatch {
+        try_body: Block,
+        catch_var: String,
+        catch_body: Block,
+        span: Span,
+    },
+    /// Throw an error: throw(code, "message")
+    Throw {
+        code: Box<Expr>,
+        message: Box<Expr>,
+        span: Span,
+    },
     /// Return
     Return {
         value: Option<Box<Expr>>,
@@ -361,6 +376,8 @@ impl Expr {
             Expr::CompoundAssign { span, .. } => span,
             Expr::Cast { span, .. } => span,
             Expr::Range { span, .. } => span,
+            Expr::TryCatch { span, .. } => span,
+            Expr::Throw { span, .. } => span,
         }
     }
 }
@@ -525,7 +542,13 @@ pub struct EnumVariant {
     pub fields: Vec<TypeExpr>,
     pub span: Span,
 }
-
+// ─── Impl Block ─────────────────────────────────────────────────────
+#[derive(Debug, Clone)]
+pub struct ImplBlock {
+    pub type_name: String,
+    pub methods: Vec<Function>,
+    pub span: Span,
+}
 // ─── Module ─────────────────────────────────────────────────────────────
 #[derive(Debug, Clone)]
 pub struct ModuleDef {

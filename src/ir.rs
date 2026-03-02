@@ -252,6 +252,14 @@ pub struct IrBuilder {
     value_types: HashMap<Value, IrType>,
     /// Type of each mutable variable (for correct Load type on Ident)
     mutable_var_types: HashMap<String, IrType>,
+    /// v18: Struct field layouts: struct_name → [(field_name, index)]
+    struct_defs: HashMap<String, Vec<String>>,
+    /// v18: Tracks which struct type each variable holds (for method dispatch)
+    var_struct_types: HashMap<String, String>,
+    /// v18: Loop context stack: (continue_bb, break_bb) for break/continue
+    loop_stack: Vec<(BlockId, BlockId)>,
+    /// Module prefix stack for name mangling (e.g. ["math"] → "math_")
+    module_prefix: Vec<String>,
 }
 
 impl IrBuilder {
@@ -355,6 +363,31 @@ impl IrBuilder {
         fn_sigs.insert("json_encode".into(),       (vec![IrType::I64], IrType::Ptr));
         fn_sigs.insert("json_decode".into(),       (vec![IrType::Ptr], IrType::I64));
 
+        // ── v18: Collection methods (array_push, etc.) ────────────────
+        fn_sigs.insert("array_push".into(),     (vec![IrType::Ptr, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("array_pop".into(),      (vec![IrType::Ptr], IrType::I64));
+        fn_sigs.insert("array_contains".into(), (vec![IrType::Ptr, IrType::I64], IrType::Bool));
+        fn_sigs.insert("array_reverse".into(),  (vec![IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("array_sort".into(),     (vec![IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("array_join".into(),     (vec![IrType::Ptr, IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("array_slice".into(),    (vec![IrType::Ptr, IrType::I64, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("array_find".into(),     (vec![IrType::Ptr, IrType::I64], IrType::I64));
+        fn_sigs.insert("array_map".into(),      (vec![IrType::Ptr, IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("array_filter".into(),   (vec![IrType::Ptr, IrType::Ptr], IrType::Ptr));
+
+        // ── v18: Error handling extensions ────────────────────────────
+        fn_sigs.insert("error_message".into(),  (vec![], IrType::Ptr));
+
+        // ── v18: Format function ──────────────────────────────────────
+        fn_sigs.insert("format".into(),         (vec![IrType::Ptr, IrType::I64], IrType::Ptr));
+        fn_sigs.insert("format2".into(),        (vec![IrType::Ptr, IrType::I64, IrType::I64], IrType::Ptr));
+
+        // ── v18: String method wrappers ───────────────────────────────
+        fn_sigs.insert("str_to_upper".into(),   (vec![IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("str_to_lower".into(),   (vec![IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("str_split".into(),      (vec![IrType::Ptr, IrType::Ptr], IrType::Ptr));
+        fn_sigs.insert("str_substring".into(),  (vec![IrType::Ptr, IrType::I64, IrType::I64], IrType::Ptr));
+
         Self {
             module: IrModule::new(),
             current_blocks: Vec::new(),
@@ -366,6 +399,10 @@ impl IrBuilder {
             fn_sigs,
             value_types: HashMap::new(),
             mutable_var_types: HashMap::new(),
+            struct_defs: HashMap::new(),
+            var_struct_types: HashMap::new(),
+            loop_stack: Vec::new(),
+            module_prefix: Vec::new(),
         }
     }
 
@@ -420,7 +457,7 @@ impl IrBuilder {
 
     // ── Public Entry Point ──────────────────────────────────────────
     pub fn build(mut self, program: &ast::Program) -> IrModule {
-        // First pass: collect function signatures
+        // First pass: collect function signatures + struct defs
         for item in &program.items {
             self.collect_fn_sig(item);
         }
@@ -433,6 +470,15 @@ impl IrBuilder {
         self.module
     }
 
+    /// Compute the mangled function name with module prefix.
+    fn mangled_fn_name(&self, name: &str) -> String {
+        if self.module_prefix.is_empty() {
+            name.to_string()
+        } else {
+            format!("{}_{}", self.module_prefix.join("_"), name)
+        }
+    }
+
     fn collect_fn_sig(&mut self, item: &ast::TopLevel) {
         match item {
             ast::TopLevel::Function(f) => {
@@ -442,13 +488,40 @@ impl IrBuilder {
                 let ret = f.return_type.as_ref()
                     .map(|t| self.type_expr_to_ir(t))
                     .unwrap_or(IrType::Void);
-                self.fn_sigs.insert(f.name.clone(), (params, ret));
+                let mangled = self.mangled_fn_name(&f.name);
+                self.fn_sigs.insert(mangled, (params, ret));
+            }
+            ast::TopLevel::Struct(s) => {
+                // Record struct field layout: name → [field_names in order]
+                let field_names: Vec<String> = s.fields.iter().map(|f| f.name.clone()).collect();
+                self.struct_defs.insert(s.name.clone(), field_names);
+            }
+            ast::TopLevel::Impl(imp) => {
+                // Collect impl method signatures as TypeName_method
+                for method in &imp.methods {
+                    let mangled = format!("{}_{}", imp.type_name, method.name);
+                    // Add implicit self param (Ptr) if first param is "self"
+                    let mut params: Vec<IrType> = Vec::new();
+                    for p in &method.params {
+                        if p.name == "self" {
+                            params.push(IrType::Ptr);
+                        } else {
+                            params.push(self.type_expr_to_ir(&p.ty));
+                        }
+                    }
+                    let ret = method.return_type.as_ref()
+                        .map(|t| self.type_expr_to_ir(t))
+                        .unwrap_or(IrType::Void);
+                    self.fn_sigs.insert(mangled, (params, ret));
+                }
             }
             ast::TopLevel::Annotated { item, .. } => self.collect_fn_sig(item),
             ast::TopLevel::Module(m) => {
+                self.module_prefix.push(m.name.clone());
                 for sub in &m.items {
                     self.collect_fn_sig(sub);
                 }
+                self.module_prefix.pop();
             }
             _ => {}
         }
@@ -479,11 +552,28 @@ impl IrBuilder {
             ast::TopLevel::Function(f) => self.lower_function(f),
             ast::TopLevel::Annotated { item, .. } => self.lower_top_level(item),
             ast::TopLevel::Module(m) => {
+                self.module_prefix.push(m.name.clone());
                 for sub in &m.items {
                     self.lower_top_level(sub);
                 }
+                self.module_prefix.pop();
             }
-            _ => {} // Structs/enums/imports don't produce IR directly in Phase 0
+            ast::TopLevel::Impl(imp) => {
+                // Lower each method as TypeName_method with self prepended
+                for method in &imp.methods {
+                    let mangled = format!("{}_{}", imp.type_name, method.name);
+                    let mut mangled_fn = method.clone();
+                    mangled_fn.name = mangled;
+                    self.lower_function(&mangled_fn);
+                }
+            }
+            ast::TopLevel::Const(_c) => {
+                // Lower const as a global-scope computed value
+                // We create a tiny init function if needed; for simple literals,
+                // just record in locals when encountered
+                // For v18, consts are handled at lower_expr/Ident time
+            }
+            _ => {} // Structs/enums/imports don't produce IR directly
         }
     }
 
@@ -497,6 +587,8 @@ impl IrBuilder {
         self.mutables = HashSet::new();
         self.value_types = HashMap::new();
         self.mutable_var_types = HashMap::new();
+        self.var_struct_types = HashMap::new();
+        self.loop_stack = Vec::new();
 
         let entry = self.fresh_block();
         let bb = BasicBlock::new(entry);
@@ -518,14 +610,26 @@ impl IrBuilder {
             self.record_type(v, ty.clone());
         }
 
+        // v18: Track struct types for parameters (for impl methods)
+        for p in &f.params {
+            if let ast::TypeExpr::Named(type_name, _) = &p.ty {
+                if self.struct_defs.contains_key(type_name) {
+                    self.var_struct_types.insert(p.name.clone(), type_name.clone());
+                }
+            }
+        }
+
         // Lower body
         let body_val = self.lower_block(&f.body);
 
         // Emit return
         self.emit(Inst::Return { value: body_val });
 
+        // Apply module prefix to function name
+        let fn_name = self.mangled_fn_name(&f.name);
+
         let ir_func = IrFunction {
-            name: f.name.clone(),
+            name: fn_name,
             params,
             ret_type,
             blocks: std::mem::take(&mut self.current_blocks),
@@ -550,6 +654,10 @@ impl IrBuilder {
         match stmt {
             ast::Stmt::Let { name, value, mutable, ty: ty_annot, .. } => {
                 let val = if let Some(expr) = value {
+                    // v18: Track struct type if RHS is a struct literal
+                    if let ast::Expr::StructLiteral { name: sname, .. } = expr {
+                        self.var_struct_types.insert(name.clone(), sname.clone());
+                    }
                     self.lower_expr(expr)
                 } else {
                     let v = self.fresh_value();
@@ -583,6 +691,9 @@ impl IrBuilder {
                 let body_bb = self.fresh_block();
                 let exit_bb = self.fresh_block();
 
+                // v18: Push loop context for break/continue
+                self.loop_stack.push((cond_bb, exit_bb));
+
                 self.emit(Inst::Jump { target: cond_bb });
                 self.switch_block(cond_bb);
 
@@ -597,6 +708,7 @@ impl IrBuilder {
                 self.lower_block(body);
                 self.emit(Inst::Jump { target: cond_bb });
 
+                self.loop_stack.pop();
                 self.switch_block(exit_bb);
             }
             ast::Stmt::For { var, iter, body, .. } => {
@@ -613,6 +725,9 @@ impl IrBuilder {
                     let cond_bb = self.fresh_block();
                     let body_bb = self.fresh_block();
                     let exit_bb = self.fresh_block();
+
+                    // v18: Push loop context for break/continue
+                    self.loop_stack.push((cond_bb, exit_bb));
 
                     self.emit(Inst::Jump { target: cond_bb });
                     self.switch_block(cond_bb);
@@ -650,18 +765,67 @@ impl IrBuilder {
                     self.emit(Inst::Store { value: cnt3, ptr: counter_ptr });
                     self.emit(Inst::Jump { target: cond_bb });
 
+                    self.loop_stack.pop();
                     self.switch_block(exit_bb);
                 } else {
-                    // Fallback for other iter forms
+                    // v18: For-each over arrays: for x in arr { body }
+                    // Lower as: len = array_len(arr); i = 0; while i < len { x = arr[i]; body; i++ }
+                    let arr_val = self.lower_expr(&iter);
+
+                    // Get array length
+                    let len_val = self.fresh_value();
+                    self.emit(Inst::ArrayLen { result: len_val, array: arr_val });
+                    self.record_type(len_val, IrType::I64);
+
+                    // Alloca mutable index counter
+                    let idx_ptr = self.fresh_value();
+                    let zero = self.fresh_value();
+                    self.emit(Inst::IConst { result: zero, value: 0, ty: IrType::I64 });
+                    self.record_type(zero, IrType::I64);
+                    self.emit(Inst::Alloca { result: idx_ptr, size: 8 });
+                    self.emit(Inst::Store { value: zero, ptr: idx_ptr });
+
+                    let cond_bb = self.fresh_block();
                     let body_bb = self.fresh_block();
                     let exit_bb = self.fresh_block();
-                    let v = self.fresh_value();
-                    self.emit(Inst::IConst { result: v, value: 0, ty: IrType::I64 });
-                    self.locals.insert(var.clone(), v);
-                    self.emit(Inst::Jump { target: body_bb });
+
+                    // v18: Push loop context for break/continue
+                    self.loop_stack.push((cond_bb, exit_bb));
+
+                    self.emit(Inst::Jump { target: cond_bb });
+                    self.switch_block(cond_bb);
+
+                    // Load index, compare < len
+                    let idx = self.fresh_value();
+                    self.emit(Inst::Load { result: idx, ptr: idx_ptr, ty: IrType::I64 });
+                    self.record_type(idx, IrType::I64);
+                    let cmp = self.fresh_value();
+                    self.emit(Inst::ICmp { result: cmp, cond: IrCmp::Lt, lhs: idx, rhs: len_val });
+                    self.record_type(cmp, IrType::Bool);
+                    self.emit(Inst::Branch { cond: cmp, then_bb: body_bb, else_bb: exit_bb });
+
+                    // Body: arr[idx] → loop var → execute body → idx++
                     self.switch_block(body_bb);
+                    let elem = self.fresh_value();
+                    self.emit(Inst::ArrayGet { result: elem, array: arr_val, index: idx, elem_ty: IrType::I64 });
+                    self.record_type(elem, IrType::I64);
+                    self.locals.insert(var.clone(), elem);
                     self.lower_block(body);
-                    self.emit(Inst::Jump { target: exit_bb });
+
+                    // Increment index
+                    let idx2 = self.fresh_value();
+                    self.emit(Inst::Load { result: idx2, ptr: idx_ptr, ty: IrType::I64 });
+                    self.record_type(idx2, IrType::I64);
+                    let one = self.fresh_value();
+                    self.emit(Inst::IConst { result: one, value: 1, ty: IrType::I64 });
+                    self.record_type(one, IrType::I64);
+                    let idx3 = self.fresh_value();
+                    self.emit(Inst::BinOp { result: idx3, op: IrBinOp::Add, lhs: idx2, rhs: one, ty: IrType::I64 });
+                    self.record_type(idx3, IrType::I64);
+                    self.emit(Inst::Store { value: idx3, ptr: idx_ptr });
+                    self.emit(Inst::Jump { target: cond_bb });
+
+                    self.loop_stack.pop();
                     self.switch_block(exit_bb);
                 }
             }
@@ -669,11 +833,15 @@ impl IrBuilder {
                 let body_bb = self.fresh_block();
                 let exit_bb = self.fresh_block();
 
+                // v18: Push loop context for break/continue
+                self.loop_stack.push((body_bb, exit_bb));
+
                 self.emit(Inst::Jump { target: body_bb });
                 self.switch_block(body_bb);
                 self.lower_block(body);
                 self.emit(Inst::Jump { target: body_bb });
 
+                self.loop_stack.pop();
                 self.switch_block(exit_bb);
             }
         }
@@ -1144,8 +1312,63 @@ impl IrBuilder {
                         self.record_type(result, IrType::I64);
                         result
                     }
+                    "push" | "pop" | "contains" | "reverse" | "sort" | "join" | "slice" | "find" | "map" | "filter" => {
+                        // v18: built-in collection methods → runtime calls
+                        let builtin_name = format!("array_{}", method);
+                        let mut call_args = vec![obj];
+                        call_args.extend(args.iter().map(|a| self.lower_expr(a)));
+                        let result = self.fresh_value();
+                        let ret_ty = match method.as_str() {
+                            "push" | "reverse" | "sort" => IrType::Ptr,
+                            "pop" | "find" => IrType::I64,
+                            "contains" => IrType::Bool,
+                            "join" => IrType::Ptr,
+                            "slice" | "map" | "filter" => IrType::Ptr,
+                            _ => IrType::I64,
+                        };
+                        self.record_type(result, ret_ty.clone());
+                        self.emit(Inst::Call { result, func: builtin_name, args: call_args, ret_ty });
+                        result
+                    }
+                    // String methods
+                    "to_upper" | "to_lower" | "trim" | "split" | "starts_with" | "ends_with"
+                    | "replace" | "substring" | "char_at" | "index_of" => {
+                        let builtin_name = format!("str_{}", method);
+                        let mut call_args = vec![obj];
+                        call_args.extend(args.iter().map(|a| self.lower_expr(a)));
+                        let result = self.fresh_value();
+                        let ret_ty = match method.as_str() {
+                            "starts_with" | "ends_with" => IrType::Bool,
+                            "index_of" | "char_at" => IrType::I64,
+                            _ => IrType::Ptr,
+                        };
+                        self.record_type(result, ret_ty.clone());
+                        self.emit(Inst::Call { result, func: builtin_name, args: call_args, ret_ty });
+                        result
+                    }
                     _ => {
-                        // Generic method: lower as `obj.__method_T_name(args...)`.
+                        // v18: Try impl-based method dispatch first
+                        // Check if object is a known struct type and look for TypeName_method
+                        let obj_type_name = if let ast::Expr::Ident(name, _) = object.as_ref() {
+                            self.var_struct_types.get(name).cloned()
+                        } else {
+                            None
+                        };
+
+                        if let Some(type_name) = obj_type_name {
+                            let mangled = format!("{}_{}", type_name, method);
+                            if self.fn_sigs.contains_key(&mangled) {
+                                let mut call_args = vec![obj];
+                                call_args.extend(args.iter().map(|a| self.lower_expr(a)));
+                                let result = self.fresh_value();
+                                let ret_ty = self.lookup_fn_ret_ty(&mangled);
+                                self.record_type(result, ret_ty.clone());
+                                self.emit(Inst::Call { result, func: mangled, args: call_args, ret_ty });
+                                return result;
+                            }
+                        }
+
+                        // Generic fallback: lower as __vtbl_obj_method
                         let mut call_args = vec![obj];
                         call_args.extend(args.iter().map(|a| self.lower_expr(a)));
                         let result = self.fresh_value();
@@ -1160,9 +1383,38 @@ impl IrBuilder {
 
             // ── Field access: obj.field ─────────────────────────────────────────
             ast::Expr::Field { object, field, .. } => {
-                // Phase 6 scaffolding: map field name to index 0 (no layout table yet).
                 let obj = self.lower_expr(object);
-                let field_index: u32 = field.parse::<u32>().unwrap_or(0);
+
+                // v18: Resolve field name → index using struct_defs layout table
+                let field_index: u32 = if let Ok(idx) = field.parse::<u32>() {
+                    idx // If it's a numeric index, use directly
+                } else {
+                    // Look up struct type from variable name
+                    let struct_type = if let ast::Expr::Ident(name, _) = object.as_ref() {
+                        self.var_struct_types.get(name).cloned()
+                    } else {
+                        None
+                    };
+
+                    if let Some(type_name) = struct_type {
+                        if let Some(fields) = self.struct_defs.get(&type_name) {
+                            fields.iter().position(|f| f == field).map(|i| i as u32).unwrap_or(0)
+                        } else {
+                            0
+                        }
+                    } else {
+                        // Try all struct_defs to find one with this field
+                        let mut found = 0u32;
+                        for (_sname, fields) in &self.struct_defs {
+                            if let Some(idx) = fields.iter().position(|f| f == field) {
+                                found = idx as u32;
+                                break;
+                            }
+                        }
+                        found
+                    }
+                };
+
                 let result = self.fresh_value();
                 let ty = IrType::I64;
                 self.emit(Inst::FieldGet { result, object: obj, field_index, ty: ty.clone() });
@@ -1170,15 +1422,22 @@ impl IrBuilder {
                 result
             }
 
-            // ── Phase 5 → v15: Lambda / closure ──────────────────────────────
+            // ── Phase 5 → v18: Lambda / closure with capture ──────────────────
             ast::Expr::Lambda { params, body, .. } => {
                 let anon_name = format!("__lambda_{}", self.next_value);
                 let lambda_params: Vec<(String, IrType)> = params.iter()
                     .map(|p| (p.name.clone(), self.type_expr_to_ir(&p.ty)))
                     .collect();
-                // Infer return type as I64 (default); proper inference would
-                // require full type unification which is a future enhancement.
                 let lambda_ret = IrType::I64;
+
+                // v18: Collect free variables from body that exist in outer scope
+                let param_names: HashSet<String> = lambda_params.iter().map(|(n,_)| n.clone()).collect();
+                let free_vars = self.collect_free_vars(body, &param_names);
+                let captured: Vec<(String, Value)> = free_vars.iter()
+                    .filter_map(|name| {
+                        self.locals.get(name).map(|v| (name.clone(), *v))
+                    })
+                    .collect();
 
                 // Save outer function state
                 let saved_blocks  = std::mem::take(&mut self.current_blocks);
@@ -1198,16 +1457,27 @@ impl IrBuilder {
                 self.current_blocks = vec![bb];
                 self.current_block = 0;
 
-                // Bind lambda params
-                for (name, ty) in &lambda_params {
+                // v18: Build params list with captures prepended as extra params
+                let mut full_params = Vec::new();
+                for (cap_name, _) in &captured {
+                    let cap_ty = saved_locals.get(cap_name)
+                        .and_then(|v| self.value_types.get(v).or_else(|| saved_vtypes.get(v)))
+                        .cloned()
+                        .unwrap_or(IrType::I64);
+                    full_params.push((cap_name.clone(), cap_ty));
+                }
+                full_params.extend(lambda_params.iter().cloned());
+
+                // Bind all params (captures + lambda params)
+                for (name, ty) in &full_params {
                     let v = self.fresh_value();
                     self.locals.insert(name.clone(), v);
                     self.record_type(v, ty.clone());
                 }
 
-                // Register lambda in fn_sigs so nested calls resolve
+                // Register lambda in fn_sigs
                 self.fn_sigs.insert(anon_name.clone(),
-                    (lambda_params.iter().map(|(_, t)| t.clone()).collect(), lambda_ret.clone()));
+                    (full_params.iter().map(|(_, t)| t.clone()).collect(), lambda_ret.clone()));
 
                 // Lower body — it's an Expr, not a Block
                 let body_val = self.lower_expr(body);
@@ -1215,7 +1485,7 @@ impl IrBuilder {
 
                 let ir_func = IrFunction {
                     name: anon_name.clone(),
-                    params: lambda_params,
+                    params: full_params,
                     ret_type: lambda_ret,
                     blocks: std::mem::take(&mut self.current_blocks),
                     entry,
@@ -1232,11 +1502,12 @@ impl IrBuilder {
                 self.value_types     = saved_vtypes;
                 self.mutable_var_types = saved_mvtypes;
 
+                let capture_vals: Vec<Value> = captured.iter().map(|(_, v)| *v).collect();
                 let result = self.fresh_value();
                 self.emit(Inst::ClosureAlloc {
                     result,
                     func: anon_name,
-                    captures: Vec::new(),
+                    captures: capture_vals,
                 });
                 self.record_type(result, IrType::Ptr);
                 result
@@ -1391,14 +1662,193 @@ impl IrBuilder {
                     fields: field_vals,
                 });
                 self.record_type(result, IrType::Ptr);
+                // v18: Track result as having this struct type (for field access + method dispatch)
+                // The binding happens in the Let handler below
                 result
             }
 
             // Remaining unimplemented AST nodes — zero constant fallback.
+            // ── v18: Try/Catch expression ─────────────────────────────────────
+            ast::Expr::TryCatch { try_body, catch_var, catch_body, .. } => {
+                // Clear error state → execute try body → check error → branch
+                let clear_result = self.fresh_value();
+                self.emit(Inst::Call {
+                    result: clear_result,
+                    func: "error_clear".to_string(),
+                    args: vec![],
+                    ret_ty: IrType::Void,
+                });
+
+                // Lower try body
+                let try_val = self.lower_block(try_body).unwrap_or_else(|| {
+                    let v = self.fresh_value();
+                    self.emit(Inst::IConst { result: v, value: 0, ty: IrType::I64 });
+                    self.record_type(v, IrType::I64);
+                    v
+                });
+                let try_ty = self.infer_type(try_val);
+                let try_pred_bb = self.current_blocks[self.current_block].id;
+
+                // Check if error occurred (error_check returns i64, 0 = no error)
+                let err_code = self.fresh_value();
+                self.emit(Inst::Call {
+                    result: err_code,
+                    func: "error_check".to_string(),
+                    args: vec![],
+                    ret_ty: IrType::I64,
+                });
+                self.record_type(err_code, IrType::I64);
+
+                // Compare: err_code != 0 → has error
+                let zero = self.fresh_value();
+                self.emit(Inst::IConst { result: zero, value: 0, ty: IrType::I64 });
+                self.record_type(zero, IrType::I64);
+                let err_check = self.fresh_value();
+                self.emit(Inst::ICmp { result: err_check, cond: IrCmp::Ne, lhs: err_code, rhs: zero });
+                self.record_type(err_check, IrType::Bool);
+
+                let catch_bb = self.fresh_block();
+                let merge_bb = self.fresh_block();
+
+                self.emit(Inst::Branch {
+                    cond: err_check,
+                    then_bb: catch_bb,
+                    else_bb: merge_bb,
+                });
+
+                // Catch block: bind error message to catch_var
+                self.switch_block(catch_bb);
+                let err_msg = self.fresh_value();
+                self.emit(Inst::Call {
+                    result: err_msg,
+                    func: "error_message".to_string(),
+                    args: vec![],
+                    ret_ty: IrType::Ptr,
+                });
+                self.record_type(err_msg, IrType::Ptr);
+                self.locals.insert(catch_var.clone(), err_msg);
+
+                let catch_val = self.lower_block(catch_body).unwrap_or_else(|| {
+                    let v = self.fresh_value();
+                    self.emit(Inst::IConst { result: v, value: 0, ty: IrType::I64 });
+                    self.record_type(v, IrType::I64);
+                    v
+                });
+                let catch_pred_bb = self.current_blocks[self.current_block].id;
+                self.emit(Inst::Jump { target: merge_bb });
+
+                // Re-point the try success path: need to fix predecessors
+                // The try_pred_bb already branches to catch_bb or merge_bb
+
+                // Merge block
+                self.switch_block(merge_bb);
+                let phi = self.fresh_value();
+                self.record_type(phi, try_ty.clone());
+                self.emit(Inst::Phi {
+                    result: phi,
+                    incoming: vec![(try_val, try_pred_bb), (catch_val, catch_pred_bb)],
+                    ty: try_ty,
+                });
+                phi
+            }
+
+            // ── v18: Throw expression ────────────────────────────────────────
+            ast::Expr::Throw { code, message, .. } => {
+                let code_val = self.lower_expr(code);
+                let msg_val = self.lower_expr(message);
+
+                let result = self.fresh_value();
+                self.emit(Inst::Call {
+                    result,
+                    func: "error_set".to_string(),
+                    args: vec![code_val, msg_val],
+                    ret_ty: IrType::Void,
+                });
+                self.record_type(result, IrType::Void);
+                result
+            }
+
+            // ── v18: Break / Continue ────────────────────────────────────────
+            ast::Expr::Break(_) => {
+                if let Some((_cont_bb, break_bb)) = self.loop_stack.last().copied() {
+                    self.emit(Inst::Jump { target: break_bb });
+                    // Switch to a new unreachable block so subsequent code doesn't
+                    // cause Cranelift verifier errors
+                    let dead_bb = self.fresh_block();
+                    self.switch_block(dead_bb);
+                }
+                let v = self.fresh_value();
+                self.emit(Inst::IConst { result: v, value: 0, ty: IrType::Void });
+                v
+            }
+            ast::Expr::Continue(_) => {
+                if let Some((cont_bb, _break_bb)) = self.loop_stack.last().copied() {
+                    self.emit(Inst::Jump { target: cont_bb });
+                    let dead_bb = self.fresh_block();
+                    self.switch_block(dead_bb);
+                }
+                let v = self.fresh_value();
+                self.emit(Inst::IConst { result: v, value: 0, ty: IrType::Void });
+                v
+            }
+
             _ => {
                 let v = self.fresh_value();
                 self.emit(Inst::IConst { result: v, value: 0, ty: IrType::I64 });
                 v
+            }
+        }
+    }
+
+    /// v18: Collect free variable names referenced in an expression that are
+    /// not in the given bound set (lambda params). Used for closure capture.
+    fn collect_free_vars(&self, expr: &ast::Expr, bound: &HashSet<String>) -> Vec<String> {
+        let mut free = Vec::new();
+        self.collect_free_vars_inner(expr, bound, &mut free);
+        free.sort();
+        free.dedup();
+        free
+    }
+
+    fn collect_free_vars_inner(&self, expr: &ast::Expr, bound: &HashSet<String>, out: &mut Vec<String>) {
+        match expr {
+            ast::Expr::Ident(name, _) => {
+                if !bound.contains(name) && self.locals.contains_key(name) {
+                    out.push(name.clone());
+                }
+            }
+            ast::Expr::Binary { left, right, .. } => {
+                self.collect_free_vars_inner(left, bound, out);
+                self.collect_free_vars_inner(right, bound, out);
+            }
+            ast::Expr::Unary { operand, .. } => {
+                self.collect_free_vars_inner(operand, bound, out);
+            }
+            ast::Expr::Call { func, args, .. } => {
+                self.collect_free_vars_inner(func, bound, out);
+                for a in args { self.collect_free_vars_inner(a, bound, out); }
+            }
+            ast::Expr::If { condition, then_branch, else_branch, .. } => {
+                self.collect_free_vars_inner(condition, bound, out);
+                for s in &then_branch.stmts {
+                    if let ast::Stmt::Expr(e) = s { self.collect_free_vars_inner(e, bound, out); }
+                }
+                if let Some(t) = &then_branch.tail_expr { self.collect_free_vars_inner(t, bound, out); }
+                if let Some(eb) = else_branch {
+                    for s in &eb.stmts {
+                        if let ast::Stmt::Expr(e) = s { self.collect_free_vars_inner(e, bound, out); }
+                    }
+                    if let Some(t) = &eb.tail_expr { self.collect_free_vars_inner(t, bound, out); }
+                }
+            }
+            ast::Expr::Block(block) => {
+                for s in &block.stmts {
+                    if let ast::Stmt::Expr(e) = s { self.collect_free_vars_inner(e, bound, out); }
+                }
+                if let Some(t) = &block.tail_expr { self.collect_free_vars_inner(t, bound, out); }
+            }
+            _ => {
+                // For other expr variants, we don't recurse deeply (conservative)
             }
         }
     }
@@ -1527,5 +1977,49 @@ mod tests {
             b.insts.iter().any(|i| matches!(i, Inst::Call { func, .. } if func == "double"))
         });
         assert!(has_call, "Pipe should lower to Call instruction");
+    }
+
+    #[test]
+    fn test_v18_module_basic() {
+        let module = lower_src(r#"
+module math {
+    fn add(a: i64, b: i64) -> i64 {
+        a + b
+    }
+}
+
+fn main() -> i64 {
+    math::add(10, 20)
+}
+        "#);
+        // Should have 2 functions: math_add and main
+        assert_eq!(module.functions.len(), 2);
+        assert_eq!(module.functions[0].name, "math_add");
+        assert_eq!(module.functions[1].name, "main");
+        // main should call math_add
+        let main_fn = &module.functions[1];
+        let has_call = main_fn.blocks.iter().any(|b| {
+            b.insts.iter().any(|i| matches!(i, Inst::Call { func, .. } if func == "math_add"))
+        });
+        assert!(has_call, "main should call math_add");
+    }
+
+    #[test]
+    fn test_v18_module_nested_fn() {
+        let module = lower_src(r#"
+module utils {
+    fn double(x: i64) -> i64 { x * 2 }
+    fn triple(x: i64) -> i64 { x * 3 }
+}
+
+fn main() -> i64 {
+    utils::double(5) + utils::triple(3)
+}
+        "#);
+        // Should have 3 functions: utils_double, utils_triple, main
+        assert_eq!(module.functions.len(), 3);
+        assert_eq!(module.functions[0].name, "utils_double");
+        assert_eq!(module.functions[1].name, "utils_triple");
+        assert_eq!(module.functions[2].name, "main");
     }
 }

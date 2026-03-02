@@ -1,6 +1,6 @@
 [package]
 name = "vitalis"
-version = "15.0.0"
+version = "19.0.0"
 edition = "2024"
 description = "Vitalis v15.0 — a JIT-compiled language with working closures, 46 new stdlib functions (strings, file I/O, maps, error handling, JSON, system), 24 algorithm libraries, self-evolving @evolvable functions — native Cranelift JIT performance"
 license = "MIT OR Apache-2.0"
@@ -38,8 +38,14 @@ thiserror = "2"
 # CLI
 clap = { version = "4", features = ["derive"] }
 
+# Regex
+regex = "1"
+
 # Utilities
 indexmap = "2"
+
+# HTTP client (blocking)
+ureq = "2"
 
 [profile.release]
 opt-level = 3

@@ -1,4 +1,4 @@
-//! Vitalis v15.0 — A JIT-compiled programming language with working closures, 46 new
+//! Vitalis v19.0 — A JIT-compiled language with impl blocks, try/catch, closures with capture,
 //! stdlib functions (strings, file I/O, maps, error handling, JSON, system), built-in
 //! code evolution, multi-domain algorithm libraries, and native Cranelift JIT performance.
 //!

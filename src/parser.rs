@@ -222,6 +222,7 @@ impl Parser {
             TopLevel::Import(i) => &i.span,
             TopLevel::Const(c) => &c.span,
             TopLevel::ExternBlock(e) => &e.span,
+            TopLevel::Impl(imp) => &imp.span,
             TopLevel::Annotated { span, .. } => span,
         }
     }
@@ -321,6 +322,10 @@ impl Parser {
                 let e = self.parse_extern_block()?;
                 Ok(TopLevel::ExternBlock(e))
             }
+            Some(Token::Impl) => {
+                let imp = self.parse_impl_block()?;
+                Ok(TopLevel::Impl(imp))
+            }
             _ => {
                 let span = self.peek_span();
                 Err(ParseError {
@@ -380,7 +385,13 @@ impl Parser {
 
     fn parse_param(&mut self) -> ParseResult<Param> {
         let span = self.peek_span();
-        let (name, _) = self.expect_ident()?;
+        // v18: Accept `self` keyword as parameter name for impl methods
+        let name = if self.check(&Token::SelfKw) {
+            self.advance();
+            "self".to_string()
+        } else {
+            self.expect_ident()?.0
+        };
         self.expect(&Token::Colon)?;
         let ty = self.parse_type()?;
 
@@ -731,6 +742,35 @@ impl Parser {
         Ok(ExternBlock {
             language,
             items,
+            span: start.merge(&end),
+        })
+    }
+
+    // ── Impl Block ──────────────────────────────────────────────────
+    // impl TypeName { fn method(&self, ...) -> T { ... } ... }
+    fn parse_impl_block(&mut self) -> ParseResult<ImplBlock> {
+        let start = self.peek_span();
+        self.expect(&Token::Impl)?;
+        let (type_name, _) = self.expect_ident()?;
+        self.expect(&Token::LBrace)?;
+
+        let mut methods = Vec::new();
+        while !self.check(&Token::RBrace) && !self.at_end() {
+            let is_pub = self.eat(&Token::Pub);
+            if self.check(&Token::Fn) || self.check(&Token::Async) {
+                methods.push(self.parse_function(is_pub)?);
+            } else {
+                // skip unknown tokens inside impl block
+                self.advance();
+            }
+        }
+
+        let end = self.peek_span();
+        self.expect(&Token::RBrace)?;
+
+        Ok(ImplBlock {
+            type_name,
+            methods,
             span: start.merge(&end),
         })
     }
@@ -1210,6 +1250,20 @@ impl Parser {
                 let span = self.peek_span();
                 self.advance();
 
+                // Module path resolution: ident::ident → mangled name
+                // e.g. math::add → "math_add"
+                if self.check(&Token::ColonColon) {
+                    let mut segments = vec![name.clone()];
+                    let mut end_span = span.clone();
+                    while self.eat(&Token::ColonColon) {
+                        let (seg, seg_span) = self.expect_ident()?;
+                        segments.push(seg);
+                        end_span = seg_span;
+                    }
+                    let mangled = segments.join("_");
+                    return Ok(Expr::Ident(mangled, span.merge(&end_span)));
+                }
+
                 // Check for struct literal: Name { field: val, ... }
                 if self.check(&Token::LBrace) {
                     // Lookahead: if it's `ident { ident :` then struct literal,
@@ -1293,11 +1347,32 @@ impl Parser {
             }
             // Parallel block
             Some(Token::Parallel) => self.parse_parallel_expr(),
+            // Try/catch block: try { ... } catch name { ... }
+            Some(Token::Try) => self.parse_try_catch_expr(),
+            // Throw expression: throw(code, "msg")
+            Some(Token::Throw) => self.parse_throw_expr(),
+            // v18: `self` keyword used as expression inside impl methods
+            Some(Token::SelfKw) => {
+                let span = self.peek_span();
+                self.advance();
+                Ok(Expr::Ident("self".to_string(), span))
+            }
             // List literal: [a, b, c]
             Some(Token::LBracket) => self.parse_list_expr(),
             // Lambda / closure: |params| expr  or  |params| -> Type { block }
             // Phase 5 readiness: `Pipe` is the single `|` token.
             Some(Token::Pipe) => self.parse_lambda_expr(),
+            // Await expression: `await expr` → just evaluate expr (stub, no async runtime)
+            Some(Token::Await) => {
+                self.advance();
+                self.parse_expr()
+            }
+            // Spawn keyword used as function call: spawn(expr)
+            Some(Token::Spawn) => {
+                let span = self.peek_span();
+                self.advance();
+                Ok(Expr::Ident("spawn".to_string(), span))
+            }
             _ => {
                 let span = self.peek_span();
                 Err(ParseError {
@@ -1461,6 +1536,62 @@ impl Parser {
                     span,
                 })
             }
+        }
+    }
+
+    // ── Try/Catch expression ────────────────────────────────────────
+    // try { body } catch name { handler }
+    fn parse_try_catch_expr(&mut self) -> ParseResult<Expr> {
+        let start = self.peek_span();
+        self.expect(&Token::Try)?;
+        let try_body = self.parse_block()?;
+        self.expect(&Token::Catch)?;
+
+        // Optional catch variable name (defaults to "err")
+        let catch_var = if let Some(Token::Ident(_)) = self.peek() {
+            let (name, _) = self.expect_ident()?;
+            name
+        } else {
+            "err".to_string()
+        };
+
+        let catch_body = self.parse_block()?;
+        let end = catch_body.span.clone();
+
+        Ok(Expr::TryCatch {
+            try_body,
+            catch_var,
+            catch_body,
+            span: start.merge(&end),
+        })
+    }
+
+    // ── Throw expression ─────────────────────────────────────────────
+    // throw(code, "message") or throw "message" (code defaults to 1)
+    fn parse_throw_expr(&mut self) -> ParseResult<Expr> {
+        let start = self.peek_span();
+        self.expect(&Token::Throw)?;
+
+        if self.eat(&Token::LParen) {
+            let code = self.parse_expr()?;
+            self.expect(&Token::Comma)?;
+            let message = self.parse_expr()?;
+            let end = self.peek_span();
+            self.expect(&Token::RParen)?;
+            Ok(Expr::Throw {
+                code: Box::new(code),
+                message: Box::new(message),
+                span: start.merge(&end),
+            })
+        } else {
+            // throw "message" — code defaults to 1
+            let message = self.parse_expr()?;
+            let end = message.span().clone();
+            Ok(Expr::Throw {
+                code: Box::new(Expr::IntLiteral(1, start.clone())),
+                message: Box::new(message),
+                span: start.merge(&end),
+            })
         }
     }
 
@@ -1732,5 +1863,43 @@ fn test() {
     fn test_parse_parallel() {
         let (_prog, errors) = parse("fn test() { parallel { task_a(), task_b() } }");
         assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_module_path_call() {
+        let (prog, errors) = parse(r#"
+module math {
+    fn add(a: i64, b: i64) -> i64 { a + b }
+}
+fn main() -> i64 { math::add(1, 2) }
+"#);
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        // The module should be parsed
+        assert!(matches!(&prog.items[0], TopLevel::Module(_)));
+        // The main function should reference "math_add" (mangled path)
+        match &prog.items[1] {
+            TopLevel::Function(f) => {
+                assert_eq!(f.name, "main");
+                // Body should contain a Call where func is Ident("math_add")
+                if let Some(tail) = &f.body.tail_expr {
+                    match tail.as_ref() {
+                        crate::ast::Expr::Call { func, args, .. } => {
+                            match func.as_ref() {
+                                crate::ast::Expr::Ident(name, _) => {
+                                    assert_eq!(name, "math_add",
+                                        "Path math::add should mangle to math_add");
+                                }
+                                other => panic!("expected Ident, got {:?}", other),
+                            }
+                            assert_eq!(args.len(), 2);
+                        }
+                        other => panic!("expected Call expr in main body, got {:?}", other),
+                    }
+                } else {
+                    panic!("expected tail expr in main body");
+                }
+            }
+            other => panic!("expected Function, got {:?}", other),
+        }
     }
 }

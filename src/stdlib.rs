@@ -171,6 +171,9 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "to_string_i64".into(),   params: vec![("x", IrType::I64)],                                              ret: IrType::Ptr,  runtime_name: "slang_to_string_i64".into() },
         BuiltinFn { name: "to_string_f64".into(),   params: vec![("x", IrType::F64)],                                              ret: IrType::Ptr,  runtime_name: "slang_to_string_f64".into() },
         BuiltinFn { name: "to_string_bool".into(),  params: vec![("x", IrType::Bool)],                                             ret: IrType::Ptr,  runtime_name: "slang_to_string_bool".into() },
+        BuiltinFn { name: "str_format_i64".into(),  params: vec![("fmt", IrType::Ptr), ("val", IrType::I64)],                       ret: IrType::Ptr,  runtime_name: "slang_str_format_i64".into() },
+        BuiltinFn { name: "str_format_f64".into(),  params: vec![("fmt", IrType::Ptr), ("val", IrType::F64)],                       ret: IrType::Ptr,  runtime_name: "slang_str_format_f64".into() },
+        BuiltinFn { name: "str_format_str".into(),  params: vec![("fmt", IrType::Ptr), ("val", IrType::Ptr)],                       ret: IrType::Ptr,  runtime_name: "slang_str_format_str".into() },
         BuiltinFn { name: "parse_int".into(),       params: vec![("s", IrType::Ptr)],                                              ret: IrType::I64,  runtime_name: "slang_parse_int".into() },
         BuiltinFn { name: "parse_float".into(),     params: vec![("s", IrType::Ptr)],                                              ret: IrType::F64,  runtime_name: "slang_parse_float".into() },
 
@@ -191,6 +194,24 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "map_len".into(),         params: vec![("m", IrType::I64)],                                 ret: IrType::I64,  runtime_name: "slang_map_len".into() },
         BuiltinFn { name: "map_keys".into(),        params: vec![("m", IrType::I64)],                                 ret: IrType::Ptr,  runtime_name: "slang_map_keys".into() },
 
+        // ── v16: Set operations ───────────────────────────────────────
+        BuiltinFn { name: "set_new".into(),         params: vec![],                                                   ret: IrType::I64,  runtime_name: "slang_set_new".into() },
+        BuiltinFn { name: "set_add".into(),         params: vec![("s", IrType::I64), ("v", IrType::I64)],             ret: IrType::Void, runtime_name: "slang_set_add".into() },
+        BuiltinFn { name: "set_has".into(),         params: vec![("s", IrType::I64), ("v", IrType::I64)],             ret: IrType::Bool, runtime_name: "slang_set_has".into() },
+        BuiltinFn { name: "set_remove".into(),      params: vec![("s", IrType::I64), ("v", IrType::I64)],             ret: IrType::Void, runtime_name: "slang_set_remove".into() },
+        BuiltinFn { name: "set_len".into(),         params: vec![("s", IrType::I64)],                                 ret: IrType::I64,  runtime_name: "slang_set_len".into() },
+        BuiltinFn { name: "set_union".into(),       params: vec![("a", IrType::I64), ("b", IrType::I64)],             ret: IrType::I64,  runtime_name: "slang_set_union".into() },
+        BuiltinFn { name: "set_intersect".into(),   params: vec![("a", IrType::I64), ("b", IrType::I64)],             ret: IrType::I64,  runtime_name: "slang_set_intersect".into() },
+        BuiltinFn { name: "set_diff".into(),        params: vec![("a", IrType::I64), ("b", IrType::I64)],             ret: IrType::I64,  runtime_name: "slang_set_diff".into() },
+        BuiltinFn { name: "set_to_array".into(),    params: vec![("s", IrType::I64)],                                 ret: IrType::Ptr,  runtime_name: "slang_set_to_array".into() },
+
+        // ── v18: Tuple operations ─────────────────────────────────────
+        BuiltinFn { name: "tuple_new2".into(),     params: vec![("a", IrType::I64), ("b", IrType::I64)],             ret: IrType::I64,  runtime_name: "slang_tuple_new2".into() },
+        BuiltinFn { name: "tuple_new3".into(),     params: vec![("a", IrType::I64), ("b", IrType::I64), ("c", IrType::I64)], ret: IrType::I64, runtime_name: "slang_tuple_new3".into() },
+        BuiltinFn { name: "tuple_new4".into(),     params: vec![("a", IrType::I64), ("b", IrType::I64), ("c", IrType::I64), ("d", IrType::I64)], ret: IrType::I64, runtime_name: "slang_tuple_new4".into() },
+        BuiltinFn { name: "tuple_get".into(),      params: vec![("t", IrType::I64), ("idx", IrType::I64)],           ret: IrType::I64,  runtime_name: "slang_tuple_get".into() },
+        BuiltinFn { name: "tuple_len".into(),      params: vec![("t", IrType::I64)],                                 ret: IrType::I64,  runtime_name: "slang_tuple_len".into() },
+
         // ── v15: Error handling ───────────────────────────────────────
         BuiltinFn { name: "error_set".into(),       params: vec![("code", IrType::I64), ("msg", IrType::Ptr)],        ret: IrType::Void, runtime_name: "slang_error_set".into() },
         BuiltinFn { name: "error_check".into(),     params: vec![],                                                   ret: IrType::I64,  runtime_name: "slang_error_check".into() },
@@ -209,6 +230,53 @@ pub fn builtins() -> Vec<BuiltinFn> {
         // ── v15: JSON ─────────────────────────────────────────────────
         BuiltinFn { name: "json_encode".into(),     params: vec![("m", IrType::I64)],                                 ret: IrType::Ptr,  runtime_name: "slang_json_encode".into() },
         BuiltinFn { name: "json_decode".into(),     params: vec![("s", IrType::Ptr)],                                 ret: IrType::I64,  runtime_name: "slang_json_decode".into() },
+
+        // ── v18: Collection methods ───────────────────────────────────
+        BuiltinFn { name: "array_push".into(),      params: vec![("arr", IrType::Ptr), ("val", IrType::I64)],         ret: IrType::Ptr,  runtime_name: "slang_array_push".into() },
+        BuiltinFn { name: "array_pop".into(),       params: vec![("arr", IrType::Ptr)],                               ret: IrType::I64,  runtime_name: "slang_array_pop".into() },
+        BuiltinFn { name: "array_contains".into(),  params: vec![("arr", IrType::Ptr), ("val", IrType::I64)],         ret: IrType::Bool, runtime_name: "slang_array_contains".into() },
+        BuiltinFn { name: "array_reverse".into(),   params: vec![("arr", IrType::Ptr)],                               ret: IrType::Ptr,  runtime_name: "slang_array_reverse".into() },
+        BuiltinFn { name: "array_sort".into(),      params: vec![("arr", IrType::Ptr)],                               ret: IrType::Ptr,  runtime_name: "slang_array_sort".into() },
+        BuiltinFn { name: "array_join".into(),      params: vec![("arr", IrType::Ptr), ("delim", IrType::Ptr)],       ret: IrType::Ptr,  runtime_name: "slang_array_join".into() },
+        BuiltinFn { name: "array_slice".into(),     params: vec![("arr", IrType::Ptr), ("start", IrType::I64), ("end", IrType::I64)], ret: IrType::Ptr, runtime_name: "slang_array_slice".into() },
+        BuiltinFn { name: "array_find".into(),      params: vec![("arr", IrType::Ptr), ("val", IrType::I64)],         ret: IrType::I64,  runtime_name: "slang_array_find".into() },
+        // ── Iterator / functional array ops ────────────────────────
+        BuiltinFn { name: "array_range".into(),        params: vec![("start", IrType::I64), ("end", IrType::I64)],     ret: IrType::Ptr,  runtime_name: "slang_array_range".into() },
+        BuiltinFn { name: "array_sum".into(),          params: vec![("arr", IrType::Ptr)],                             ret: IrType::I64,  runtime_name: "slang_array_sum".into() },
+        BuiltinFn { name: "array_min".into(),          params: vec![("arr", IrType::Ptr)],                             ret: IrType::I64,  runtime_name: "slang_array_min".into() },
+        BuiltinFn { name: "array_max".into(),          params: vec![("arr", IrType::Ptr)],                             ret: IrType::I64,  runtime_name: "slang_array_max".into() },
+        BuiltinFn { name: "array_any".into(),          params: vec![("arr", IrType::Ptr), ("val", IrType::I64)],       ret: IrType::Bool, runtime_name: "slang_array_any".into() },
+        BuiltinFn { name: "array_all_positive".into(), params: vec![("arr", IrType::Ptr)],                             ret: IrType::Bool, runtime_name: "slang_array_all_positive".into() },
+        BuiltinFn { name: "array_count".into(),        params: vec![("arr", IrType::Ptr), ("val", IrType::I64)],       ret: IrType::I64,  runtime_name: "slang_array_count".into() },
+        BuiltinFn { name: "array_flatten".into(),      params: vec![("arr", IrType::Ptr)],                             ret: IrType::Ptr,  runtime_name: "slang_array_flatten".into() },
+        BuiltinFn { name: "array_zip".into(),          params: vec![("a", IrType::Ptr), ("b", IrType::Ptr)],           ret: IrType::Ptr,  runtime_name: "slang_array_zip".into() },
+        BuiltinFn { name: "array_enumerate".into(),    params: vec![("arr", IrType::Ptr)],                             ret: IrType::Ptr,  runtime_name: "slang_array_enumerate".into() },
+        BuiltinFn { name: "array_take".into(),         params: vec![("arr", IrType::Ptr), ("n", IrType::I64)],         ret: IrType::Ptr,  runtime_name: "slang_array_take".into() },
+        BuiltinFn { name: "array_drop".into(),         params: vec![("arr", IrType::Ptr), ("n", IrType::I64)],         ret: IrType::Ptr,  runtime_name: "slang_array_drop".into() },
+        BuiltinFn { name: "array_unique".into(),       params: vec![("arr", IrType::Ptr)],                             ret: IrType::Ptr,  runtime_name: "slang_array_unique".into() },
+        BuiltinFn { name: "error_message".into(),   params: vec![],                                                   ret: IrType::Ptr,  runtime_name: "slang_error_message".into() },
+
+        // ── v18: Regex ────────────────────────────────────────────────
+        BuiltinFn { name: "regex_match".into(),          params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                                ret: IrType::Bool, runtime_name: "slang_regex_match".into() },
+        BuiltinFn { name: "regex_is_match".into(),       params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                                ret: IrType::Bool, runtime_name: "slang_regex_is_match".into() },
+        BuiltinFn { name: "regex_find".into(),           params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                                ret: IrType::Ptr,  runtime_name: "slang_regex_find".into() },
+        BuiltinFn { name: "regex_replace".into(),        params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr), ("replacement", IrType::Ptr)],  ret: IrType::Ptr,  runtime_name: "slang_regex_replace".into() },
+        BuiltinFn { name: "regex_split_count".into(),    params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                                ret: IrType::I64,  runtime_name: "slang_regex_split_count".into() },
+        BuiltinFn { name: "regex_split_get".into(),      params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr), ("idx", IrType::I64)],          ret: IrType::Ptr,  runtime_name: "slang_regex_split_get".into() },
+        BuiltinFn { name: "regex_find_all_count".into(), params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                                ret: IrType::I64,  runtime_name: "slang_regex_find_all_count".into() },
+        BuiltinFn { name: "regex_find_all_get".into(),   params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr), ("idx", IrType::I64)],          ret: IrType::Ptr,  runtime_name: "slang_regex_find_all_get".into() },
+
+        // ── v18: Async stubs ──────────────────────────────────────────
+        BuiltinFn { name: "spawn".into(),         params: vec![("task_id", IrType::I64)],                                              ret: IrType::I64,  runtime_name: "slang_spawn".into() },
+        BuiltinFn { name: "task_result".into(),   params: vec![("task_id", IrType::I64)],                                              ret: IrType::I64,  runtime_name: "slang_task_result".into() },
+
+        // ── v18: Networking ───────────────────────────────────────────
+        BuiltinFn { name: "http_get".into(),      params: vec![("url", IrType::Ptr)],                                                  ret: IrType::Ptr,  runtime_name: "slang_http_get".into() },
+        BuiltinFn { name: "http_post".into(),     params: vec![("url", IrType::Ptr), ("body", IrType::Ptr)],                           ret: IrType::Ptr,  runtime_name: "slang_http_post".into() },
+        BuiltinFn { name: "http_status".into(),   params: vec![("url", IrType::Ptr)],                                                  ret: IrType::I64,  runtime_name: "slang_http_status".into() },
+        BuiltinFn { name: "tcp_connect".into(),   params: vec![("host", IrType::Ptr), ("port", IrType::I64)],                          ret: IrType::I64,  runtime_name: "slang_tcp_connect".into() },
+        BuiltinFn { name: "tcp_send".into(),      params: vec![("handle", IrType::I64), ("data", IrType::Ptr)],                        ret: IrType::I64,  runtime_name: "slang_tcp_send".into() },
+        BuiltinFn { name: "tcp_close".into(),     params: vec![("handle", IrType::I64)],                                               ret: IrType::Void, runtime_name: "slang_tcp_close".into() },
     ]
 }
 
