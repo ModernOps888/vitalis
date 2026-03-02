@@ -22,13 +22,25 @@
 [![CI](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml/badge.svg)](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml)
 
 ```
-┌──────────────────────────────────────────────────────┐
-│   Source (.sl) → Lexer → Parser → AST → TypeCheck    │
-│                  → IR (SSA) → Cranelift JIT → Native  │
-│                                                        │
-│   7.5× faster than Python  ·  29.1× peak speedup      │
-│   634 tests  ·  41 source files  ·  24 algo libraries  │
-└──────────────────────────────────────────────────────┘
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║   ┌─────────┐    ┌────────┐    ┌─────┐    ┌───────────┐    ┌─────┐  ║
+║   │ Source   │───▶│ Lexer  │───▶│ AST │───▶│ TypeCheck │───▶│ IR  │  ║
+║   │  (.sl)   │    │ (Logos)│    │     │    │ (2-pass)  │    │(SSA)│  ║
+║   └─────────┘    └────────┘    └─────┘    └───────────┘    └──┬──┘  ║
+║                                                                │     ║
+║                  ┌────────────────────────────────────────────┘     ║
+║                  ▼                                                   ║
+║   ┌──────────────────────┐    ┌──────────────┐    ┌──────────────┐  ║
+║   │   Cranelift 0.116    │───▶│  Native x86  │───▶│  C FFI / Py  │  ║
+║   │   JIT Backend        │    │  Machine Code│    │  482 APIs    │  ║
+║   └──────────────────────┘    └──────────────┘    └──────────────┘  ║
+║                                                                      ║
+║   ⚡ 7.5× avg faster than Python  ·  29.1× peak speedup             ║
+║   🧪 634 tests  ·  41 source files  ·  24 algorithm libraries       ║
+║   🧬 Self-evolving @evolvable functions with fitness tracking        ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
 ```
 
 *Write it in Vitalis. Compile to native. Evolve it at runtime.*
