@@ -29,3 +29,8 @@ build/
 
 # Rust
 Cargo.lock
+
+# Test output
+*.txt
+
+SETUP_GIT.ps1

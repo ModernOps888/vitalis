@@ -7,6 +7,8 @@
   <img alt="Vitalis" src="https://img.shields.io/badge/%E2%9A%A1-Vitalis-00f0ff?style=for-the-badge&labelColor=0a0f1e&color=00f0ff">
 </picture>
 
+# Vitalis
+
 ### A JIT-compiled language with self-evolving functions
 
 <br />
@@ -14,51 +16,95 @@
 [![Rust](https://img.shields.io/badge/Rust-Edition%202024-F74C00?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Cranelift](https://img.shields.io/badge/Backend-Cranelift%200.116-4B8BBE?style=flat-square)](https://cranelift.dev/)
 [![Tests](https://img.shields.io/badge/Tests-470%20passing-00C853?style=flat-square)](.)
-[![LOC](https://img.shields.io/badge/LOC-24%2C769%20Rust-blueviolet?style=flat-square)](.)
+[![LOC](https://img.shields.io/badge/Rust%20LOC-24%2C769-blueviolet?style=flat-square)](.)
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache--2.0-blue?style=flat-square)](LICENSE-MIT)
 [![CI](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml/badge.svg)](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml)
 
-**v9.0** &nbsp;·&nbsp; 31 source files &nbsp;·&nbsp; 470 tests &nbsp;·&nbsp; 14 algorithm libraries &nbsp;·&nbsp; 405 FFI exports &nbsp;·&nbsp; 304 Python APIs
-
-<br />
-
 ```
-                     ╔══════════════════════════════════════╗
-                     ║   7.5× faster than Python (avg)     ║
-                     ║   29.1× peak · 13/13 benchmarks won ║
-                     ╚══════════════════════════════════════╝
+┌──────────────────────────────────────────────────────┐
+│   Source (.sl) → Lexer → Parser → AST → TypeCheck    │
+│                  → IR (SSA) → Cranelift JIT → Native  │
+│                                                        │
+│   7.5× faster than Python  ·  29.1× peak speedup      │
+│   470 tests  ·  31 source files  ·  14 algo libraries  │
+└──────────────────────────────────────────────────────┘
 ```
+
+*Write it in Vitalis. Compile to native. Evolve it at runtime.*
 
 </div>
 
+<br />
+
 ---
 
+## Table of Contents
+
+- [Why Vitalis?](#-why-vitalis)
+- [Quick Start](#-60-second-quick-start)
+- [Architecture](#️-architecture)
+- [Language Features](#-language-features)
+- [Code Evolution](#-code-evolution--the-killer-feature)
+- [Python Integration](#-python-integration-304-apis)
+- [Algorithm Libraries](#-14-algorithm-libraries)
+- [Benchmarks](#-benchmarks-vitalis-vs-python)
+- [Hot-Path Native Ops](#-hot-path-native-operations)
+- [CLI Reference](#️-cli-reference)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+
 <br />
+
+---
 
 ## 🔥 Why Vitalis?
 
 Most languages make you choose: **fast** or **flexible**. Vitalis gives you both.
 
-It compiles to native machine code via Cranelift JIT, runs 7.5× faster than Python on real workloads, and has a feature no other language has — **functions that can evolve themselves at runtime**.
+| | Python | C/Rust | **Vitalis** |
+|---|:---:|:---:|:---:|
+| **Compiles to native** | ✗ | ✓ | ✓ |
+| **Python interop** | — | FFI wrappers | Built-in |
+| **Runtime evolution** | ✗ | ✗ | **✓** |
+| **Type checking** | Optional | Required | Required |
+| **Quick prototyping** | ✓ | ✗ | ✓ |
+| **Production speed** | Slow | Fast | **Fast** |
+
+**Three things make Vitalis different:**
+
+1. **Native speed, zero friction** — Cranelift JIT compiles to x86-64 machine code. No VM, no interpreter, no GC. 7.5× faster than Python on real workloads.
+
+2. **Functions that evolve themselves** — Mark any function `@evolvable`. Mutate it at runtime. Score its fitness. Roll back if it regresses. The compiler tracks every generation. Your code literally gets better over time.
+
+3. **Python as a first-class citizen** — Import `vitalis` in Python, get 304 native Rust functions. No subprocess, no REST API, no serialization. Pure FFI.
 
 ```rust
+// hello.sl — Your first Vitalis program
+fn main() -> i64 {
+    println("Hello from Vitalis!");
+    42
+}
+```
+
+```rust
+// evolution.sl — Self-improving code
 @evolvable
 fn strategy(input: i64) -> i64 {
     input * 2 + 1
 }
 
 fn main() -> i64 {
-    strategy(21)  // → 43
+    strategy(21)  // → 43, but this function can evolve
 }
 ```
-
-Mark a function with `@evolvable`. Mutate it. Score its fitness. Roll it back if it fails. The compiler tracks every generation. Your code literally gets better over time.
 
 <br />
 
 ---
 
 ## ⚡ 60-Second Quick Start
+
+**Prerequisites:** [Rust](https://rustup.rs/) stable (Edition 2024). That's it.
 
 ### 1. Clone & Build
 
@@ -68,185 +114,90 @@ cd vitalis
 cargo build
 ```
 
-> **Requirements:** [Rust](https://rustup.rs/) stable (Edition 2024). That's it.
-
-### 2. Write Your First Program
-
-Create `hello.sl`:
-```rust
-fn main() -> i64 {
-    println("Hello from Vitalis!");
-    42
-}
-```
-
-### 3. Run It
+### 2. Run a Program
 
 ```bash
-cargo run -- run hello.sl
+# Run an example
+cargo run -- run examples/hello.sl
+
+# Evaluate inline
+cargo run -- eval -e "21 * 2"
+# → Result: 42
 ```
 
-```
-Hello from Vitalis!
-Result: 42
-```
-
-### 4. Use from Python
+### 3. Use from Python
 
 ```bash
-cargo build                    # builds vitalis.dll / libvitalis.so
-cp python/vitalis.py .         # copy the Python wrapper
-python -c "import vitalis; print(vitalis.compile_and_run('fn main() -> i64 { 42 }'))"
-# → 42
+cargo build                     # produces vitalis.dll / libvitalis.so
+cp python/vitalis.py .          # grab the Python wrapper
+python -c "
+import vitalis
+result = vitalis.compile_and_run('fn main() -> i64 { 42 }')
+print(f'JIT result: {result}')  # → JIT result: 42
+"
 ```
 
-That's it. You're running JIT-compiled native code from Python.
+You're now running JIT-compiled native code from Python. No intermediate steps.
 
 <br />
 
 ---
 
-## 🏗️ How It Works
+## 🏗️ Architecture
 
 ```
-                    ┌─────────────────────────────────────────────┐
-                    │             VITALIS COMPILER                │
-                    │                                             │
-  Source (.sl) ───▶ │  Lexer ──▶ Parser ──▶ AST ──▶ TypeChecker  │
-                    │                                │            │
-                    │                          IR (SSA form)      │
-                    │                                │            │
-                    │                       Cranelift 0.116 JIT   │
-                    │                                │            │
-                    │                      Native x86-64 code     │
-                    └────────────────────────┬────────────────────┘
-                                             │
-                                    ┌────────┴────────┐
-                                    │                 │
-                               Direct exec      C FFI bridge
-                               (vtc CLI)        (Python / C)
+                      ┌───────────────────────────────────────────┐
+                      │            VITALIS  COMPILER              │
+                      │                                           │
+   Source (.sl) ────▶ │  Lexer ──▶ Parser ──▶ AST ──▶ TypeCheck  │
+                      │    │         │         │          │       │
+                      │  Logos    Pratt +    27 expr   2-pass    │
+                      │  zero-   recursive   variants  scope    │
+                      │  copy    descent               chains   │
+                      │                                  │       │
+                      │                            IR (SSA)      │
+                      │                             │    │       │
+                      │                      Optimizer   │       │
+                      │                             │    │       │
+                      │                    Cranelift 0.116 JIT   │
+                      │                             │            │
+                      │                     Native x86-64        │
+                      └─────────────────────┬───────────────────┘
+                                            │
+                               ┌────────────┼────────────┐
+                               │            │            │
+                          Direct exec   C FFI bridge  Evolution
+                          (vtc CLI)     (Python / C)  (@evolvable)
 ```
 
-| Stage | Implementation | What It Does |
-|-------|---------------|--------------|
-| **Lexer** | Logos (zero-copy) | Tokenizes ~70 token variants with zero allocation |
-| **Parser** | Recursive-descent + Pratt | Builds AST with operator precedence and `@annotation` support |
-| **Type Checker** | Two-pass with scope chains | Catches type errors before codegen |
+| Stage | Implementation | Details |
+|-------|---------------|---------|
+| **Lexer** | [Logos](https://github.com/maciejhirsz/logos) zero-copy | ~70 token variants, zero allocation |
+| **Parser** | Recursive-descent + Pratt | Operator precedence, `@annotation` support |
+| **AST** | 27 expression variants | Origin tracking, struct/enum/match/pipe |
+| **Type Checker** | Two-pass with scope chains | Full type inference before codegen |
 | **IR** | SSA form | Intermediate representation for optimization |
-| **Codegen** | Cranelift 0.116 | Compiles to native x86-64 machine code |
-| **FFI Bridge** | `extern "C"` (405 exports) | Zero-overhead interop with Python/C |
+| **Optimizer** | Multi-pass (1,294 LOC) | Dead code elimination, constant folding, SIMD |
+| **Codegen** | Cranelift 0.116 | Native x86-64 machine code via JIT |
+| **FFI** | `extern "C"` bridge | 21 native bridge functions + 99 stdlib built-ins |
 
 <br />
 
 ---
 
-## 📊 Benchmarks: Vitalis vs Python
+## 📋 Language Features
 
-### Real numbers. Real workloads. No tricks.
+### Types & Variables
 
-**Setup:** 100,000 elements · 500 iterations · pre-allocated ctypes arrays (zero marshalling overhead)
-
-This is how you'd actually use Vitalis in production — data stays in Rust-side buffers, Python calls into native code via FFI.
-
-<br />
-
-<div align="center">
-
-```
- Python ████████████████████████████████████████████████  75,327ms
-Vitalis ████████▌                                        13,116ms   ← 5.7× faster
-```
-
-</div>
-
-<br />
-
-| Operation | Python | Vitalis | Speedup | |
-|-----------|-------:|--------:|--------:|-|
-| Cosine Distance (100K) | 13,922ms | 479ms | **29.1×** | 🟢🟢🟢🟢🟢 |
-| Batch ReLU (100K) | 6,308ms | 613ms | **10.3×** | 🟢🟢🟢🟢 |
-| Std Deviation (100K) | 7,183ms | 780ms | **9.2×** | 🟢🟢🟢🟢 |
-| MSE Loss (100K) | 3,645ms | 450ms | **8.1×** | 🟢🟢🟢 |
-| Batch Sigmoid (100K) | 5,173ms | 686ms | **7.5×** | 🟢🟢🟢 |
-| Huber Loss (100K) | 6,524ms | 929ms | **7.0×** | 🟢🟢🟢 |
-| Sliding Window (100K) | 3,505ms | 641ms | **5.5×** | 🟢🟢 |
-| L2 Normalize (100K) | 4,407ms | 820ms | **5.4×** | 🟢🟢 |
-| Softmax (10K) | 712ms | 160ms | **4.5×** | 🟢🟢 |
-| Layer Norm (100K) | 9,050ms | 2,313ms | **3.9×** | 🟢 |
-| Batch Norm (100K) | 9,115ms | 2,414ms | **3.8×** | 🟢 |
-| GELU Batch (100K) | 5,458ms | 2,626ms | **2.1×** | 🟢 |
-| Mean (100K) | 327ms | 204ms | **1.6×** | 🟢 |
-
-<br />
-
-<div align="center">
-
-| | |
-|---|---|
-| **Benchmarks won** | **13 / 13** (100%) |
-| **Average speedup** | **7.5×** |
-| **Peak speedup** | **29.1×** (Cosine Distance) |
-| **Total time saved** | **62.2 seconds** (75.3s → 13.1s) |
-
-</div>
-
-<br />
-
-### Why is Vitalis faster?
-
-| Factor | Python | Vitalis |
-|--------|--------|---------|
-| **Execution** | Interpreted bytecode | Native x86-64 machine code |
-| **Memory** | GC + boxing + heap alloc | Stack-allocated, zero-copy |
-| **Math ops** | Dynamic dispatch per op | Inlined native instructions |
-| **Data layout** | PyObjects (56 bytes each) | Flat `f64` arrays (8 bytes each) |
-| **Function calls** | Frame creation + lookup | Direct `call` instruction |
-
-> **Important:** These benchmarks measure pure computation with pre-allocated arrays (zero marshalling). This matches real production usage where data stays in Rust-side buffers. The first benchmark run (`benchmark_py_vs_vitalis`) which included Python↔C marshalling overhead showed different results — see [Benchmark Methodology](#-benchmark-methodology) for full transparency.
-
-<br />
-
----
-
-## 🔬 Module Performance (74 Benchmarks)
-
-Every algorithm library benchmarked via Python FFI. These numbers **include** the Python→Rust FFI call overhead.
-
-| Category | Avg Throughput | Peak Function | Peak Throughput |
-|----------|---------------:|--------------|----------------:|
-| 🔬 Science | **1.59M** ops/sec | `schwarzschild_radius` | 2.25M ops/sec |
-| 🧮 Advanced Math | **1.24M** ops/sec | `math_erf` | 2.09M ops/sec |
-| ⚛️ Quantum Math | **1.15M** ops/sec | `golden_ratio` | 3.43M ops/sec |
-| 📏 Scoring | **1.14M** ops/sec | `elo_expected` | 1.64M ops/sec |
-| 📈 Statistics | **525.7K** ops/sec | `normal_pdf` | 1.37M ops/sec |
-| 🔤 String Algorithms | **314.8K** ops/sec | `jaro_winkler` | 465.1K ops/sec |
-| 🔢 Numerical | **298.5K** ops/sec | `horner` | 593.6K ops/sec |
-| 📊 Analytics | **278.0K** ops/sec | `apdex` | 1.37M ops/sec |
-| 💫 Quantum Simulator | **254.5K** ops/sec | `bell_state` | 306.5K ops/sec |
-| 🛡️ Security | **151.9K** ops/sec | `password_entropy` | 293.2K ops/sec |
-| 📦 Compression | **118.0K** ops/sec | `rle_encode` | 283.8K ops/sec |
-| 🔒 Crypto | **92.1K** ops/sec | `fnv1a_64` | 167.0K ops/sec |
-| 📡 Signal Processing | **22.3K** ops/sec | `rms_energy` | 30.7K ops/sec |
-| ⚙️ Core Compiler | **18.6K** ops/sec | `lex` | 46.3K ops/sec |
-| 🕸️ Graph Algorithms | **10.8K** ops/sec | `is_bipartite` | 13.0K ops/sec |
-
-> 74 benchmarks. 0 failures. 470 tests passing.
-
-<br />
-
----
-
-## 📋 Language Reference
-
-### Types
 ```rust
 let x: i64 = 42;
-let y: f64 = 3.14;
+let pi: f64 = 3.14159;
 let flag: bool = true;
 let name: string = "hello";
 ```
 
 ### Functions
+
 ```rust
 fn add(a: i64, b: i64) -> i64 {
     a + b
@@ -258,36 +209,51 @@ fn main() -> i64 {
 ```
 
 ### Control Flow
+
 ```rust
-fn abs(x: i64) -> i64 {
-    if x < 0 { -x } else { x }
+fn classify(x: i64) -> i64 {
+    if x > 100 {
+        3
+    } else if x > 10 {
+        2
+    } else {
+        1
+    }
 }
 ```
 
 ### Pipe Operator
+
 ```rust
 fn double(x: i64) -> i64 { x * 2 }
 fn inc(x: i64) -> i64 { x + 1 }
+fn square(x: i64) -> i64 { x * x }
 
 fn main() -> i64 {
-    5 |> double |> inc  // → 11
+    5 |> double |> inc |> square  // 5 → 10 → 11 → 121
 }
 ```
 
 ### Structs
+
 ```rust
 struct Point {
     x: i64,
     y: i64,
 }
 
+fn manhattan(p: Point) -> i64 {
+    p.x + p.y
+}
+
 fn main() -> i64 {
     let p = Point { x: 3, y: 4 };
-    p.x + p.y  // → 7
+    manhattan(p)  // → 7
 }
 ```
 
-### Pattern Matching
+### Enums & Pattern Matching
+
 ```rust
 enum Shape {
     Circle(f64),
@@ -302,362 +268,260 @@ fn area(s: Shape) -> f64 {
 }
 ```
 
-### Evolution
-```rust
-@evolvable
-fn strategy(input: i64) -> i64 {
-    input * 2
-}
+### 99 Built-in Functions
 
-// At runtime:
-// evolve strategy → new variant
-// fitness score → 0.95
-// rollback → previous generation if fitness drops
-```
-
-> **Full language reference →** [docs/LANGUAGE_GUIDE.md](docs/LANGUAGE_GUIDE.md)
+The standard library includes 99 functions available in any `.sl` program — math, string manipulation, I/O, and more. See [docs/LANGUAGE_GUIDE.md](docs/LANGUAGE_GUIDE.md) for the full reference.
 
 <br />
 
 ---
 
-## 🐍 Python Integration
+## 🧬 Code Evolution — The Killer Feature
 
-Vitalis ships a full Python wrapper with 304 exported functions. Import it and call native Rust from Python — no subprocess, no REST API, just FFI.
+This is what no other compiled language does. Functions marked `@evolvable` can be **mutated, scored, and rolled back at runtime** while the compiler tracks every generation.
+
+```
+Generation 1:  fn score(x) → x * 2           fitness: 0.72
+Generation 2:  fn score(x) → x * 3 + 1       fitness: 0.89   ← improved
+Generation 3:  fn score(x) → x * 4 - 2       fitness: 0.61   ← regressed
+           ↓   rollback to gen 2
+Active:        fn score(x) → x * 3 + 1       fitness: 0.89   ✓
+```
+
+### How It Works
+
+```python
+import vitalis
+
+# 1. Register an evolvable function
+vitalis.evo_register("predict",
+    "@evolvable fn predict(x: i64) -> i64 { x * 2 }")
+
+# 2. Evolve with a new variant
+gen = vitalis.evo_evolve("predict",
+    "@evolvable fn predict(x: i64) -> i64 { x * 3 + 1 }")
+# gen → 2
+
+# 3. Score its fitness
+vitalis.evo_set_fitness("predict", 0.89)
+
+# 4. If it regresses, roll back
+vitalis.evo_rollback("predict", 1)  # back to gen 1
+
+# 5. Batch-load from source
+vitalis.evo_load("@evolvable fn f(x: i64) -> i64 { x }")
+```
+
+### Use Cases
+
+| Scenario | How Evolution Helps |
+|----------|-------------------|
+| **ML pipeline optimization** | Scoring functions evolve based on accuracy metrics |
+| **A/B testing at function level** | Deploy variants, measure, keep the winner |
+| **Autonomous agents** | Strategies mutate and improve without redeployment |
+| **Self-tuning systems** | Parameters converge on optimal values automatically |
+
+### Evolution Engine (852 LOC)
+
+Beyond basic `@evolvable`, Vitalis includes a full evolution engine:
+
+- **Population management** — maintain multiple variants simultaneously
+- **Fitness landscape** — visualize how variants perform across parameter space
+- **Meta-evolution** (830 LOC) — the evolution strategy itself can evolve
+- **Engram memory** (802 LOC) — evolutionary knowledge persists across sessions with decay and consolidation
+
+<br />
+
+---
+
+## 🐍 Python Integration (304 APIs)
+
+Vitalis ships a complete Python wrapper (`python/vitalis.py`, 2,500 LOC) with 304 exported functions. Import it and call native Rust from Python — no subprocess, no REST API, just FFI.
 
 ### Core Compiler
 
 ```python
 import vitalis
 
-# Compile and run Vitalis code
+# Compile and JIT-execute
 result = vitalis.compile_and_run("fn main() -> i64 { 42 }")
-assert result == 42
 
 # Type-check without running
 errors = vitalis.check("fn main() -> i64 { true }")  # → type error
 
 # Tokenize
 tokens = vitalis.lex("let x = 42;")
+# → [("Let", "let"), ("Ident", "x"), ("Assign", "="), ("Int", "42"), ...]
 
 # Parse to AST
 ast = vitalis.parse_ast("fn main() -> i64 { 42 }")
+
+# Dump IR
+ir = vitalis.dump_ir("fn main() -> i64 { 1 + 2 }")
 ```
 
-### Evolution API
+### Hot-Path Native Ops
 
 ```python
-# Register an evolvable function
-vitalis.evo_register("score", "@evolvable fn score(x: i64) -> i64 { x * 2 }")
-
-# Evolve it (creates generation 2)
-vitalis.evo_evolve("score", "@evolvable fn score(x: i64) -> i64 { x * 3 }")
-
-# Score fitness
-vitalis.evo_set_fitness("score", 0.95)
-
-# Roll back if needed
-vitalis.evo_rollback("score", 1)
-```
-
-### Hot-Path Native Ops (7.5× faster than Python)
-
-```python
-# Statistics
-p95 = vitalis.hotpath_p95([1.0, 2.0, 3.0, ..., 100000.0])
+# Zero-overhead native Rust — no JIT compilation needed
+p95 = vitalis.hotpath_p95(data)
 mean = vitalis.hotpath_mean(data)
 stddev = vitalis.hotpath_stddev(data)
 
-# ML Activations
+# ML activations
 scores = vitalis.hotpath_softmax([1.0, 2.0, 3.0])
 activated = vitalis.hotpath_batch_relu(data)
 normalized = vitalis.hotpath_layer_norm(data)
 
-# Loss Functions
+# Loss functions
 loss = vitalis.hotpath_mse(predictions, targets)
 loss = vitalis.hotpath_huber(predictions, targets, delta=1.0)
 ```
 
-### Algorithm Libraries (269 functions)
+### Algorithm Libraries
 
 ```python
-# Quantum computing
+# === Quantum Computing ===
 q = vitalis.QuantumRegister(2)
-q.h(0).cnot(0, 1)              # Bell state
-print(q.prob(0))                # → 0.5
+q.h(0).cnot(0, 1)                # Bell state
+prob = q.prob(0)                  # → 0.5
 
-# Cryptography
-vitalis.sha256("hello")         # → SHA-256 hash
-vitalis.base64_encode("data")   # → base64 string
+# === Cryptography ===
+h = vitalis.sha256("hello")      # SHA-256
+b = vitalis.base64_encode("hi")  # Base64
+c = vitalis.crc32("data")        # CRC-32
 
-# Graph algorithms
-vitalis.bfs(edges, start)       # → BFS traversal
-vitalis.dijkstra(edges, s, t)   # → shortest path
-vitalis.pagerank(edges, n)      # → PageRank scores
+# === Graph Algorithms ===
+path = vitalis.dijkstra(edges, start, end)
+ranks = vitalis.pagerank(edges, n)
+comps = vitalis.connected_components(edges, n)
 
-# String algorithms
-vitalis.levenshtein("kitten", "sitting")  # → 3
-vitalis.jaro_winkler("abc", "abd")        # → 0.933
-vitalis.soundex("Robert")                 # → R163
+# === String Algorithms ===
+d = vitalis.levenshtein("kitten", "sitting")  # → 3
+s = vitalis.jaro_winkler("abc", "abd")        # → 0.933
+p = vitalis.soundex("Robert")                 # → R163
 
-# Science
-vitalis.physical_constant("c")            # → 299792458.0
-vitalis.schwarzschild_radius(1.989e30)    # → 2953.35m
-vitalis.kinetic_energy(10.0, 5.0)         # → 125.0 J
+# === Science & Physics ===
+c = vitalis.physical_constant("c")            # → 299792458.0
+r = vitalis.schwarzschild_radius(1.989e30)    # → 2953.35
+e = vitalis.kinetic_energy(10.0, 5.0)         # → 125.0
 
-# Security
-vitalis.detect_sqli("'; DROP TABLE--")    # → True
-vitalis.detect_xss("<script>alert(1)")    # → True
-vitalis.password_strength("hunter2")      # → "weak"
+# === Security ===
+vitalis.detect_sqli("'; DROP TABLE--")        # → True
+vitalis.detect_xss("<script>alert(1)")        # → True
+vitalis.password_strength("hunter2")          # → "weak"
 
-# And 200+ more...
+# === Statistics ===
+p = vitalis.normal_pdf(0.0, 0.0, 1.0)        # Standard normal
+r = vitalis.pearson_correlation(xs, ys)       # Pearson r
+reg = vitalis.linear_regression(xs, ys)       # Least squares
+
+# And 250+ more...
 ```
 
 <br />
 
 ---
 
-## 🧬 Code Evolution
+## 📦 14 Algorithm Libraries
 
-This is Vitalis's unique feature. Functions marked `@evolvable` can be mutated at runtime while tracking every generation.
-
-```
-Generation 1: fn score(x) → x * 2         fitness: 0.72
-Generation 2: fn score(x) → x * 3 + 1     fitness: 0.89  ← evolved
-Generation 3: fn score(x) → x * 4 - 2     fitness: 0.61  ← regressed
-         ↓ rollback to gen 2
-Active:      fn score(x) → x * 3 + 1      fitness: 0.89  ✓
-```
-
-### How to use it:
-
-```python
-import vitalis
-
-# 1. Register a function
-vitalis.evo_register("predict",
-    "@evolvable fn predict(x: i64) -> i64 { x * 2 }")
-
-# 2. Evolve it with a new variant
-gen = vitalis.evo_evolve("predict",
-    "@evolvable fn predict(x: i64) -> i64 { x * 3 + 1 }")
-# gen → 2
-
-# 3. Score it
-vitalis.evo_set_fitness("predict", 0.89)
-
-# 4. If it regresses, roll back
-vitalis.evo_rollback("predict", 1)  # back to gen 1
-
-# 5. Load @evolvable functions from a .sl file
-vitalis.evo_load("@evolvable fn f(x: i64) -> i64 { x }")
-```
-
-Use cases:
-- **Self-optimizing ML pipelines** — scoring functions evolve based on accuracy
-- **A/B testing at the function level** — deploy variants, measure, keep the winner
-- **Autonomous agents** — strategies mutate and improve without redeployment
-
-<br />
-
----
-
-## 📦 What's Inside (14 Algorithm Libraries)
+Every module is written in pure Rust with full test coverage. All functions are callable from Python via FFI.
 
 <details>
-<summary><b>📡 Signal Processing</b> — FFT, filters, windowing, spectral analysis (550 LOC)</summary>
+<summary><b>📡 Signal Processing</b> — 550 LOC · 14 tests</summary>
 
-<br />
-
-- FFT / IFFT (Cooley-Tukey)
-- Convolution, cross-correlation, autocorrelation
-- FIR / IIR filter application
-- Hann, Hamming, Blackman window functions
-- RMS energy, spectral centroid, spectral rolloff
+FFT/IFFT (Cooley-Tukey) · Power spectrum · Convolution · Cross-correlation · Autocorrelation · FIR/IIR biquad filters · Hann/Hamming/Blackman windows · Zero-crossing rate · RMS energy · Spectral centroid · Spectral rolloff · Linear resampling
 
 </details>
 
 <details>
-<summary><b>🔒 Cryptography</b> — SHA-256, HMAC, Base64, CRC-32 (440 LOC)</summary>
+<summary><b>🔒 Cryptography</b> — 440 LOC · 10 tests</summary>
 
-<br />
-
-- SHA-256 hash (full NIST implementation)
-- HMAC-SHA256
-- Base64 encode/decode
-- CRC-32, FNV-1a hash
-- XorShift64 PRNG
+SHA-256 (full NIST) · HMAC-SHA256 · Base64 encode/decode · CRC-32 · FNV-1a 64-bit hash · Constant-time comparison · XorShift128+ PRNG
 
 </details>
 
 <details>
-<summary><b>🕸️ Graph Algorithms</b> — BFS, Dijkstra, PageRank, SCC (789 LOC)</summary>
+<summary><b>🕸️ Graph Algorithms</b> — 789 LOC · 13 tests</summary>
 
-<br />
-
-- BFS, DFS traversal
-- Dijkstra's shortest path
-- PageRank (iterative)
-- Tarjan's strongly connected components
-- Topological sort, cycle detection
-- Bipartite checking
+BFS · DFS · Dijkstra shortest paths · Cycle detection · Bipartite check · Connected components · Topological sort · PageRank (iterative) · Tarjan SCC
 
 </details>
 
 <details>
-<summary><b>🔤 String Algorithms</b> — Edit distance, fuzzy matching, search (574 LOC)</summary>
+<summary><b>🔤 String Algorithms</b> — 574 LOC · 12 tests</summary>
 
-<br />
-
-- Levenshtein edit distance
-- Jaro-Winkler similarity
-- Soundex phonetic encoding
-- KMP pattern search
-- Rabin-Karp search
-- Boyer-Moore-Horspool
+Levenshtein distance · LCS (length + string) · Longest common substring · Hamming distance · Jaro-Winkler similarity · Soundex · String rotation check · N-gram counting · KMP search · Rabin-Karp search · Boyer-Moore-Horspool
 
 </details>
 
 <details>
-<summary><b>🔢 Numerical</b> — Linear algebra, integration, root finding (709 LOC)</summary>
+<summary><b>🔢 Numerical / Linear Algebra</b> — 709 LOC · 15 tests</summary>
 
-<br />
-
-- Matrix: determinant, inverse, multiply, transpose
-- Eigenvalue approximation (power iteration)
-- Numerical integration (Simpson's rule, trapezoidal)
-- Root finding (Newton-Raphson, bisection)
-- Horner's polynomial evaluation
-- Dot product, cross product
+Matrix multiply/determinant/inverse/trace · Linear system solver · Simpson's/Trapezoidal integration · Horner polynomial eval · Lagrange interpolation · Power iteration (eigenvalue) · Dot/Cross product · Vector norm · Newton-Raphson · Bisection root finding
 
 </details>
 
 <details>
-<summary><b>📦 Compression</b> — RLE, Huffman, delta coding, LZ77 (532 LOC)</summary>
+<summary><b>📦 Compression</b> — 532 LOC · 8 tests</summary>
 
-<br />
-
-- Run-length encoding/decoding
-- Huffman coding (tree construction + encode/decode)
-- Delta encoding/decoding
-- LZ77 compression/decompression
+Run-length encoding/decoding · Huffman coding (tree + encode/decode) · Delta encoding/decoding · LZ77 compression/decompression
 
 </details>
 
 <details>
-<summary><b>📈 Statistics</b> — Distributions, regression, hypothesis testing (653 LOC)</summary>
+<summary><b>📈 Statistics & Probability</b> — 653 LOC · 16 tests</summary>
 
-<br />
-
-- Normal/Poisson/Binomial/Exponential PDF & CDF
-- Pearson correlation, Spearman rank correlation
-- Linear regression (least squares)
-- Chi-squared test, Kolmogorov-Smirnov test
-- Skewness, kurtosis, z-score
+Normal/Poisson/Binomial/Exponential PDF & CDF · Pearson/Spearman correlation · Linear regression (least squares) · Chi-squared test · Kolmogorov-Smirnov · Skewness · Kurtosis · Z-score · Shannon entropy · Covariance matrix
 
 </details>
 
 <details>
-<summary><b>💫 Quantum Simulator</b> — Statevector, gates, QFT, Bell states (813 LOC)</summary>
+<summary><b>💫 Quantum Simulator</b> — 813 LOC · 23 tests</summary>
 
-<br />
-
-- N-qubit statevector register
-- H, X, Y, Z, CNOT, Toffoli gates
-- RX, RY, RZ parametric rotation gates
-- Quantum Fourier Transform (QFT)
-- Bell state preparation
-- Bloch sphere coordinates
-- Measurement with probability sampling
+N-qubit statevector register · H/X/Y/Z/CNOT/Toffoli gates · RX/RY/RZ parametric rotations · Quantum Fourier Transform · Bell state preparation · Bloch sphere coordinates · Fidelity · Purity · Von Neumann entropy · Measurement with probability sampling
 
 </details>
 
 <details>
-<summary><b>⚛️ Quantum Math</b> — Special functions, quaternions, wavelets (1,004 LOC)</summary>
+<summary><b>⚛️ Quantum Math</b> — 1,004 LOC · 23 tests</summary>
 
-<br />
-
-- Gamma function, Beta function
-- Bessel functions (J0, J1, Y0)
-- Riemann zeta function
-- Quaternion arithmetic
-- Haar wavelets (forward/inverse transform)
-- Runge-Kutta RK4 ODE solver
+Complex arithmetic · Gamma/lgamma/Beta functions · Bessel J0/J1 · Riemann zeta (1000-term + Euler-Maclaurin) · Monte Carlo integration · RK4 ODE solver · Haar wavelets · Legendre polynomials · Quaternion multiply/rotate/SLERP · Outer/Kronecker products · Fibonacci · Golden ratio · Euler totient
 
 </details>
 
 <details>
-<summary><b>🧮 Advanced Math</b> — Combinatorics, fractals, special functions (943 LOC)</summary>
+<summary><b>🧮 Advanced Math</b> — 943 LOC · 31 tests</summary>
 
-<br />
-
-- Factorial, double factorial
-- Binomial coefficient, Catalan numbers, Bell numbers
-- Error function (erf)
-- Fibonacci (fast), Lucas sequence
-- Mandelbrot set iteration
-- GCD, LCM, modular exponentiation
-- Primality testing
+Factorial · Double factorial · Binomial coefficients · Catalan numbers · Bell numbers · Error function (erf) · Mandelbrot iteration · Integer partitions · Lucas sequence · GCD/LCM · Modular exponentiation · Primality testing
 
 </details>
 
 <details>
-<summary><b>🔬 Science</b> — Physics, chemistry, astronomy formulas (504 LOC)</summary>
+<summary><b>🔬 Science & Physics</b> — 504 LOC · 17 tests</summary>
 
-<br />
-
-- 50+ physical formulas
-- Kinetic/potential energy, work-energy theorem
-- Schwarzschild radius, escape velocity
-- Ideal gas law, heat transfer
-- Coulomb's law, Ohm's law
-- 20+ physical constants (c, G, h, k_B, etc.)
-- Unit conversions (Celsius↔Kelvin↔Fahrenheit)
+20+ physical constants (c, G, h, k_B, etc.) · Kinematics (3 equations) · Energy (kinetic/potential) · Pendulum · Orbital/Escape velocity · Projectile motion · Ideal gas law · Carnot efficiency · Heat transfer · Coulomb/Electric field · Ohm's law · Wavelength · Photon energy · Doppler shift · Snell's law · de Broglie · Radioactive decay · E=mc² · pH/pOH · Arrhenius · Nernst · Schwarzschild radius · Luminosity · Hubble velocity · Reynolds number · Drag force · Bernoulli · 6 unit conversions
 
 </details>
 
 <details>
-<summary><b>📊 Analytics</b> — Time series, anomaly detection, forecasting (662 LOC)</summary>
+<summary><b>📊 Analytics</b> — 662 LOC · 19 tests</summary>
 
-<br />
-
-- Moving averages: SMA, EMA, WMA, DEMA
-- Anomaly detection (z-score method)
-- Simple exponential smoothing (SES)
-- Holt linear trend forecasting
-- Apdex scoring
-- Linear trend extraction
+SMA/EMA/WMA/DEMA moving averages · Anomaly detection (z-score/IQR/MAD) · Linear trend · Turning points · SES/Holt forecasting · Min-max/Z-score normalization · SLA uptime · Error rate · Throughput · Apdex score · MTBF · MTTR · Cardinality
 
 </details>
 
 <details>
-<summary><b>🛡️ Security</b> — Input validation, injection detection (421 LOC)</summary>
+<summary><b>🛡️ Security</b> — 421 LOC · 16 tests</summary>
 
-<br />
-
-- SQL injection detection
-- XSS detection
-- Path traversal detection
-- Command injection detection
-- Email validation, URL validation
-- Password strength scoring + entropy calculation
-- HTML escaping
-- Code safety scoring
+SQL injection detection · XSS detection · Path traversal detection · Command injection detection · Email/IPv4/URL validation · Password strength + entropy · HTML escaping · Code safety scoring · Token bucket rate limiting · Capability-based sandbox
 
 </details>
 
 <details>
-<summary><b>📏 Scoring</b> — Metrics, ratings, A/B testing (470 LOC)</summary>
+<summary><b>📏 Scoring & Metrics</b> — 470 LOC · 19 tests</summary>
 
-<br />
-
-- Halstead software metrics
-- Maintainability index
-- Elo rating system
-- Bayesian A/B testing
-- Cohen's d effect size
-- Pareto ranking
-- Geometric mean
+Halstead software metrics · Maintainability index · Tech debt ratio · Elo rating (update + expected) · Welch's t-test · Cohen's d · Mann-Whitney U · Wilson score · Bayesian A/B testing · Pareto dominance/ranking · Geometric/Harmonic/Power mean · Latency scoring · System health composite
 
 </details>
 
@@ -665,20 +529,108 @@ Use cases:
 
 ---
 
-## 🔨 44 Hot-Path Native Ops
+## 📊 Benchmarks: Vitalis vs Python
 
-These are Rust-native operations exposed directly via FFI — no JIT compilation, pure Rust speed.
+### Real numbers. Real workloads. No tricks.
+
+**Setup:** 100,000 elements · 500 iterations · pre-allocated `ctypes` arrays · pure Python baseline (no NumPy)
+
+<div align="center">
+
+```
+ Python ██████████████████████████████████████████████████  75,327 ms
+Vitalis ██████████▌                                        13,116 ms   ← 5.7× faster (aggregate)
+```
+
+</div>
+
+| Operation | Python | Vitalis | Speedup |
+|-----------|-------:|--------:|--------:|
+| Cosine Distance (100K) | 13,922 ms | 479 ms | **29.1×** |
+| Batch ReLU (100K) | 6,308 ms | 613 ms | **10.3×** |
+| Std Deviation (100K) | 7,183 ms | 780 ms | **9.2×** |
+| MSE Loss (100K) | 3,645 ms | 450 ms | **8.1×** |
+| Batch Sigmoid (100K) | 5,173 ms | 686 ms | **7.5×** |
+| Huber Loss (100K) | 6,524 ms | 929 ms | **7.0×** |
+| Sliding Window (100K) | 3,505 ms | 641 ms | **5.5×** |
+| L2 Normalize (100K) | 4,407 ms | 820 ms | **5.4×** |
+| Softmax (10K) | 712 ms | 160 ms | **4.5×** |
+| Layer Norm (100K) | 9,050 ms | 2,313 ms | **3.9×** |
+| Batch Norm (100K) | 9,115 ms | 2,414 ms | **3.8×** |
+| GELU Batch (100K) | 5,458 ms | 2,626 ms | **2.1×** |
+| Mean (100K) | 327 ms | 204 ms | **1.6×** |
+
+<div align="center">
+
+| Metric | Value |
+|--------|-------|
+| **Benchmarks won** | **13 / 13** (100%) |
+| **Average speedup** | **7.5×** |
+| **Peak speedup** | **29.1×** (Cosine Distance) |
+| **Total time saved** | **62.2 seconds** (75.3s → 13.1s) |
+
+</div>
+
+### Why is Vitalis faster?
+
+| | Python | Vitalis |
+|--|--------|---------|
+| **Execution** | Interpreted bytecode | Native x86-64 machine code |
+| **Memory** | GC + boxing + heap alloc | Stack-allocated, zero-copy |
+| **Math** | Dynamic dispatch per op | Inlined native instructions |
+| **Data layout** | PyObjects (56 bytes each) | Flat `f64` arrays (8 bytes each) |
+| **Function calls** | Frame creation + dict lookup | Direct `call` instruction |
+
+### Methodology note
+
+These benchmarks measure **pure computation with pre-allocated arrays** — matching how you'd actually use Vitalis in production (data stays in native buffers). The first benchmark version (v1) with per-call Python→C marshalling showed different results where marshalling overhead dominated small computations. Both are reproducible — run `python _benchmark_v3_compute.py` (production-realistic) or `python _benchmark_py_vs_vitalis.py` (with marshalling).
+
+<br />
+
+---
+
+## 🔬 Module Throughput (74 Benchmarks)
+
+Every algorithm library benchmarked via Python FFI. These numbers **include** Python→Rust call overhead.
+
+| Category | Avg Throughput | Peak Function | Peak |
+|----------|---------------:|--------------|-----:|
+| 🔬 Science | **1.59M** ops/s | `schwarzschild_radius` | 2.25M |
+| 🧮 Advanced Math | **1.24M** ops/s | `math_erf` | 2.09M |
+| ⚛️ Quantum Math | **1.15M** ops/s | `golden_ratio` | 3.43M |
+| 📏 Scoring | **1.14M** ops/s | `elo_expected` | 1.64M |
+| 📈 Statistics | **525.7K** ops/s | `normal_pdf` | 1.37M |
+| 🔤 Strings | **314.8K** ops/s | `jaro_winkler` | 465.1K |
+| 🔢 Numerical | **298.5K** ops/s | `horner` | 593.6K |
+| 📊 Analytics | **278.0K** ops/s | `apdex` | 1.37M |
+| 💫 Quantum Sim | **254.5K** ops/s | `bell_state` | 306.5K |
+| 🛡️ Security | **151.9K** ops/s | `password_entropy` | 293.2K |
+| 📦 Compression | **118.0K** ops/s | `rle_encode` | 283.8K |
+| 🔒 Crypto | **92.1K** ops/s | `fnv1a_64` | 167.0K |
+| 📡 Signal | **22.3K** ops/s | `rms_energy` | 30.7K |
+| ⚙️ Compiler | **18.6K** ops/s | `lex` | 46.3K |
+| 🕸️ Graph | **10.8K** ops/s | `is_bipartite` | 13.0K |
+
+> 74 benchmarks · 0 failures · 470 tests passing
+
+<br />
+
+---
+
+## ⚡ Hot-Path Native Operations
+
+80 Rust-native functions exposed directly via FFI — no JIT compilation, pure Rust speed. These are the fastest path from Python to native code.
 
 | Category | Operations |
 |----------|-----------|
-| **Rate Limiting** | Sliding window count, token bucket |
-| **Statistics** | P95, percentile, mean, median, stddev, entropy |
+| **Statistics** | P95, percentile, mean, median, stddev, entropy, variance |
 | **ML Activations** | Softmax, sigmoid, ReLU, GELU, batch norm, layer norm |
-| **Loss Functions** | Cross-entropy, MSE, Huber, KL divergence |
-| **Vector Ops** | Cosine similarity, cosine distance, L2 normalize, hamming distance |
+| **Loss Functions** | Cross-entropy, MSE, Huber, KL divergence, cosine distance |
+| **Vector Ops** | Cosine similarity, L2 normalize, hamming distance, dot product |
+| **Rate Limiting** | Sliding window count, token bucket |
 | **Optimization** | Bayesian UCB, simulated annealing, Boltzmann selection, CMA-ES |
 | **Analysis** | Code quality scoring, cognitive complexity, vote tallying |
-| **Consensus** | Weighted score, tally votes, string vote tallying |
+| **SIMD Ops** | Vectorized batch math, SIMD-accelerated operations (846 LOC) |
 
 <br />
 
@@ -699,7 +651,7 @@ cargo run -- check examples/arithmetic.sl
 # Dump the AST
 cargo run -- dump-ast examples/structs.sl
 
-# Dump the IR
+# Dump the IR (SSA form)
 cargo run -- dump-ir examples/arithmetic.sl
 
 # Tokenize a file
@@ -714,104 +666,79 @@ cargo run -- lex examples/hello.sl
 
 ```
 vitalis/
-├── Cargo.toml                # Build config (v9.0.0, Edition 2024)
+├── Cargo.toml                  # v9.0.0, Rust Edition 2024
 ├── src/
-│   ├── main.rs               # CLI binary (vtc)
-│   ├── lib.rs                # Library root (28 modules)
+│   ├── main.rs                 # CLI binary (vtc) with clap
+│   ├── lib.rs                  # Library root — 28 public modules
 │   │
-│   │  ── Core Compiler ──
-│   ├── lexer.rs              # Logos zero-copy tokenizer
-│   ├── parser.rs             # Recursive-descent + Pratt parser
-│   ├── ast.rs                # AST definitions (27 expression variants)
-│   ├── types.rs              # Two-pass type checker
-│   ├── ir.rs                 # SSA-form IR lowering
-│   ├── codegen.rs            # Cranelift JIT codegen
-│   ├── stdlib.rs             # 97 built-in functions
+│   │  ── Core Compiler (6 files, 6,968 LOC) ──
+│   ├── lexer.rs                # Logos zero-copy tokenizer (~70 tokens)
+│   ├── parser.rs               # Recursive-descent + Pratt parser
+│   ├── ast.rs                  # 27 expression variants, Origin tracking
+│   ├── types.rs                # Two-pass type checker with scope chains
+│   ├── ir.rs                   # SSA-form intermediate representation
+│   ├── codegen.rs              # Cranelift 0.116 JIT backend
 │   │
-│   │  ── Evolution & Performance ──
-│   ├── evolution.rs          # @evolvable function registry + rollback
-│   ├── engine.rs             # Evolution cycle runner
-│   ├── meta_evolution.rs     # Strategy-level evolution
-│   ├── memory.rs             # Engram-based memory store
-│   ├── hotpath.rs            # 44 native fast-path operations
-│   ├── optimizer.rs          # Optimization passes
-│   ├── simd_ops.rs           # SIMD-optimized operations
+│   │  ── Runtime & Stdlib (3 files, 3,074 LOC) ──
+│   ├── stdlib.rs               # 99 built-in functions
+│   ├── hotpath.rs              # 80 native fast-path operations
+│   ├── bridge.rs               # extern "C" FFI exports
 │   │
-│   │  ── Algorithm Libraries (14 modules) ──
-│   ├── signal_processing.rs  # FFT, filters, windowing
-│   ├── crypto.rs             # SHA-256, HMAC, Base64, CRC
-│   ├── graph.rs              # BFS, Dijkstra, PageRank, SCC
-│   ├── string_algorithms.rs  # Levenshtein, KMP, Soundex
-│   ├── numerical.rs          # Linear algebra, integration
-│   ├── compression.rs        # RLE, Huffman, LZ77
-│   ├── probability.rs        # Distributions, correlation, tests
-│   ├── quantum.rs            # Quantum circuit simulator
-│   ├── quantum_math.rs       # Gamma, Bessel, quaternions
-│   ├── advanced_math.rs      # Factorial, erf, Mandelbrot
-│   ├── science.rs            # 50+ physics/chemistry formulas
-│   ├── analytics.rs          # Time series, anomaly detection
-│   ├── security.rs           # Validation, injection detection
-│   ├── scoring.rs            # Halstead, Elo, A/B testing
+│   │  ── Evolution System (4 files, 3,268 LOC) ──
+│   ├── evolution.rs            # @evolvable function registry + rollback
+│   ├── engine.rs               # Evolution cycle runner + populations
+│   ├── meta_evolution.rs       # Strategy-level meta-evolution
+│   ├── memory.rs               # Engram-based memory with decay
 │   │
-│   └── bridge.rs             # C FFI exports (405 functions)
+│   │  ── Optimization (2 files, 2,140 LOC) ──
+│   ├── optimizer.rs            # Multi-pass optimization
+│   ├── simd_ops.rs             # SIMD-accelerated operations
+│   │
+│   │  ── Algorithm Libraries (14 modules, 9,778 LOC) ──
+│   ├── signal_processing.rs    # FFT, filters, windowing
+│   ├── crypto.rs               # SHA-256, HMAC, Base64, CRC
+│   ├── graph.rs                # BFS, Dijkstra, PageRank, SCC
+│   ├── string_algorithms.rs    # Levenshtein, KMP, Soundex
+│   ├── numerical.rs            # Linear algebra, integration
+│   ├── compression.rs          # RLE, Huffman, LZ77
+│   ├── probability.rs          # Distributions, correlation, tests
+│   ├── quantum.rs              # Quantum circuit simulator
+│   ├── quantum_math.rs         # Gamma, Bessel, quaternions, wavelets
+│   ├── advanced_math.rs        # Factorial, erf, Mandelbrot
+│   ├── science.rs              # 50+ physics/chemistry formulas
+│   ├── analytics.rs            # Time series, anomaly detection
+│   ├── security.rs             # Validation, injection detection
+│   └── scoring.rs              # Halstead, Elo, A/B testing
 │
 ├── python/
-│   └── vitalis.py            # Python wrapper (3,036 LOC, 304 exports)
-├── examples/                 # Example .sl programs
+│   └── vitalis.py              # Python wrapper — 2,500 LOC, 304 exports
+├── examples/                   # 8 example .sl programs
 ├── docs/
-│   ├── LANGUAGE_GUIDE.md     # Complete language reference
-│   └── EXTENDING.md          # Developer extension guide
-└── tests/                    # 470 inline tests
+│   ├── LANGUAGE_GUIDE.md       # Complete language reference
+│   └── EXTENDING.md            # Developer extension guide
+├── tests/                      # Integration tests
+├── .github/workflows/ci.yml    # CI: Ubuntu + Windows + macOS
+├── CHANGELOG.md                # Full release history
+├── CONTRIBUTING.md             # Contribution guidelines
+└── SECURITY.md                 # Security policy
 ```
 
 <br />
 
 ---
 
-## 📐 Benchmark Methodology
+## 📈 v0.1 → v9.0 Growth
 
-Full transparency on how benchmarks were run:
-
-### v3 Benchmarks (the headline numbers)
-
-| Parameter | Value |
-|-----------|-------|
-| **Machine** | Windows 11, AMD Ryzen / Intel i7 |
-| **Data size** | 100,000 elements (10K for softmax) |
-| **Iterations** | 500 per operation |
-| **Array setup** | Pre-allocated `ctypes.c_double * N` arrays |
-| **Marshalling** | Zero — data stays in C-compatible buffers |
-| **Python baseline** | Pure Python loops (no NumPy) |
-| **Vitalis** | Native Rust via `extern "C"` FFI |
-
-**Why pre-allocated arrays?** In production, Vitalis holds data in Rust-side buffers. The Python→C marshalling cost (converting Python lists to C arrays per call) is a one-time setup cost, not a per-operation cost. These benchmarks measure what matters: **raw computation speed**.
-
-### v1 Benchmarks (with marshalling overhead)
-
-The first benchmark run used small arrays (200–1,000 elements) with 10,000 iterations and **included Python↔C marshalling on every call**. In that test, Python won 16/17 benchmarks because the marshalling overhead dominated the small computation. This is expected — you wouldn't convert a Python list to a C array 10,000 times in production.
-
-| Version | Data Size | Marshalling | Vitalis Wins | Avg Speedup |
-|---------|----------|-------------|-------------|-------------|
-| **v1** (with marshalling) | 200–1K | Every call | 1/17 | 0.7× |
-| **v3** (production-realistic) | 10K–100K | Pre-allocated | **13/13** | **7.5×** |
-
-> Both benchmark results are reproducible. Run `python _benchmark_py_vs_vitalis.py` (v1) and `python _benchmark_v3_compute.py` (v3) yourself.
-
-<br />
-
----
-
-## 📈 Growth: v0.1 → v9.0
-
-| Metric | v0.1 | v9.0 | Change |
+| Metric | v0.1 | v9.0 | Growth |
 |--------|-----:|-----:|-------:|
 | Source files | 17 | 31 | +82% |
 | Rust LOC | ~13,500 | 24,769 | +83% |
 | Tests | 234 | 470 | +101% |
-| FFI exports | ~50 | 405 | +710% |
-| Python exports | ~40 | 304 | +660% |
-| Python wrapper LOC | 930 | 3,036 | +226% |
-| Algorithm modules | 0 | 14 | new |
+| Stdlib functions | 97 | 99 | +2 |
+| Python wrapper LOC | 930 | 2,500 | +169% |
+| Python `__all__` exports | ~50 | 304 | +508% |
+| Algorithm modules | 0 | 14 | — |
+| Hot-path ops | 44 | 80 | +82% |
 
 <br />
 
@@ -819,15 +746,17 @@ The first benchmark run used small arrays (200–1,000 elements) with 10,000 ite
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. PRs welcome.
 
-**Areas where help is welcome:**
+**Areas where help is needed:**
 
-- 🔧 Language features — closures, traits, generics
-- 🖥️ Platform support — Linux/macOS CI testing
-- ✏️ Editor support — VS Code extension, syntax highlighting
-- 📝 Documentation & tutorials
-- 📦 Package manager for `.sl` dependencies
+| Area | What | Impact |
+|------|------|--------|
+| 🔧 Language features | Closures, traits, generics | Core language capability |
+| 🖥️ Platform | Linux/macOS CI testing | Cross-platform reliability |
+| ✏️ Editor support | VS Code extension, syntax highlighting | Developer experience |
+| 📝 Docs | Tutorials, cookbook examples | Adoption |
+| 📦 Package manager | `.sl` dependency system | Ecosystem |
 
 <br />
 
@@ -852,7 +781,7 @@ Dual-licensed under your choice of:
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with [Cranelift](https://cranelift.dev/) (JIT), [Logos](https://github.com/maciejhirsz/logos) (lexer), and [Clap](https://github.com/clap-rs/clap) (CLI).
 
@@ -862,7 +791,7 @@ Built with [Cranelift](https://cranelift.dev/) (JIT), [Logos](https://github.com
 
 <div align="center">
 
-**Built solo from scratch by [Bart Chmiel](https://www.linkedin.com/in/modern-workplace-tech365/)**
+**Solo-built from scratch by [Bart Chmiel](https://www.linkedin.com/in/modern-workplace-tech365/)**
 
 [Website](https://infinitytechstack.uk) · [Tech Stack](https://infinitytechstack.uk/techstack) · [Consulting](https://infinitytechstack.uk/consulting)
 

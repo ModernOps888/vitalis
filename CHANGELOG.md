@@ -28,10 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scoring** (`scoring.rs`, 470 LOC) — Maintainability index, tech debt ratio, composite code quality, Halstead metrics, weighted fitness, Pareto dominance/ranking, Elo rating (update/expected), Welch's t-test, Cohen's d, Mann-Whitney U, Wilson score conversion rate, Bayesian A/B testing, regression scoring, geometric/harmonic/power mean, latency scoring, efficiency ratios, system health composite, decay/sigmoid/tournament fitness functions
 
 #### Python Wrapper Overhaul
-- `python/vitalis.py` expanded from 930 → 3,036 lines
+- `python/vitalis.py` expanded from 930 → 2,500 lines
 - 304 Python functions exposed via `__all__`
 - `QuantumRegister` Python class with gate chaining, measurement, entropy
-- Full ctypes coverage for all 269 C FFI functions across 14 modules
+- Full ctypes coverage for all C FFI functions across 14 modules
 - Helper utilities: `_str_buf()`, `_edges_flat_sz()`, `_to_double_array()`
 
 ### Changed
@@ -45,11 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | Rust source files | 17 | 31 | +14 |
 | Rust LOC (total) | ~13,500 | 24,769 | +11,269 |
 | Test cases | 234 | 470 | +236 |
-| FFI exports | ~50 | 405 | +355 |
-| Python wrapper LOC | 930 | 3,036 | +2,106 |
+| Python wrapper LOC | 930 | 2,500 | +1,570 |
 | Python `__all__` exports | ~50 | 304 | +254 |
-| Stdlib functions | 97 | 97 | — |
-| Hot-path ops | 44 | 44 | — |
+| Stdlib functions | 97 | 99 | +2 |
+| Hot-path functions | 44 | 80 | +36 |
 | Algorithm modules | 0 | 14 | +14 |
 
 ### Benchmark Scores (v9.0.0, 74 benchmarks, all passing)
