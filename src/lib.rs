@@ -1,9 +1,11 @@
-//! Vitalis v19.0 — A JIT-compiled language with impl blocks, try/catch, closures with capture,
+//! Vitalis v20.0 — A JIT-compiled language with impl blocks, try/catch, closures with capture,
 //! stdlib functions (strings, file I/O, maps, error handling, JSON, system), built-in
-//! code evolution, multi-domain algorithm libraries, and native Cranelift JIT performance.
+//! code evolution, multi-domain algorithm libraries, native Cranelift JIT performance,
+//! and a full deep learning engine (tensors, transformers, GPU compute, BPE, training).
 //!
-//! Enterprise-grade release with 38 modules spanning quantum computing, bioinformatics,
-//! neuromorphic computation, advanced evolutionary algorithms, and physical sciences.
+//! Enterprise-grade release with 47 modules spanning quantum computing, bioinformatics,
+//! neuromorphic computation, advanced evolutionary algorithms, physical sciences,
+//! and a production-quality ML training pipeline (Nova ML Engine).
 //! This library provides the compiler pipeline (lex → parse → type-check → IR → JIT)
 //! and a C FFI bridge so Python code (via ctypes) and other languages can compile
 //! and execute `.sl` code natively.
@@ -18,7 +20,7 @@
 //!                                                   Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v13.0 — 38 modules)
+//! # Module Domains (v20.0 — 47 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Evolution**: evolution, engine, meta_evolution, optimizer
 //! - **Advanced Evolution**: evolution_advanced (DE, PSO, CMA-ES, NSGA-II, MAP-Elites)
@@ -44,6 +46,7 @@
 //! - **Sorting & Searching**: sorting (quicksort, mergesort, radixsort, binary search)
 //! - **Automata & Patterns**: automata (Aho-Corasick, Bloom filter, tries, regex)
 //! - **Combinatorial Optimization**: combinatorial (knapsack, TSP, simplex, genetic)
+//! - **Nova ML Engine**: tensor_engine, deep_learning, gpu_compute, ml_training, bpe_tokenizer, model_inference
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -114,6 +117,14 @@ pub mod neuromorphic;
 
 // ── Advanced Evolutionary Computation (v13.0) ─────────────────────────
 pub mod evolution_advanced;
+
+// ── Nova ML Engine (v20.0) ────────────────────────────────────────────
+pub mod tensor_engine;
+pub mod deep_learning;
+pub mod gpu_compute;
+pub mod ml_training;
+pub mod bpe_tokenizer;
+pub mod model_inference;
 
 // ── FFI Bridge ───────────────────────────────────────────────────────
 pub mod bridge;
