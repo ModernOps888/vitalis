@@ -15,8 +15,9 @@
 
 [![Rust](https://img.shields.io/badge/Rust-Edition%202024-F74C00?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Cranelift](https://img.shields.io/badge/Backend-Cranelift%200.116-4B8BBE?style=flat-square)](https://cranelift.dev/)
-[![Tests](https://img.shields.io/badge/Tests-542%20passing-00C853?style=flat-square)](.)
-[![LOC](https://img.shields.io/badge/Rust%20LOC-28%2C412-blueviolet?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/Tests-634%20passing-00C853?style=flat-square)](.)
+[![LOC](https://img.shields.io/badge/Rust%20LOC-32%2C638-blueviolet?style=flat-square)](.)
+[![Python APIs](https://img.shields.io/badge/Python%20APIs-482-ff69b4?style=flat-square)](python/vitalis.py)
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache--2.0-blue?style=flat-square)](LICENSE-MIT)
 [![CI](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml/badge.svg)](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml)
 
@@ -26,7 +27,7 @@
 │                  → IR (SSA) → Cranelift JIT → Native  │
 │                                                        │
 │   7.5× faster than Python  ·  29.1× peak speedup      │
-│   542 tests  ·  36 source files  ·  19 algo libraries  │
+│   634 tests  ·  41 source files  ·  24 algo libraries  │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -45,8 +46,8 @@
 - [Architecture](#️-architecture)
 - [Language Features](#-language-features)
 - [Code Evolution](#-code-evolution--the-killer-feature)
-- [Python Integration](#-python-integration-354-apis)
-- [Algorithm Libraries](#-19-algorithm-libraries)
+- [Python Integration](#-python-integration-482-apis)
+- [Algorithm Libraries](#-24-algorithm-libraries)
 - [Benchmarks](#-benchmarks-vitalis-vs-python)
 - [Hot-Path Native Ops](#-hot-path-native-operations)
 - [CLI Reference](#️-cli-reference)
@@ -76,7 +77,7 @@ Most languages make you choose: **fast** or **flexible**. Vitalis gives you both
 
 2. **Functions that evolve themselves** — Mark any function `@evolvable`. Mutate it at runtime. Score its fitness. Roll back if it regresses. The compiler tracks every generation. Your code literally gets better over time.
 
-3. **Python as a first-class citizen** — Import `vitalis` in Python, get 354 native Rust functions. No subprocess, no REST API, no serialization. Pure FFI.
+3. **Python as a first-class citizen** — Import `vitalis` in Python, get 482 native Rust functions. No subprocess, no REST API, no serialization. Pure FFI.
 
 ```rust
 // hello.sl — Your first Vitalis program
@@ -334,9 +335,9 @@ Beyond basic `@evolvable`, Vitalis includes a full evolution engine:
 
 ---
 
-## 🐍 Python Integration (354 APIs)
+## 🐍 Python Integration (482 APIs)
 
-Vitalis ships a complete Python wrapper (`python/vitalis.py`, 3,600 LOC) with 354 exported functions. Import it and call native Rust from Python — no subprocess, no REST API, just FFI.
+Vitalis ships a complete Python wrapper (`python/vitalis.py`, 4,906 LOC) with 482 exported functions. Import it and call native Rust from Python — no subprocess, no REST API, just FFI.
 
 ### Core Compiler
 
@@ -386,6 +387,34 @@ q = vitalis.QuantumRegister(2)
 q.h(0).cnot(0, 1)                # Bell state
 prob = q.prob(0)                  # → 0.5
 
+# === Quantum Algorithms (v13) ===
+vitalis.quantum_deutsch_jozsa(2, False)   # Constant oracle → "constant"
+vitalis.quantum_grover(8, 5)              # Search for 5 in 8 items
+vitalis.quantum_shor_factor(15)           # Factor 15 → (3, 5)
+vitalis.quantum_vqe(0.5)                  # Variational eigensolver
+
+# === Bioinformatics (v13) ===
+vitalis.bio_gc_content("ATGCGCTA")        # → 0.5
+vitalis.bio_needleman_wunsch("ACGT", "ACGT", 1, -1, -2)  # Global alignment
+vitalis.bio_sir_model(0.3, 0.1, 999, 1, 0, 10)           # SIR epidemic
+vitalis.bio_translate("AUGUUUAAA")        # → "MFK" (codon table)
+
+# === Chemistry & Physics (v13) ===
+vitalis.chem_henderson_hasselbalch(4.75, 0.1, 0.1)  # pH = pKa
+vitalis.phys_lorentz_factor(0.9)                      # γ ≈ 2.294
+vitalis.phys_schwarzschild_radius_adv(1.989e30)       # Solar mass → m
+vitalis.chem_particle_in_box(1, 1e-9, 9.109e-31)      # Quantum confinement
+
+# === Neuromorphic Computing (v13) ===
+vitalis.neuro_lif(0.5, 1.0, 0.02, 0.01, 1.0)   # LIF neuron step
+vitalis.neuro_stdp_delta(0.005, 0.01, 20.0)     # STDP plasticity
+vitalis.neuro_spike_entropy(spike_train)          # Information content
+
+# === Evolutionary Computation (v13) ===
+vitalis.evo_differential_evolution("sphere", 2, 20, 100, 0.8, 0.9)
+vitalis.evo_pso_step(positions, velocities, bests, gbest, 0.7, 1.5, 1.5)
+vitalis.evo_novelty_score(behavior, archive, 5)  # k-NN novelty
+
 # === Cryptography ===
 h = vitalis.sha256("hello")      # SHA-256
 b = vitalis.base64_encode("hi")  # Base64
@@ -416,14 +445,14 @@ p = vitalis.normal_pdf(0.0, 0.0, 1.0)        # Standard normal
 r = vitalis.pearson_correlation(xs, ys)       # Pearson r
 reg = vitalis.linear_regression(xs, ys)       # Least squares
 
-# And 250+ more...
+# And 370+ more...
 ```
 
 <br />
 
 ---
 
-## 📦 19 Algorithm Libraries
+## 📦 24 Algorithm Libraries
 
 Every module is written in pure Rust with full test coverage. All functions are callable from Python via FFI.
 
@@ -560,6 +589,64 @@ Aho-Corasick multi-pattern search (full automaton with fail links) · Bloom filt
 
 </details>
 
+<details>
+<summary><b>⚛️ Quantum Algorithms</b> — 988 LOC · 17 tests <sup>v13.0</sup></summary>
+
+Deutsch-Jozsa (constant/balanced oracle detection) · Bernstein-Vazirani (hidden string recovery) · Quantum Phase Estimation (QPE with inverse QFT) · Shor's factoring (period-finding + classical post-processing) · Variational Quantum Eigensolver (VQE, 2-qubit) · QAOA MaxCut (Quantum Approximate Optimization) · Quantum Walk (discrete-time on line graph) · Quantum Teleportation (Bell state + corrections) · Quantum Error Correction (3-qubit bit-flip code) · BB84 QKD (QBER estimation) · Simon's Algorithm (hidden period finding) · Grover's Search (amplitude amplification, optimal iterations)
+
+</details>
+
+<details>
+<summary><b>🧬 Bioinformatics</b> — 784 LOC · 22 tests <sup>v13.0</sup></summary>
+
+GC Content · DNA Complement/Reverse Complement · Transcription (DNA→RNA) · Nucleotide Frequency · Codon Translation (full genetic code) · Needleman-Wunsch (global alignment) · Smith-Waterman (local alignment) · Hamming Distance · Edit Distance · K-mer Counting · Linguistic Complexity · Hardy-Weinberg Equilibrium · Lotka-Volterra (predator-prey dynamics) · SIR Epidemic Model · SEIR Epidemic Model · Basic Reproduction Number (R₀) · Michaelis-Menten Kinetics · Competitive Inhibition · Hill Equation (cooperativity) · Jukes-Cantor & Kimura Evolutionary Distance · Protein Molecular Weight · GRAVY Hydropathicity Index · Logistic Growth · Wright-Fisher Drift Simulation · Shannon & Simpson Diversity Indices
+
+</details>
+
+<details>
+<summary><b>⚗️ Chemistry & Physics</b> — 634 LOC · 25 tests <sup>v13.0</sup></summary>
+
+**Acid-Base:** Henderson-Hasselbalch · Buffer Capacity · Ionization Fraction  
+**Thermodynamics:** Keq from Gibbs · Gibbs Free Energy · Van't Hoff · Clausius-Clapeyron  
+**Kinetics:** 1st/2nd Order Decay · Half-Life · Eyring · Arrhenius  
+**Electrochemistry:** Butler-Volmer · Tafel · Faraday's Mass Deposition  
+**Statistical Mechanics:** Boltzmann Probability · Partition Function · Fermi-Dirac · Bose-Einstein · Maxwell-Boltzmann Speed Distribution · Mean Thermal Energy · Einstein & Debye Specific Heat  
+**Special Relativity:** Lorentz Factor · Time Dilation · Length Contraction · Relativistic Momentum/Energy/KE · Velocity Addition · Mass-Energy Equivalence · Relativistic Doppler  
+**General Relativity:** Schwarzschild Radius · Gravitational Time Dilation · Gravitational Redshift · ISCO Radius  
+**Material Science:** Hooke's Stress · Thermal Expansion · Poisson Transverse Strain · Bulk & Shear Modulus · Fourier Heat Flux  
+**Quantum Chemistry:** Hydrogen Energy Levels · Rydberg Wavelength · de Broglie Wavelength · Heisenberg Δp · Particle-in-Box · Harmonic Oscillator · Morse Potential  
+**Gas Laws:** Ideal Gas (advanced) · Van der Waals · Compressibility Factor
+
+</details>
+
+<details>
+<summary><b>🧠 Neuromorphic Computing</b> — 880 LOC · 20 tests <sup>v13.0</sup></summary>
+
+**Neuron Models:** Leaky Integrate-and-Fire (LIF) · Izhikevich (20+ firing patterns) · Adaptive Exponential (AdEx)  
+**Synaptic Plasticity:** Hebbian Learning · Spike-Timing Dependent Plasticity (STDP) · BCM Theory · Homeostatic Scaling  
+**Spike Analysis:** Firing Rate · ISI Statistics (mean, CV) · Population Decode (vector) · Fano Factor · Spike Train Correlation · Spike Entropy · Burst Detection  
+**Network Models:** Watts-Strogatz Small-World · Barabási-Albert Scale-Free  
+**Reservoir Computing:** Echo State Network (ESN) forward pass  
+**Neuroevolution:** NEAT Compatibility Distance  
+**Oscillatory Dynamics:** Kuramoto Coupled Oscillators (phase synchronization)  
+**Utilities:** Sigmoid Activation · Mutual Information Estimation
+
+</details>
+
+<details>
+<summary><b>🧬 Evolutionary Computation</b> — 921 LOC · 14 tests <sup>v13.0</sup></summary>
+
+**Metaheuristics:** Differential Evolution (DE/rand/1/bin) · Particle Swarm Optimization (PSO) · CMA-ES (Covariance Matrix Adaptation) · Simulated Annealing  
+**Multi-Objective:** NSGA-II Non-Dominated Sorting · Crowding Distance  
+**Quality-Diversity:** Novelty Search (archive-based) · MAP-Elites (insert + coverage)  
+**Island Models:** Migration-based Island Model Evolution  
+**Coevolution:** Competitive Coevolution Fitness  
+**Self-Adaptation:** Adaptive Mutation Rate (F) · Adaptive Crossover Rate (CR)  
+**Analysis:** Fitness-Distance Correlation (FDC)  
+**Test Functions:** Sphere · Rastrigin · Rosenbrock · Ackley · Griewank
+
+</details>
+
 <br />
 
 ---
@@ -646,7 +733,7 @@ Every algorithm library benchmarked via Python FFI. These numbers **include** Py
 | ⚙️ Compiler | **18.6K** ops/s | `lex` | 46.3K |
 | 🕸️ Graph | **10.8K** ops/s | `is_bipartite` | 13.0K |
 
-> 74 benchmarks · 0 failures · 470 tests passing
+> 74 benchmarks · 0 failures · 634 tests passing
 
 <br />
 
@@ -701,10 +788,10 @@ cargo run -- lex examples/hello.sl
 
 ```
 vitalis/
-├── Cargo.toml                  # v9.0.0, Rust Edition 2024
+├── Cargo.toml                  # v13.0.0, Rust Edition 2024
 ├── src/
 │   ├── main.rs                 # CLI binary (vtc) with clap
-│   ├── lib.rs                  # Library root — 28 public modules
+│   ├── lib.rs                  # Library root — 38 public modules
 │   │
 │   │  ── Core Compiler (6 files, 6,968 LOC) ──
 │   ├── lexer.rs                # Logos zero-copy tokenizer (~70 tokens)
@@ -729,24 +816,34 @@ vitalis/
 │   ├── optimizer.rs            # Multi-pass optimization
 │   ├── simd_ops.rs             # SIMD-accelerated operations
 │   │
-│   │  ── Algorithm Libraries (19 modules, 12,138 LOC) ──
-│   ├── signal_processing.rs    # FFT, filters, windowing
-│   ├── crypto.rs               # SHA-256, HMAC, Base64, CRC
-│   ├── graph.rs                # BFS, Dijkstra, PageRank, SCC
-│   ├── string_algorithms.rs    # Levenshtein, KMP, Soundex
-│   ├── numerical.rs            # Linear algebra, integration
-│   ├── compression.rs          # RLE, Huffman, LZ77
-│   ├── probability.rs          # Distributions, correlation, tests
-│   ├── quantum.rs              # Quantum circuit simulator
-│   ├── quantum_math.rs         # Gamma, Bessel, quaternions, wavelets
-│   ├── advanced_math.rs        # Factorial, erf, Mandelbrot
-│   ├── science.rs              # 50+ physics/chemistry formulas
-│   ├── analytics.rs            # Time series, anomaly detection
-│   ├── security.rs             # Validation, injection detection
-│   └── scoring.rs              # Halstead, Elo, A/B testing
+│   │  ── Algorithm Libraries (24 modules, 16,354 LOC) ──
+│   ├── signal_processing.rs    # FFT, filters, windowing (550 LOC)
+│   ├── crypto.rs               # SHA-256, HMAC, Base64 (440 LOC)
+│   ├── graph.rs                # BFS, Dijkstra, PageRank (789 LOC)
+│   ├── string_algorithms.rs    # Levenshtein, KMP, Soundex (574 LOC)
+│   ├── numerical.rs            # Linear algebra, integration (709 LOC)
+│   ├── compression.rs          # RLE, Huffman, LZ77 (532 LOC)
+│   ├── probability.rs          # Distributions, correlation (653 LOC)
+│   ├── quantum.rs              # Quantum circuit simulator (813 LOC)
+│   ├── quantum_math.rs         # Gamma, Bessel, quaternions (1,004 LOC)
+│   ├── advanced_math.rs        # Factorial, erf, Mandelbrot (943 LOC)
+│   ├── science.rs              # 50+ physics/chemistry (504 LOC)
+│   ├── analytics.rs            # Time series, anomaly detection (662 LOC)
+│   ├── security.rs             # Validation, injection detection (421 LOC)
+│   ├── scoring.rs              # Halstead, Elo, A/B testing (470 LOC)
+│   ├── ml.rs                   # K-means, KNN, PCA, DBSCAN (580 LOC)
+│   ├── geometry.rs             # Convex hull, Welzl's (490 LOC)
+│   ├── sorting.rs              # QuickSort, RadixSort (380 LOC)
+│   ├── automata.rs             # Aho-Corasick, Bloom filter (440 LOC)
+│   ├── combinatorial.rs        # Knapsack, TSP, Simplex (470 LOC)
+│   ├── quantum_algorithms.rs   # DJ, Shor, VQE, Grover (988 LOC) ← v13
+│   ├── bioinformatics.rs       # Sequence alignment, SIR (784 LOC) ← v13
+│   ├── chemistry_advanced.rs   # Stat-mech, relativity (634 LOC) ← v13
+│   ├── neuromorphic.rs         # LIF, STDP, ESN (880 LOC) ← v13
+│   └── evolution_advanced.rs   # DE, PSO, CMA-ES, NSGA-II (921 LOC) ← v13
 │
 ├── python/
-│   └── vitalis.py              # Python wrapper — 3,600 LOC, 354 exports
+│   └── vitalis.py              # Python wrapper — 4,906 LOC, 482 exports
 ├── examples/                   # 8 example .sl programs
 ├── docs/
 │   ├── LANGUAGE_GUIDE.md       # Complete language reference
@@ -762,18 +859,19 @@ vitalis/
 
 ---
 
-## 📈 v0.1 → v9.0 Growth
+## 📈 v0.1 → v13.0 Growth
 
-| Metric | v0.1 | v9.0 | Growth |
-|--------|-----:|-----:|-------:|
-| Source files | 17 | 31 | +82% |
-| Rust LOC | ~13,500 | 24,769 | +83% |
-| Tests | 234 | 470 | +101% |
-| Stdlib functions | 97 | 99 | +2 |
-| Python wrapper LOC | 930 | 2,500 | +169% |
-| Python `__all__` exports | ~50 | 304 | +508% |
-| Algorithm modules | 0 | 14 | — |
-| Hot-path ops | 44 | 80 | +82% |
+| Metric | v0.1 | v9.0 | v10.0 | **v13.0** | Growth |
+|--------|-----:|-----:|------:|----------:|-------:|
+| Source files | 17 | 31 | 36 | **41** | +141% |
+| Rust LOC | ~13,500 | 24,769 | 28,412 | **32,638** | +142% |
+| Tests | 234 | 470 | 542 | **634** | +171% |
+| Stdlib functions | 97 | 99 | 99 | **99** | +2 |
+| Python wrapper LOC | 930 | 2,500 | 3,600 | **4,906** | +428% |
+| Python `__all__` exports | ~50 | 304 | 354 | **482** | +864% |
+| Algorithm modules | 0 | 14 | 19 | **24** | — |
+| Hot-path ops | 44 | 80 | 80 | **80** | +82% |
+| Domains covered | 0 | 8 | 13 | **18** | — |
 
 <br />
 
@@ -790,7 +888,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. PRs welcome.
 | 🔧 Language features | Closures, traits, generics | Core language capability |
 | 🖥️ Platform | Linux/macOS CI testing | Cross-platform reliability |
 | ✏️ Editor support | VS Code extension, syntax highlighting | Developer experience |
-| 📝 Docs | Tutorials, cookbook examples | Adoption |
+| 🧬 Biology/Chemistry | More bioinformatics algorithms | Domain expansion |
+| 🧠 Neuromorphic | Cortical column models | Brain-inspired computing |
 | 📦 Package manager | `.sl` dependency system | Ecosystem |
 
 <br />

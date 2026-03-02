@@ -3474,6 +3474,1231 @@ def opt_tsp_nearest_neighbor(dist_matrix, n, start=0):
 
 
 # ============================================================================
+# v13.0: Quantum Algorithms
+# ============================================================================
+
+_lib.vitalis_deutsch_jozsa.argtypes = [ctypes.c_uint64, ctypes.c_size_t]
+_lib.vitalis_deutsch_jozsa.restype = ctypes.c_int32
+
+_lib.vitalis_bernstein_vazirani.argtypes = [ctypes.c_uint64, ctypes.c_size_t]
+_lib.vitalis_bernstein_vazirani.restype = ctypes.c_uint64
+
+_lib.vitalis_qpe.argtypes = [ctypes.c_double, ctypes.c_size_t]
+_lib.vitalis_qpe.restype = ctypes.c_double
+
+_lib.vitalis_shor_factor.argtypes = [ctypes.c_uint64, ctypes.c_uint64]
+_lib.vitalis_shor_factor.restype = ctypes.c_uint64
+
+_lib.vitalis_vqe_2qubit.argtypes = [
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_size_t,
+]
+_lib.vitalis_vqe_2qubit.restype = ctypes.c_double
+
+_lib.vitalis_qaoa_maxcut.argtypes = [
+    ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t), ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+]
+_lib.vitalis_qaoa_maxcut.restype = ctypes.c_double
+
+_lib.vitalis_quantum_walk_line.argtypes = [ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_quantum_walk_line.restype = ctypes.c_int32
+
+_lib.vitalis_quantum_teleport.argtypes = [
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint64,
+]
+_lib.vitalis_quantum_teleport.restype = ctypes.c_double
+
+_lib.vitalis_qec_bitflip.argtypes = [
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_int32,
+]
+_lib.vitalis_qec_bitflip.restype = ctypes.c_double
+
+_lib.vitalis_bb84_qber.argtypes = [ctypes.c_size_t, ctypes.c_int32, ctypes.c_uint64]
+_lib.vitalis_bb84_qber.restype = ctypes.c_double
+
+_lib.vitalis_simon.argtypes = [ctypes.c_uint64, ctypes.c_size_t]
+_lib.vitalis_simon.restype = ctypes.c_uint64
+
+_lib.vitalis_grover_search.argtypes = [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_uint64]
+_lib.vitalis_grover_search.restype = ctypes.c_int64
+
+
+def quantum_deutsch_jozsa(oracle, n):
+    """Deutsch-Jozsa algorithm. oracle=bitmask of f(x), n=input qubits. Returns 1=constant, 0=balanced."""
+    return _lib.vitalis_deutsch_jozsa(oracle, n)
+
+def quantum_bernstein_vazirani(secret, n):
+    """Bernstein-Vazirani: recover hidden string s from f(x)=s·x mod 2. Returns recovered secret."""
+    return _lib.vitalis_bernstein_vazirani(secret, n)
+
+def quantum_phase_estimation(phase_fraction, precision_bits):
+    """Quantum Phase Estimation. Returns estimated phase (0.0 to 1.0)."""
+    return _lib.vitalis_qpe(phase_fraction, precision_bits)
+
+def quantum_shor_factor(n_val, seed=42):
+    """Shor's algorithm: factor a semiprime. Returns a non-trivial factor or 0."""
+    return _lib.vitalis_shor_factor(n_val, seed)
+
+def quantum_vqe(c_zz, c_z0, c_z1, c_x0, c_x1, initial_params, n_layers, lr=0.01, max_iter=100):
+    """Variational Quantum Eigensolver for 2-qubit Hamiltonian. Returns ground state energy."""
+    np = n_layers * 4
+    params = (ctypes.c_double * np)(*initial_params[:np])
+    return _lib.vitalis_vqe_2qubit(c_zz, c_z0, c_z1, c_x0, c_x1, params, n_layers, lr, max_iter)
+
+def quantum_qaoa_maxcut(n_vertices, edges, gamma, beta, p=1):
+    """QAOA for MaxCut. edges=[(u,v),...], gamma/beta=[p]. Returns expected cut value."""
+    n_edges = len(edges)
+    flat_edges = (ctypes.c_size_t * (n_edges * 2))(*[v for e in edges for v in e])
+    g = (ctypes.c_double * p)(*gamma[:p])
+    b = (ctypes.c_double * p)(*beta[:p])
+    return _lib.vitalis_qaoa_maxcut(n_vertices, flat_edges, n_edges, g, b, p)
+
+def quantum_walk_line(n_positions, steps):
+    """Discrete quantum walk on a line. Returns probability distribution."""
+    probs = (ctypes.c_double * n_positions)()
+    _lib.vitalis_quantum_walk_line(n_positions, steps, probs)
+    return list(probs)
+
+def quantum_teleport(alpha_re, alpha_im, beta_re, beta_im, seed=42):
+    """Quantum teleportation. Returns fidelity (ideally 1.0)."""
+    return _lib.vitalis_quantum_teleport(alpha_re, alpha_im, beta_re, beta_im, seed)
+
+def quantum_qec_bitflip(alpha_re, alpha_im, beta_re, beta_im, error_qubit=-1):
+    """3-qubit bit-flip error correction. error_qubit=-1 for none. Returns fidelity."""
+    return _lib.vitalis_qec_bitflip(alpha_re, alpha_im, beta_re, beta_im, error_qubit)
+
+def quantum_bb84(n_bits, eavesdrop=False, seed=42):
+    """BB84 QKD simulation. Returns Quantum Bit Error Rate."""
+    return _lib.vitalis_bb84_qber(n_bits, 1 if eavesdrop else 0, seed)
+
+def quantum_simon(secret, n):
+    """Simon's algorithm: find hidden period s. Returns recovered secret."""
+    return _lib.vitalis_simon(secret, n)
+
+def quantum_grover(n, target, seed=42):
+    """Grover's search: find marked item in 2^n items. Returns found index or -1."""
+    return _lib.vitalis_grover_search(n, target, seed)
+
+
+# ============================================================================
+# v13.0: Bioinformatics
+# ============================================================================
+
+_lib.vitalis_bio_gc_content.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_gc_content.restype = ctypes.c_double
+
+_lib.vitalis_bio_dna_complement.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_dna_complement.restype = ctypes.c_int32
+
+_lib.vitalis_bio_reverse_complement.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_reverse_complement.restype = ctypes.c_int32
+
+_lib.vitalis_bio_transcribe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_transcribe.restype = ctypes.c_int32
+
+_lib.vitalis_bio_nucleotide_freq.argtypes = [ctypes.c_char_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint64)]
+_lib.vitalis_bio_nucleotide_freq.restype = ctypes.c_int32
+
+_lib.vitalis_bio_translate.argtypes = [ctypes.c_char_p, ctypes.c_size_t, ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_translate.restype = ctypes.c_int32
+
+_lib.vitalis_bio_needleman_wunsch.argtypes = [
+    ctypes.c_char_p, ctypes.c_size_t, ctypes.c_char_p, ctypes.c_size_t,
+    ctypes.c_int32, ctypes.c_int32, ctypes.c_int32,
+]
+_lib.vitalis_bio_needleman_wunsch.restype = ctypes.c_int32
+
+_lib.vitalis_bio_smith_waterman.argtypes = [
+    ctypes.c_char_p, ctypes.c_size_t, ctypes.c_char_p, ctypes.c_size_t,
+    ctypes.c_int32, ctypes.c_int32, ctypes.c_int32,
+]
+_lib.vitalis_bio_smith_waterman.restype = ctypes.c_int32
+
+_lib.vitalis_bio_hamming_distance.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_hamming_distance.restype = ctypes.c_int32
+
+_lib.vitalis_bio_edit_distance.argtypes = [ctypes.c_char_p, ctypes.c_size_t, ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_edit_distance.restype = ctypes.c_int32
+
+_lib.vitalis_bio_kmer_count.argtypes = [ctypes.c_char_p, ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_bio_kmer_count.restype = ctypes.c_uint64
+
+_lib.vitalis_bio_linguistic_complexity.argtypes = [ctypes.c_char_p, ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_bio_linguistic_complexity.restype = ctypes.c_double
+
+_lib.vitalis_bio_hardy_weinberg.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_bio_hardy_weinberg.restype = ctypes.c_int32
+
+_lib.vitalis_bio_lotka_volterra.argtypes = [
+    ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_bio_lotka_volterra.restype = ctypes.c_int32
+
+_lib.vitalis_bio_sir_model.argtypes = [
+    ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_bio_sir_model.restype = ctypes.c_int32
+
+_lib.vitalis_bio_seir_model.argtypes = [
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_bio_seir_model.restype = ctypes.c_int32
+
+_lib.vitalis_bio_r0.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_bio_r0.restype = ctypes.c_double
+
+_lib.vitalis_bio_michaelis_menten.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_bio_michaelis_menten.restype = ctypes.c_double
+
+_lib.vitalis_bio_competitive_inhibition.argtypes = [
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+]
+_lib.vitalis_bio_competitive_inhibition.restype = ctypes.c_double
+
+_lib.vitalis_bio_hill_equation.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_bio_hill_equation.restype = ctypes.c_double
+
+_lib.vitalis_bio_jukes_cantor.argtypes = [ctypes.c_double]
+_lib.vitalis_bio_jukes_cantor.restype = ctypes.c_double
+
+_lib.vitalis_bio_kimura_distance.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_bio_kimura_distance.restype = ctypes.c_double
+
+_lib.vitalis_bio_protein_mw.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_protein_mw.restype = ctypes.c_double
+
+_lib.vitalis_bio_gravy.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
+_lib.vitalis_bio_gravy.restype = ctypes.c_double
+
+_lib.vitalis_bio_logistic_growth.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_bio_logistic_growth.restype = ctypes.c_double
+
+_lib.vitalis_bio_wright_fisher.argtypes = [ctypes.c_double, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_uint64]
+_lib.vitalis_bio_wright_fisher.restype = ctypes.c_double
+
+_lib.vitalis_bio_shannon_diversity.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_bio_shannon_diversity.restype = ctypes.c_double
+
+_lib.vitalis_bio_simpson_diversity.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_bio_simpson_diversity.restype = ctypes.c_double
+
+
+def bio_gc_content(seq):
+    """GC content ratio (0.0-1.0) of a DNA sequence."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    return _lib.vitalis_bio_gc_content(s, len(s))
+
+def bio_dna_complement(seq):
+    """DNA complement (A↔T, G↔C)."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    out = ctypes.create_string_buffer(len(s))
+    _lib.vitalis_bio_dna_complement(s, out, len(s))
+    return out.value.decode()
+
+def bio_reverse_complement(seq):
+    """Reverse complement of a DNA sequence."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    out = ctypes.create_string_buffer(len(s))
+    _lib.vitalis_bio_reverse_complement(s, out, len(s))
+    return out.value.decode()
+
+def bio_transcribe(seq):
+    """Transcribe DNA to RNA (T→U)."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    out = ctypes.create_string_buffer(len(s))
+    _lib.vitalis_bio_transcribe(s, out, len(s))
+    return out.value.decode()
+
+def bio_nucleotide_freq(seq):
+    """Nucleotide frequencies. Returns dict {A, C, G, T}."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    counts = (ctypes.c_uint64 * 4)()
+    _lib.vitalis_bio_nucleotide_freq(s, len(s), counts)
+    return {"A": counts[0], "C": counts[1], "G": counts[2], "T": counts[3]}
+
+def bio_translate(seq):
+    """Translate DNA/RNA to amino acid sequence."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    out_cap = len(s) // 3 + 1
+    out = ctypes.create_string_buffer(out_cap)
+    n = _lib.vitalis_bio_translate(s, len(s), out, out_cap)
+    return out.value.decode() if n >= 0 else ""
+
+def bio_needleman_wunsch(seq1, seq2, match_score=1, mismatch_penalty=-1, gap_penalty=-2):
+    """Needleman-Wunsch global alignment score."""
+    s1 = seq1.encode() if isinstance(seq1, str) else seq1
+    s2 = seq2.encode() if isinstance(seq2, str) else seq2
+    return _lib.vitalis_bio_needleman_wunsch(s1, len(s1), s2, len(s2), match_score, mismatch_penalty, gap_penalty)
+
+def bio_smith_waterman(seq1, seq2, match_score=2, mismatch_penalty=-1, gap_penalty=-1):
+    """Smith-Waterman local alignment score."""
+    s1 = seq1.encode() if isinstance(seq1, str) else seq1
+    s2 = seq2.encode() if isinstance(seq2, str) else seq2
+    return _lib.vitalis_bio_smith_waterman(s1, len(s1), s2, len(s2), match_score, mismatch_penalty, gap_penalty)
+
+def bio_hamming_distance(seq1, seq2):
+    """Hamming distance between two equal-length sequences."""
+    s1 = seq1.encode() if isinstance(seq1, str) else seq1
+    s2 = seq2.encode() if isinstance(seq2, str) else seq2
+    return _lib.vitalis_bio_hamming_distance(s1, s2, len(s1))
+
+def bio_edit_distance(seq1, seq2):
+    """Edit distance (Levenshtein) between sequences."""
+    s1 = seq1.encode() if isinstance(seq1, str) else seq1
+    s2 = seq2.encode() if isinstance(seq2, str) else seq2
+    return _lib.vitalis_bio_edit_distance(s1, len(s1), s2, len(s2))
+
+def bio_kmer_count(seq, k):
+    """Count distinct k-mers in a sequence."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    return _lib.vitalis_bio_kmer_count(s, len(s), k)
+
+def bio_linguistic_complexity(seq, k):
+    """Linguistic complexity: ratio of observed k-mers to possible."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    return _lib.vitalis_bio_linguistic_complexity(s, len(s), k)
+
+def bio_hardy_weinberg(p):
+    """Hardy-Weinberg equilibrium genotype frequencies. Returns (p², 2pq, q²)."""
+    freqs = (ctypes.c_double * 3)()
+    _lib.vitalis_bio_hardy_weinberg(p, freqs)
+    return list(freqs)
+
+def bio_lotka_volterra(prey0, pred0, alpha, beta, delta, gamma, dt, steps):
+    """Lotka-Volterra predator-prey simulation. Returns (prey_series, predator_series)."""
+    prey = (ctypes.c_double * (steps + 1))()
+    pred = (ctypes.c_double * (steps + 1))()
+    _lib.vitalis_bio_lotka_volterra(prey0, pred0, alpha, beta, delta, gamma, dt, steps, prey, pred)
+    return list(prey), list(pred)
+
+def bio_sir_model(s0, i0, r0, beta, gamma_rate, dt, steps):
+    """SIR epidemic model. Returns list of (S, I, R) tuples."""
+    out = (ctypes.c_double * ((steps + 1) * 3))()
+    _lib.vitalis_bio_sir_model(s0, i0, r0, beta, gamma_rate, dt, steps, out)
+    return [(out[i*3], out[i*3+1], out[i*3+2]) for i in range(steps + 1)]
+
+def bio_seir_model(s0, e0, i0, r0, beta, sigma, gamma_rate, dt, steps):
+    """SEIR epidemic model. Returns list of (S, E, I, R) tuples."""
+    out = (ctypes.c_double * ((steps + 1) * 4))()
+    _lib.vitalis_bio_seir_model(s0, e0, i0, r0, beta, sigma, gamma_rate, dt, steps, out)
+    return [(out[i*4], out[i*4+1], out[i*4+2], out[i*4+3]) for i in range(steps + 1)]
+
+def bio_r0(beta, gamma_rate):
+    """Basic reproduction number R₀ = β / γ."""
+    return _lib.vitalis_bio_r0(beta, gamma_rate)
+
+def bio_michaelis_menten(substrate, vmax, km):
+    """Michaelis-Menten enzyme kinetics: v = Vmax*[S]/(Km+[S])."""
+    return _lib.vitalis_bio_michaelis_menten(substrate, vmax, km)
+
+def bio_competitive_inhibition(substrate, inhibitor, vmax, km, ki):
+    """Competitive enzyme inhibition."""
+    return _lib.vitalis_bio_competitive_inhibition(substrate, inhibitor, vmax, km, ki)
+
+def bio_hill_equation(substrate, vmax, k, n):
+    """Hill equation: cooperative binding kinetics."""
+    return _lib.vitalis_bio_hill_equation(substrate, vmax, k, n)
+
+def bio_jukes_cantor(p):
+    """Jukes-Cantor evolutionary distance from fraction of differing sites."""
+    return _lib.vitalis_bio_jukes_cantor(p)
+
+def bio_kimura_distance(p_transitions, q_transversions):
+    """Kimura 2-parameter evolutionary distance."""
+    return _lib.vitalis_bio_kimura_distance(p_transitions, q_transversions)
+
+def bio_protein_mw(seq):
+    """Protein molecular weight from amino acid sequence (Da)."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    return _lib.vitalis_bio_protein_mw(s, len(s))
+
+def bio_gravy(seq):
+    """GRAVY (Grand Average of Hydropathicity) index."""
+    s = seq.encode() if isinstance(seq, str) else seq
+    return _lib.vitalis_bio_gravy(s, len(s))
+
+def bio_logistic_growth(p0, r, k, t):
+    """Logistic growth model: P(t) = K / (1 + ((K-P0)/P0)*exp(-rt))."""
+    return _lib.vitalis_bio_logistic_growth(p0, r, k, t)
+
+def bio_wright_fisher(initial_freq, pop_size, generations, seed=42):
+    """Wright-Fisher genetic drift simulation. Returns final allele frequency."""
+    return _lib.vitalis_bio_wright_fisher(initial_freq, pop_size, generations, seed)
+
+def bio_shannon_diversity(abundances):
+    """Shannon diversity index H' = -Σ(pᵢ * ln(pᵢ))."""
+    n = len(abundances)
+    a = (ctypes.c_double * n)(*abundances)
+    return _lib.vitalis_bio_shannon_diversity(a, n)
+
+def bio_simpson_diversity(abundances):
+    """Simpson's diversity index D = 1 - Σ(pᵢ²)."""
+    n = len(abundances)
+    a = (ctypes.c_double * n)(*abundances)
+    return _lib.vitalis_bio_simpson_diversity(a, n)
+
+
+# ============================================================================
+# v13.0: Advanced Chemistry & Physics
+# ============================================================================
+
+# Acid-base
+_lib.vitalis_chem_henderson_hasselbalch.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_henderson_hasselbalch.restype = ctypes.c_double
+_lib.vitalis_chem_buffer_capacity.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_buffer_capacity.restype = ctypes.c_double
+_lib.vitalis_chem_ionization_fraction.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_ionization_fraction.restype = ctypes.c_double
+
+# Equilibrium
+_lib.vitalis_chem_keq_from_gibbs.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_keq_from_gibbs.restype = ctypes.c_double
+_lib.vitalis_chem_gibbs_free_energy.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_gibbs_free_energy.restype = ctypes.c_double
+_lib.vitalis_chem_vant_hoff.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_vant_hoff.restype = ctypes.c_double
+_lib.vitalis_chem_clausius_clapeyron.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_clausius_clapeyron.restype = ctypes.c_double
+
+# Kinetics
+_lib.vitalis_chem_first_order.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_first_order.restype = ctypes.c_double
+_lib.vitalis_chem_second_order.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_second_order.restype = ctypes.c_double
+_lib.vitalis_chem_half_life_first_order.argtypes = [ctypes.c_double]
+_lib.vitalis_chem_half_life_first_order.restype = ctypes.c_double
+_lib.vitalis_chem_eyring.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_eyring.restype = ctypes.c_double
+_lib.vitalis_chem_arrhenius.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_arrhenius.restype = ctypes.c_double
+
+# Electrochemistry
+_lib.vitalis_chem_butler_volmer.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_butler_volmer.restype = ctypes.c_double
+_lib.vitalis_chem_tafel.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_tafel.restype = ctypes.c_double
+_lib.vitalis_chem_faraday_mass.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_faraday_mass.restype = ctypes.c_double
+
+# Statistical Mechanics
+_lib.vitalis_chem_boltzmann_prob.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_boltzmann_prob.restype = ctypes.c_double
+_lib.vitalis_chem_partition_function.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double]
+_lib.vitalis_chem_partition_function.restype = ctypes.c_double
+_lib.vitalis_chem_fermi_dirac.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_fermi_dirac.restype = ctypes.c_double
+_lib.vitalis_chem_bose_einstein.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_bose_einstein.restype = ctypes.c_double
+_lib.vitalis_chem_maxwell_boltzmann_speed.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_maxwell_boltzmann_speed.restype = ctypes.c_double
+_lib.vitalis_chem_mean_thermal_energy.argtypes = [ctypes.c_double]
+_lib.vitalis_chem_mean_thermal_energy.restype = ctypes.c_double
+_lib.vitalis_chem_einstein_specific_heat.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_einstein_specific_heat.restype = ctypes.c_double
+_lib.vitalis_chem_debye_specific_heat.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_size_t]
+_lib.vitalis_chem_debye_specific_heat.restype = ctypes.c_double
+
+# Special Relativity
+_lib.vitalis_phys_lorentz_factor.argtypes = [ctypes.c_double]
+_lib.vitalis_phys_lorentz_factor.restype = ctypes.c_double
+_lib.vitalis_phys_time_dilation.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_time_dilation.restype = ctypes.c_double
+_lib.vitalis_phys_length_contraction.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_length_contraction.restype = ctypes.c_double
+_lib.vitalis_phys_relativistic_momentum.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_relativistic_momentum.restype = ctypes.c_double
+_lib.vitalis_phys_relativistic_energy.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_relativistic_energy.restype = ctypes.c_double
+_lib.vitalis_phys_relativistic_kinetic_energy.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_relativistic_kinetic_energy.restype = ctypes.c_double
+_lib.vitalis_phys_velocity_addition.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_velocity_addition.restype = ctypes.c_double
+_lib.vitalis_phys_mass_energy.argtypes = [ctypes.c_double]
+_lib.vitalis_phys_mass_energy.restype = ctypes.c_double
+_lib.vitalis_phys_relativistic_doppler.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_relativistic_doppler.restype = ctypes.c_double
+
+# General Relativity
+_lib.vitalis_phys_schwarzschild_radius.argtypes = [ctypes.c_double]
+_lib.vitalis_phys_schwarzschild_radius.restype = ctypes.c_double
+_lib.vitalis_phys_gravitational_time_dilation.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_gravitational_time_dilation.restype = ctypes.c_double
+_lib.vitalis_phys_gravitational_redshift.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_phys_gravitational_redshift.restype = ctypes.c_double
+_lib.vitalis_phys_isco_radius.argtypes = [ctypes.c_double]
+_lib.vitalis_phys_isco_radius.restype = ctypes.c_double
+
+# Material Science
+_lib.vitalis_mat_hooke_stress.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_mat_hooke_stress.restype = ctypes.c_double
+_lib.vitalis_mat_thermal_expansion.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_mat_thermal_expansion.restype = ctypes.c_double
+_lib.vitalis_mat_poisson_transverse_strain.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_mat_poisson_transverse_strain.restype = ctypes.c_double
+_lib.vitalis_mat_bulk_modulus.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_mat_bulk_modulus.restype = ctypes.c_double
+_lib.vitalis_mat_shear_modulus.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_mat_shear_modulus.restype = ctypes.c_double
+_lib.vitalis_mat_fourier_heat_flux.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_mat_fourier_heat_flux.restype = ctypes.c_double
+
+# Quantum Chemistry
+_lib.vitalis_chem_hydrogen_energy.argtypes = [ctypes.c_int32]
+_lib.vitalis_chem_hydrogen_energy.restype = ctypes.c_double
+_lib.vitalis_chem_rydberg_wavelength.argtypes = [ctypes.c_int32, ctypes.c_int32]
+_lib.vitalis_chem_rydberg_wavelength.restype = ctypes.c_double
+_lib.vitalis_chem_de_broglie.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_de_broglie.restype = ctypes.c_double
+_lib.vitalis_chem_heisenberg_min_dp.argtypes = [ctypes.c_double]
+_lib.vitalis_chem_heisenberg_min_dp.restype = ctypes.c_double
+_lib.vitalis_chem_particle_in_box.argtypes = [ctypes.c_int32, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_particle_in_box.restype = ctypes.c_double
+_lib.vitalis_chem_harmonic_oscillator_energy.argtypes = [ctypes.c_int32, ctypes.c_double]
+_lib.vitalis_chem_harmonic_oscillator_energy.restype = ctypes.c_double
+_lib.vitalis_chem_morse_potential.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_morse_potential.restype = ctypes.c_double
+
+# Gas Laws
+_lib.vitalis_chem_ideal_gas_pressure.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_ideal_gas_pressure.restype = ctypes.c_double
+_lib.vitalis_chem_van_der_waals_pressure.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_van_der_waals_pressure.restype = ctypes.c_double
+_lib.vitalis_chem_compressibility.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_chem_compressibility.restype = ctypes.c_double
+
+
+def chem_henderson_hasselbalch(pka, conj_base, acid):
+    """Henderson-Hasselbalch equation: pH = pKa + log10([A⁻]/[HA])."""
+    return _lib.vitalis_chem_henderson_hasselbalch(pka, conj_base, acid)
+
+def chem_buffer_capacity(c_total, ka, h_conc):
+    """Buffer capacity β."""
+    return _lib.vitalis_chem_buffer_capacity(c_total, ka, h_conc)
+
+def chem_ionization_fraction(ka, h_conc):
+    """Fraction of acid ionized: α = Ka / (Ka + [H⁺])."""
+    return _lib.vitalis_chem_ionization_fraction(ka, h_conc)
+
+def chem_keq_from_gibbs(delta_g, temperature):
+    """Equilibrium constant from Gibbs free energy: K = exp(-ΔG/RT)."""
+    return _lib.vitalis_chem_keq_from_gibbs(delta_g, temperature)
+
+def chem_gibbs_free_energy(delta_h, temperature, delta_s):
+    """Gibbs free energy: ΔG = ΔH - TΔS."""
+    return _lib.vitalis_chem_gibbs_free_energy(delta_h, temperature, delta_s)
+
+def chem_vant_hoff(k1, delta_h, t1, t2):
+    """Van't Hoff equation: predict K at new temperature."""
+    return _lib.vitalis_chem_vant_hoff(k1, delta_h, t1, t2)
+
+def chem_clausius_clapeyron(p1, delta_h_vap, t1, t2):
+    """Clausius-Clapeyron equation: predict vapor pressure at T2."""
+    return _lib.vitalis_chem_clausius_clapeyron(p1, delta_h_vap, t1, t2)
+
+def chem_first_order(a0, k, t):
+    """First-order reaction: [A](t) = [A]₀ * e^{-kt}."""
+    return _lib.vitalis_chem_first_order(a0, k, t)
+
+def chem_second_order(a0, k, t):
+    """Second-order reaction: [A](t) = [A]₀ / (1 + [A]₀*k*t)."""
+    return _lib.vitalis_chem_second_order(a0, k, t)
+
+def chem_half_life_first_order(k):
+    """First-order half-life: t½ = ln(2)/k."""
+    return _lib.vitalis_chem_half_life_first_order(k)
+
+def chem_eyring(temperature, delta_g_barrier):
+    """Eyring equation: transition state theory rate constant."""
+    return _lib.vitalis_chem_eyring(temperature, delta_g_barrier)
+
+def chem_arrhenius_advanced(a_factor, ea, temperature):
+    """Arrhenius equation: k = A * exp(-Ea/RT)."""
+    return _lib.vitalis_chem_arrhenius(a_factor, ea, temperature)
+
+def chem_butler_volmer(j0, alpha_a, alpha_c, eta, temperature):
+    """Butler-Volmer equation for electrode kinetics."""
+    return _lib.vitalis_chem_butler_volmer(j0, alpha_a, alpha_c, eta, temperature)
+
+def chem_tafel(a, b, j, j0):
+    """Tafel equation: η = a + b*log10(|j/j₀|)."""
+    return _lib.vitalis_chem_tafel(a, b, j, j0)
+
+def chem_faraday_mass(current, time, molar_mass, n_electrons):
+    """Faradaic mass deposition: m = (I*t*M)/(n*F)."""
+    return _lib.vitalis_chem_faraday_mass(current, time, molar_mass, n_electrons)
+
+def chem_boltzmann_prob(energy, temperature, partition_fn):
+    """Boltzmann probability: P(E) ∝ exp(-E/kBT)/Z."""
+    return _lib.vitalis_chem_boltzmann_prob(energy, temperature, partition_fn)
+
+def chem_partition_function(energies, temperature):
+    """Partition function: Z = Σ exp(-Eᵢ/kBT)."""
+    n = len(energies)
+    e = (ctypes.c_double * n)(*energies)
+    return _lib.vitalis_chem_partition_function(e, n, temperature)
+
+def chem_fermi_dirac(energy, mu, temperature):
+    """Fermi-Dirac distribution: f(E) = 1/(exp((E-μ)/kBT)+1)."""
+    return _lib.vitalis_chem_fermi_dirac(energy, mu, temperature)
+
+def chem_bose_einstein(energy, mu, temperature):
+    """Bose-Einstein distribution: n(E) = 1/(exp((E-μ)/kBT)-1)."""
+    return _lib.vitalis_chem_bose_einstein(energy, mu, temperature)
+
+def chem_maxwell_boltzmann_speed(velocity, mass, temperature):
+    """Maxwell-Boltzmann speed distribution f(v)."""
+    return _lib.vitalis_chem_maxwell_boltzmann_speed(velocity, mass, temperature)
+
+def chem_mean_thermal_energy(temperature):
+    """Mean thermal energy: ⟨E⟩ = (3/2)kBT."""
+    return _lib.vitalis_chem_mean_thermal_energy(temperature)
+
+def chem_einstein_specific_heat(einstein_temp, temperature):
+    """Einstein model of specific heat."""
+    return _lib.vitalis_chem_einstein_specific_heat(einstein_temp, temperature)
+
+def chem_debye_specific_heat(debye_temp, temperature, n_steps=500):
+    """Debye model of specific heat."""
+    return _lib.vitalis_chem_debye_specific_heat(debye_temp, temperature, n_steps)
+
+def phys_lorentz_factor(velocity):
+    """Lorentz factor: γ = 1/√(1 - v²/c²)."""
+    return _lib.vitalis_phys_lorentz_factor(velocity)
+
+def phys_time_dilation(proper_time, velocity):
+    """Time dilation: Δt' = γΔt₀."""
+    return _lib.vitalis_phys_time_dilation(proper_time, velocity)
+
+def phys_length_contraction(proper_length, velocity):
+    """Length contraction: L' = L₀/γ."""
+    return _lib.vitalis_phys_length_contraction(proper_length, velocity)
+
+def phys_relativistic_momentum(mass, velocity):
+    """Relativistic momentum: p = γmv."""
+    return _lib.vitalis_phys_relativistic_momentum(mass, velocity)
+
+def phys_relativistic_energy(mass, velocity):
+    """Relativistic energy: E = γmc²."""
+    return _lib.vitalis_phys_relativistic_energy(mass, velocity)
+
+def phys_relativistic_kinetic_energy(mass, velocity):
+    """Relativistic kinetic energy: K = (γ-1)mc²."""
+    return _lib.vitalis_phys_relativistic_kinetic_energy(mass, velocity)
+
+def phys_velocity_addition(u, v):
+    """Relativistic velocity addition: u' = (u+v)/(1+uv/c²)."""
+    return _lib.vitalis_phys_velocity_addition(u, v)
+
+def phys_mass_energy_equiv(mass):
+    """Mass-energy equivalence: E = mc²."""
+    return _lib.vitalis_phys_mass_energy(mass)
+
+def phys_relativistic_doppler(f0, velocity):
+    """Relativistic Doppler: f' = f₀√((1+β)/(1-β))."""
+    return _lib.vitalis_phys_relativistic_doppler(f0, velocity)
+
+def phys_schwarzschild_radius_adv(mass):
+    """Schwarzschild radius: rs = 2GM/c²."""
+    return _lib.vitalis_phys_schwarzschild_radius(mass)
+
+def phys_gravitational_time_dilation(proper_time, mass, radius):
+    """Gravitational time dilation near massive body."""
+    return _lib.vitalis_phys_gravitational_time_dilation(proper_time, mass, radius)
+
+def phys_gravitational_redshift(mass, radius):
+    """Gravitational redshift: z = 1/√(1-rs/r) - 1."""
+    return _lib.vitalis_phys_gravitational_redshift(mass, radius)
+
+def phys_isco_radius(mass):
+    """Innermost Stable Circular Orbit: r_isco = 6GM/c²."""
+    return _lib.vitalis_phys_isco_radius(mass)
+
+def mat_hooke_stress(youngs_modulus, strain):
+    """Hooke's law: σ = E * ε."""
+    return _lib.vitalis_mat_hooke_stress(youngs_modulus, strain)
+
+def mat_thermal_expansion(length, alpha, delta_t):
+    """Thermal expansion: ΔL = L₀ * α * ΔT."""
+    return _lib.vitalis_mat_thermal_expansion(length, alpha, delta_t)
+
+def mat_poisson_transverse_strain(axial_strain, poisson_ratio):
+    """Transverse strain from Poisson's ratio."""
+    return _lib.vitalis_mat_poisson_transverse_strain(axial_strain, poisson_ratio)
+
+def mat_bulk_modulus(youngs_modulus, poisson_ratio):
+    """Bulk modulus: K = E/(3(1-2ν))."""
+    return _lib.vitalis_mat_bulk_modulus(youngs_modulus, poisson_ratio)
+
+def mat_shear_modulus(youngs_modulus, poisson_ratio):
+    """Shear modulus: G = E/(2(1+ν))."""
+    return _lib.vitalis_mat_shear_modulus(youngs_modulus, poisson_ratio)
+
+def mat_fourier_heat_flux(k, dt_dx):
+    """Fourier heat flux: q = -k * dT/dx."""
+    return _lib.vitalis_mat_fourier_heat_flux(k, dt_dx)
+
+def chem_hydrogen_energy(n):
+    """Hydrogen atom energy level: En = -13.6/n² eV."""
+    return _lib.vitalis_chem_hydrogen_energy(n)
+
+def chem_rydberg_wavelength(n1, n2):
+    """Rydberg formula wavelength for hydrogen transitions."""
+    return _lib.vitalis_chem_rydberg_wavelength(n1, n2)
+
+def chem_de_broglie_wavelength(mass, velocity):
+    """De Broglie wavelength: λ = h/(mv)."""
+    return _lib.vitalis_chem_de_broglie(mass, velocity)
+
+def chem_heisenberg_min_dp(delta_x):
+    """Heisenberg minimum Δp given Δx."""
+    return _lib.vitalis_chem_heisenberg_min_dp(delta_x)
+
+def chem_particle_in_box(n, mass, length):
+    """Particle in a box energy: En = n²h²/(8mL²)."""
+    return _lib.vitalis_chem_particle_in_box(n, mass, length)
+
+def chem_harmonic_oscillator_energy(n, omega):
+    """Quantum harmonic oscillator: En = ℏω(n + ½)."""
+    return _lib.vitalis_chem_harmonic_oscillator_energy(n, omega)
+
+def chem_morse_potential(r, r_eq, de, a):
+    """Morse potential: V(r) = De*(1-exp(-a(r-re)))²."""
+    return _lib.vitalis_chem_morse_potential(r, r_eq, de, a)
+
+def chem_ideal_gas_pressure_adv(n_moles, volume, temperature):
+    """Ideal gas law: PV = nRT. Returns pressure."""
+    return _lib.vitalis_chem_ideal_gas_pressure(n_moles, volume, temperature)
+
+def chem_van_der_waals_pressure(n_moles, volume, temperature, a, b):
+    """Van der Waals equation of state. Returns pressure."""
+    return _lib.vitalis_chem_van_der_waals_pressure(n_moles, volume, temperature, a, b)
+
+def chem_compressibility(pressure, volume, n_moles, temperature):
+    """Compressibility factor: Z = PV/(nRT)."""
+    return _lib.vitalis_chem_compressibility(pressure, volume, n_moles, temperature)
+
+
+# ============================================================================
+# v13.0: Neuromorphic Computing
+# ============================================================================
+
+# Neuron models
+_lib.vitalis_neuro_lif.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_uint8),
+]
+_lib.vitalis_neuro_lif.restype = ctypes.c_int32
+
+_lib.vitalis_neuro_izhikevich.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_uint8),
+]
+_lib.vitalis_neuro_izhikevich.restype = ctypes.c_int32
+
+_lib.vitalis_neuro_adex.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_uint8),
+]
+_lib.vitalis_neuro_adex.restype = ctypes.c_int32
+
+# Plasticity
+_lib.vitalis_neuro_hebbian_update.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_double, ctypes.c_double,
+]
+_lib.vitalis_neuro_hebbian_update.restype = ctypes.c_int32
+
+_lib.vitalis_neuro_stdp_delta.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_neuro_stdp_delta.restype = ctypes.c_double
+
+_lib.vitalis_neuro_stdp_update.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_double,
+]
+_lib.vitalis_neuro_stdp_update.restype = ctypes.c_int32
+
+_lib.vitalis_neuro_bcm_update.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+_lib.vitalis_neuro_bcm_update.restype = ctypes.c_double
+
+_lib.vitalis_neuro_homeostatic_scaling.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_neuro_homeostatic_scaling.restype = ctypes.c_int32
+
+# Neural coding
+_lib.vitalis_neuro_firing_rate.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.c_double]
+_lib.vitalis_neuro_firing_rate.restype = ctypes.c_double
+
+_lib.vitalis_neuro_isi_stats.argtypes = [
+    ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_neuro_isi_stats.restype = ctypes.c_int32
+
+_lib.vitalis_neuro_population_decode.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+]
+_lib.vitalis_neuro_population_decode.restype = ctypes.c_double
+
+_lib.vitalis_neuro_fano_factor.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_neuro_fano_factor.restype = ctypes.c_double
+
+# Network topology
+_lib.vitalis_neuro_small_world_network.argtypes = [
+    ctypes.c_size_t, ctypes.c_size_t, ctypes.c_double, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64,
+]
+_lib.vitalis_neuro_small_world_network.restype = ctypes.c_int32
+
+_lib.vitalis_neuro_scale_free_network.argtypes = [
+    ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64,
+]
+_lib.vitalis_neuro_scale_free_network.restype = ctypes.c_int32
+
+# Reservoir computing
+_lib.vitalis_neuro_esn_forward.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_neuro_esn_forward.restype = ctypes.c_int32
+
+# Spike analysis
+_lib.vitalis_neuro_spike_correlation.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+_lib.vitalis_neuro_spike_correlation.restype = ctypes.c_double
+
+_lib.vitalis_neuro_spike_entropy.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+_lib.vitalis_neuro_spike_entropy.restype = ctypes.c_double
+
+_lib.vitalis_neuro_burst_detection.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_neuro_burst_detection.restype = ctypes.c_int32
+
+# Neuroevolution
+_lib.vitalis_neuro_neat_compatibility.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double,
+]
+_lib.vitalis_neuro_neat_compatibility.restype = ctypes.c_double
+
+_lib.vitalis_neuro_sigmoid.argtypes = [ctypes.c_double, ctypes.c_double]
+_lib.vitalis_neuro_sigmoid.restype = ctypes.c_double
+
+_lib.vitalis_neuro_mutual_information.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+_lib.vitalis_neuro_mutual_information.restype = ctypes.c_double
+
+# Oscillations
+_lib.vitalis_neuro_kuramoto_step.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_double,
+]
+_lib.vitalis_neuro_kuramoto_step.restype = ctypes.c_double
+
+
+def neuro_lif(currents, tau_m=20.0, v_rest=-65.0, v_threshold=-55.0, v_reset=-70.0, r_membrane=10.0, dt=0.1):
+    """Leaky Integrate-and-Fire neuron. Returns (spike_count, spike_train)."""
+    n = len(currents)
+    inp = (ctypes.c_double * n)(*currents)
+    spikes = (ctypes.c_uint8 * n)()
+    count = _lib.vitalis_neuro_lif(inp, n, tau_m, v_rest, v_threshold, v_reset, r_membrane, dt, spikes)
+    return count, list(spikes)
+
+def neuro_izhikevich(currents, a=0.02, b=0.2, c=-65.0, d=8.0, dt=0.5):
+    """Izhikevich neuron model. Returns (spike_count, v_trace, u_trace, spikes)."""
+    n = len(currents)
+    inp = (ctypes.c_double * n)(*currents)
+    v_out = (ctypes.c_double * n)()
+    u_out = (ctypes.c_double * n)()
+    spikes = (ctypes.c_uint8 * n)()
+    count = _lib.vitalis_neuro_izhikevich(inp, n, a, b, c, d, dt, v_out, u_out, spikes)
+    return count, list(v_out), list(u_out), list(spikes)
+
+def neuro_adex(currents, tau_m=20.0, v_rest=-70.0, v_threshold=-50.0, delta_t=2.0,
+               a=4.0, b=0.0805, tau_w=150.0, v_reset=-58.0, c_m=281.0, dt=0.1):
+    """Adaptive Exponential IF neuron. Returns (spike_count, spikes)."""
+    n = len(currents)
+    inp = (ctypes.c_double * n)(*currents)
+    spikes = (ctypes.c_uint8 * n)()
+    count = _lib.vitalis_neuro_adex(inp, n, tau_m, v_rest, v_threshold, delta_t, a, b, tau_w, v_reset, c_m, dt, spikes)
+    return count, list(spikes)
+
+def neuro_hebbian_update(weights, n_pre, n_post, pre_activity, post_activity, lr=0.01, w_max=1.0):
+    """Hebbian learning: Δw = η * x_pre * x_post. Modifies weights in-place. Returns new weights."""
+    w = (ctypes.c_double * (n_pre * n_post))(*weights)
+    pre = (ctypes.c_double * n_pre)(*pre_activity)
+    post = (ctypes.c_double * n_post)(*post_activity)
+    _lib.vitalis_neuro_hebbian_update(w, n_pre, n_post, pre, post, lr, w_max)
+    return list(w)
+
+def neuro_stdp_delta(dt_spike, a_plus=0.01, a_minus=0.012, tau_plus=20.0, tau_minus=20.0):
+    """STDP weight change for a single spike pair."""
+    return _lib.vitalis_neuro_stdp_delta(dt_spike, a_plus, a_minus, tau_plus, tau_minus)
+
+def neuro_stdp_update(weights, n_pre, n_post, pre_times, post_times,
+                      a_plus=0.01, a_minus=0.012, tau_plus=20.0, tau_minus=20.0, w_max=1.0):
+    """Apply STDP to weight matrix. Returns updated weights."""
+    w = (ctypes.c_double * (n_pre * n_post))(*weights)
+    pre = (ctypes.c_double * n_pre)(*pre_times)
+    post = (ctypes.c_double * n_post)(*post_times)
+    _lib.vitalis_neuro_stdp_update(w, n_pre, n_post, pre, post, a_plus, a_minus, tau_plus, tau_minus, w_max)
+    return list(w)
+
+def neuro_bcm_update(weight, pre, post, theta, lr=0.01, w_max=1.0):
+    """BCM learning rule: Δw = η*x*y*(y-θ). Returns new weight."""
+    return _lib.vitalis_neuro_bcm_update(weight, pre, post, theta, lr, w_max)
+
+def neuro_homeostatic_scaling(rates, target_rate, tau_homeo=100.0):
+    """Homeostatic scaling factors to maintain target firing rate."""
+    n = len(rates)
+    r = (ctypes.c_double * n)(*rates)
+    out = (ctypes.c_double * n)()
+    _lib.vitalis_neuro_homeostatic_scaling(r, n, target_rate, tau_homeo, out)
+    return list(out)
+
+def neuro_firing_rate(spikes, dt=0.001):
+    """Compute firing rate (Hz) from binary spike train."""
+    n = len(spikes)
+    s = (ctypes.c_uint8 * n)(*spikes)
+    return _lib.vitalis_neuro_firing_rate(s, n, dt)
+
+def neuro_isi_stats(spikes, dt=0.001):
+    """Inter-spike interval statistics. Returns (n_isi, mean_isi, cv_isi)."""
+    n = len(spikes)
+    s = (ctypes.c_uint8 * n)(*spikes)
+    mean_isi = ctypes.c_double(0.0)
+    cv_isi = ctypes.c_double(0.0)
+    n_isi = _lib.vitalis_neuro_isi_stats(s, n, dt, ctypes.byref(mean_isi), ctypes.byref(cv_isi))
+    return n_isi, mean_isi.value, cv_isi.value
+
+def neuro_population_decode(preferred_stimuli, responses):
+    """Population vector decoding. Returns decoded stimulus value."""
+    n = len(preferred_stimuli)
+    pref = (ctypes.c_double * n)(*preferred_stimuli)
+    resp = (ctypes.c_double * n)(*responses)
+    return _lib.vitalis_neuro_population_decode(pref, resp, n)
+
+def neuro_fano_factor(spikes, window_size=100):
+    """Fano factor: variance/mean of spike counts in windows."""
+    n = len(spikes)
+    s = (ctypes.c_uint8 * n)(*spikes)
+    return _lib.vitalis_neuro_fano_factor(s, n, window_size)
+
+def neuro_small_world_network(n, k=4, beta=0.3, seed=42):
+    """Generate Watts-Strogatz small-world network. Returns adjacency matrix."""
+    adj = (ctypes.c_double * (n * n))()
+    _lib.vitalis_neuro_small_world_network(n, k, beta, adj, seed)
+    return [list(adj[i*n:(i+1)*n]) for i in range(n)]
+
+def neuro_scale_free_network(n, m=2, seed=42):
+    """Generate Barabási-Albert scale-free network. Returns adjacency matrix."""
+    adj = (ctypes.c_double * (n * n))()
+    _lib.vitalis_neuro_scale_free_network(n, m, adj, seed)
+    return [list(adj[i*n:(i+1)*n]) for i in range(n)]
+
+def neuro_esn_forward(input_data, n_steps, input_dim, reservoir_weights, res_size, input_weights, leak_rate=0.3):
+    """Echo State Network forward pass. Returns state matrix [n_steps × res_size]."""
+    inp = (ctypes.c_double * (n_steps * input_dim))(*input_data)
+    w_res = (ctypes.c_double * (res_size * res_size))(*reservoir_weights)
+    w_in = (ctypes.c_double * (res_size * input_dim))(*input_weights)
+    out = (ctypes.c_double * (n_steps * res_size))()
+    _lib.vitalis_neuro_esn_forward(inp, n_steps, input_dim, w_res, res_size, w_in, leak_rate, out)
+    return [list(out[t*res_size:(t+1)*res_size]) for t in range(n_steps)]
+
+def neuro_spike_correlation(spikes1, spikes2):
+    """Cross-correlation between two spike trains at lag 0."""
+    n = len(spikes1)
+    s1 = (ctypes.c_uint8 * n)(*spikes1)
+    s2 = (ctypes.c_uint8 * n)(*spikes2)
+    return _lib.vitalis_neuro_spike_correlation(s1, s2, n)
+
+def neuro_spike_entropy(spikes):
+    """Spike train entropy (bits per bin)."""
+    n = len(spikes)
+    s = (ctypes.c_uint8 * n)(*spikes)
+    return _lib.vitalis_neuro_spike_entropy(s, n)
+
+def neuro_burst_detection(spikes, max_isi=5, min_spikes=3):
+    """Detect bursts in spike train. Returns burst count."""
+    n = len(spikes)
+    s = (ctypes.c_uint8 * n)(*spikes)
+    return _lib.vitalis_neuro_burst_detection(s, n, max_isi, min_spikes)
+
+def neuro_neat_compatibility(genes1, n1, genes2, n2, c1=1.0, c2=1.0, c3=0.4):
+    """NEAT genome compatibility distance. genes=[n×3] (innovation, weight, enabled)."""
+    g1 = (ctypes.c_double * (n1 * 3))(*genes1)
+    g2 = (ctypes.c_double * (n2 * 3))(*genes2)
+    return _lib.vitalis_neuro_neat_compatibility(g1, n1, g2, n2, c1, c2, c3)
+
+def neuro_sigmoid(x, steepness=1.0):
+    """Sigmoid with configurable steepness."""
+    return _lib.vitalis_neuro_sigmoid(x, steepness)
+
+def neuro_mutual_information(spikes_in, spikes_out):
+    """Mutual information between input and output spike trains (bits)."""
+    n = len(spikes_in)
+    si = (ctypes.c_uint8 * n)(*spikes_in)
+    so = (ctypes.c_uint8 * n)(*spikes_out)
+    return _lib.vitalis_neuro_mutual_information(si, so, n)
+
+def neuro_kuramoto_step(phases, frequencies, coupling=1.0, dt=0.01):
+    """Kuramoto coupled oscillator step. Returns (order_parameter, updated_phases)."""
+    n = len(phases)
+    ph = (ctypes.c_double * n)(*phases)
+    freq = (ctypes.c_double * n)(*frequencies)
+    r = _lib.vitalis_neuro_kuramoto_step(ph, freq, n, coupling, dt)
+    return r, list(ph)
+
+
+# ============================================================================
+# v13.0: Advanced Evolutionary Computation
+# ============================================================================
+
+_lib.vitalis_evo_differential_evolution.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.c_int32, ctypes.c_double, ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_uint64,
+]
+_lib.vitalis_evo_differential_evolution.restype = ctypes.c_double
+
+_lib.vitalis_evo_pso_step.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.c_double, ctypes.c_double, ctypes.c_double,
+    ctypes.c_int32,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_uint64,
+]
+_lib.vitalis_evo_pso_step.restype = ctypes.c_double
+
+_lib.vitalis_evo_cma_es_step.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_size_t, ctypes.c_int32,
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_uint64,
+]
+_lib.vitalis_evo_cma_es_step.restype = ctypes.c_double
+
+_lib.vitalis_evo_nsga2_sort.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_int32),
+]
+_lib.vitalis_evo_nsga2_sort.restype = ctypes.c_int32
+
+_lib.vitalis_evo_crowding_distance.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t), ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_evo_crowding_distance.restype = ctypes.c_int32
+
+_lib.vitalis_evo_novelty_score.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+]
+_lib.vitalis_evo_novelty_score.restype = ctypes.c_double
+
+_lib.vitalis_evo_map_elites_insert.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double), ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t),
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_evo_map_elites_insert.restype = ctypes.c_int32
+
+_lib.vitalis_evo_map_elites_coverage.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_evo_map_elites_coverage.restype = ctypes.c_size_t
+
+_lib.vitalis_evo_island_migrate.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.c_size_t,
+]
+_lib.vitalis_evo_island_migrate.restype = ctypes.c_int32
+
+_lib.vitalis_evo_simulated_annealing.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t,
+    ctypes.c_int32,
+    ctypes.c_double, ctypes.c_double,
+    ctypes.c_size_t, ctypes.c_double,
+    ctypes.c_uint64,
+]
+_lib.vitalis_evo_simulated_annealing.restype = ctypes.c_double
+
+_lib.vitalis_evo_coevolution_fitness.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t, ctypes.c_uint64,
+]
+_lib.vitalis_evo_coevolution_fitness.restype = ctypes.c_double
+
+_lib.vitalis_evo_adapt_f.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double]
+_lib.vitalis_evo_adapt_f.restype = ctypes.c_double
+
+_lib.vitalis_evo_adapt_cr.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double]
+_lib.vitalis_evo_adapt_cr.restype = ctypes.c_double
+
+_lib.vitalis_evo_fitness_distance_correlation.argtypes = [
+    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_double),
+]
+_lib.vitalis_evo_fitness_distance_correlation.restype = ctypes.c_double
+
+
+def evo_differential_evolution(population, pop_size, dim, fitness_fn_id=0,
+                               f_weight=0.8, crossover_rate=0.9,
+                               bounds_lo=None, bounds_hi=None, seed=42):
+    """Differential evolution (DE/rand/1/bin). Returns (best_fitness, population, fitness_values).
+    fitness_fn_id: 0=sphere, 1=rastrigin, 2=rosenbrock, 3=ackley, 4=griewank."""
+    pop = (ctypes.c_double * (pop_size * dim))(*population)
+    fit = (ctypes.c_double * pop_size)()
+    lo = (ctypes.c_double * dim)(*bounds_lo) if bounds_lo else None
+    hi = (ctypes.c_double * dim)(*bounds_hi) if bounds_hi else None
+    best = _lib.vitalis_evo_differential_evolution(pop, pop_size, dim, fitness_fn_id,
+                                                    f_weight, crossover_rate, lo, hi, fit, seed)
+    return best, list(pop), list(fit)
+
+def evo_pso_step(positions, velocities, p_best, p_best_fit, g_best, g_best_fit,
+                 n, dim, w_inertia=0.7, c1=1.5, c2=1.5, fitness_fn_id=0,
+                 bounds_lo=None, bounds_hi=None, seed=42):
+    """Particle Swarm Optimization step. Returns (global_best_fitness, positions, g_best)."""
+    pos = (ctypes.c_double * (n * dim))(*positions)
+    vel = (ctypes.c_double * (n * dim))(*velocities)
+    pb = (ctypes.c_double * (n * dim))(*p_best)
+    pbf = (ctypes.c_double * n)(*p_best_fit)
+    gb = (ctypes.c_double * dim)(*g_best)
+    gbf = ctypes.c_double(g_best_fit)
+    lo = (ctypes.c_double * dim)(*bounds_lo) if bounds_lo else None
+    hi = (ctypes.c_double * dim)(*bounds_hi) if bounds_hi else None
+    best = _lib.vitalis_evo_pso_step(pos, vel, pb, pbf, gb, ctypes.byref(gbf),
+                                      n, dim, w_inertia, c1, c2, fitness_fn_id, lo, hi, seed)
+    return best, list(pos), list(gb)
+
+def evo_cma_es_step(mean, sigma, dim, lam=20, fitness_fn_id=0, seed=42):
+    """CMA-ES step. Returns (best_fitness, mean, sigma, population, fitness)."""
+    m = (ctypes.c_double * dim)(*mean)
+    s = ctypes.c_double(sigma)
+    pop = (ctypes.c_double * (lam * dim))()
+    fit = (ctypes.c_double * lam)()
+    best = _lib.vitalis_evo_cma_es_step(m, ctypes.byref(s), dim, lam, fitness_fn_id, pop, fit, seed)
+    return best, list(m), s.value, list(pop), list(fit)
+
+def evo_nsga2_sort(objectives, n, n_obj):
+    """NSGA-II non-dominated sorting. Returns (n_fronts, ranks)."""
+    obj = (ctypes.c_double * (n * n_obj))(*objectives)
+    ranks = (ctypes.c_int32 * n)()
+    nf = _lib.vitalis_evo_nsga2_sort(obj, n, n_obj, ranks)
+    return nf, list(ranks)
+
+def evo_crowding_distance(objectives, n_obj, front_indices):
+    """NSGA-II crowding distance for a Pareto front. Returns distances."""
+    fs = len(front_indices)
+    obj = (ctypes.c_double * len(objectives))(*objectives)
+    fi = (ctypes.c_size_t * fs)(*front_indices)
+    dist = (ctypes.c_double * fs)()
+    _lib.vitalis_evo_crowding_distance(obj, n_obj, fi, fs, dist)
+    return list(dist)
+
+def evo_novelty_score(behaviors, dim, query, k_nearest=15):
+    """Novelty score: mean distance to k-nearest in behavior space."""
+    n = len(behaviors) // dim
+    beh = (ctypes.c_double * (n * dim))(*behaviors)
+    q = (ctypes.c_double * dim)(*query)
+    return _lib.vitalis_evo_novelty_score(beh, n, dim, q, k_nearest)
+
+def evo_map_elites_insert(archive_fitness, archive_solutions, grid_size, dim,
+                           solution, fitness, behavior, grid_dims, behavior_lo, behavior_hi):
+    """MAP-Elites insert. Returns cell index or -1 if rejected."""
+    bd = len(behavior)
+    af = (ctypes.c_double * grid_size)(*archive_fitness)
+    as_ = (ctypes.c_double * (grid_size * dim))(*archive_solutions)
+    sol = (ctypes.c_double * dim)(*solution)
+    beh = (ctypes.c_double * bd)(*behavior)
+    gd = (ctypes.c_size_t * bd)(*grid_dims)
+    blo = (ctypes.c_double * bd)(*behavior_lo)
+    bhi = (ctypes.c_double * bd)(*behavior_hi)
+    cell = _lib.vitalis_evo_map_elites_insert(af, as_, grid_size, dim, sol, fitness, beh, bd, gd, blo, bhi)
+    return cell, list(af), list(as_)
+
+def evo_map_elites_coverage(archive_fitness):
+    """Count non-empty cells in MAP-Elites archive."""
+    n = len(archive_fitness)
+    af = (ctypes.c_double * n)(*archive_fitness)
+    return _lib.vitalis_evo_map_elites_coverage(af, n)
+
+def evo_island_migrate(islands, island_fitness, n_islands, island_size, dim, n_migrants=2):
+    """Island model migration (ring topology). Returns updated (islands, fitness)."""
+    total = n_islands * island_size
+    pop = (ctypes.c_double * (total * dim))(*islands)
+    fit = (ctypes.c_double * total)(*island_fitness)
+    _lib.vitalis_evo_island_migrate(pop, fit, n_islands, island_size, dim, n_migrants)
+    return list(pop), list(fit)
+
+def evo_simulated_annealing(initial, dim, fitness_fn_id=0,
+                             initial_temp=100.0, cooling_rate=0.995,
+                             n_iterations=1000, step_size=0.5, seed=42):
+    """Simulated annealing. Returns (best_fitness, best_solution)."""
+    x = (ctypes.c_double * dim)(*initial)
+    best = _lib.vitalis_evo_simulated_annealing(x, dim, fitness_fn_id,
+                                                 initial_temp, cooling_rate, n_iterations, step_size, seed)
+    return best, list(x)
+
+def evo_coevolution_fitness(solutions, n, dim, n_opponents=5, seed=42):
+    """Competitive coevolution: evaluate fitness as win rate. Returns (mean_fitness, fitness_vec)."""
+    sol = (ctypes.c_double * (n * dim))(*solutions)
+    fit = (ctypes.c_double * n)()
+    mean = _lib.vitalis_evo_coevolution_fitness(sol, n, dim, fit, n_opponents, seed)
+    return mean, list(fit)
+
+def evo_adapt_f(success_f, current_f):
+    """Adaptive F for DE (Lehmer mean of successes)."""
+    n = len(success_f)
+    sf = (ctypes.c_double * n)(*success_f)
+    return _lib.vitalis_evo_adapt_f(sf, n, current_f)
+
+def evo_adapt_cr(success_cr, current_cr):
+    """Adaptive CR for DE (arithmetic mean of successes)."""
+    n = len(success_cr)
+    scr = (ctypes.c_double * n)(*success_cr)
+    return _lib.vitalis_evo_adapt_cr(scr, n, current_cr)
+
+def evo_fitness_distance_correlation(solutions, fitness, dim, optimum):
+    """Fitness-distance correlation. Returns FDC coefficient (-1 to 1)."""
+    n = len(fitness)
+    sol = (ctypes.c_double * (n * dim))(*solutions)
+    fit = (ctypes.c_double * n)(*fitness)
+    opt = (ctypes.c_double * dim)(*optimum)
+    return _lib.vitalis_evo_fitness_distance_correlation(sol, fit, n, dim, opt)
+
+
+# ============================================================================
 # Module metadata
 # ============================================================================
 
@@ -3619,5 +4844,63 @@ __all__ = [
     "opt_bin_packing", "opt_coin_change", "opt_lis_length",
     "opt_job_scheduling", "opt_activity_selection", "opt_matrix_chain",
     "opt_genetic_sphere", "opt_tsp_nearest_neighbor",
+    # v13.0: Quantum Algorithms
+    "quantum_deutsch_jozsa", "quantum_bernstein_vazirani", "quantum_phase_estimation",
+    "quantum_shor_factor", "quantum_vqe", "quantum_qaoa_maxcut",
+    "quantum_walk_line", "quantum_teleport", "quantum_qec_bitflip",
+    "quantum_bb84", "quantum_simon", "quantum_grover",
+    # v13.0: Bioinformatics
+    "bio_gc_content", "bio_dna_complement", "bio_reverse_complement",
+    "bio_transcribe", "bio_nucleotide_freq", "bio_translate",
+    "bio_needleman_wunsch", "bio_smith_waterman",
+    "bio_hamming_distance", "bio_edit_distance",
+    "bio_kmer_count", "bio_linguistic_complexity",
+    "bio_hardy_weinberg", "bio_lotka_volterra",
+    "bio_sir_model", "bio_seir_model", "bio_r0",
+    "bio_michaelis_menten", "bio_competitive_inhibition", "bio_hill_equation",
+    "bio_jukes_cantor", "bio_kimura_distance",
+    "bio_protein_mw", "bio_gravy",
+    "bio_logistic_growth", "bio_wright_fisher",
+    "bio_shannon_diversity", "bio_simpson_diversity",
+    # v13.0: Advanced Chemistry
+    "chem_henderson_hasselbalch", "chem_buffer_capacity", "chem_ionization_fraction",
+    "chem_keq_from_gibbs", "chem_gibbs_free_energy", "chem_vant_hoff", "chem_clausius_clapeyron",
+    "chem_first_order", "chem_second_order", "chem_half_life_first_order",
+    "chem_eyring", "chem_arrhenius_advanced",
+    "chem_butler_volmer", "chem_tafel", "chem_faraday_mass",
+    "chem_boltzmann_prob", "chem_partition_function",
+    "chem_fermi_dirac", "chem_bose_einstein",
+    "chem_maxwell_boltzmann_speed", "chem_mean_thermal_energy",
+    "chem_einstein_specific_heat", "chem_debye_specific_heat",
+    "chem_hydrogen_energy", "chem_rydberg_wavelength",
+    "chem_de_broglie_wavelength", "chem_heisenberg_min_dp",
+    "chem_particle_in_box", "chem_harmonic_oscillator_energy", "chem_morse_potential",
+    "chem_ideal_gas_pressure_adv", "chem_van_der_waals_pressure", "chem_compressibility",
+    # v13.0: Advanced Physics (Relativity)
+    "phys_lorentz_factor", "phys_time_dilation", "phys_length_contraction",
+    "phys_relativistic_momentum", "phys_relativistic_energy", "phys_relativistic_kinetic_energy",
+    "phys_velocity_addition", "phys_mass_energy_equiv", "phys_relativistic_doppler",
+    "phys_schwarzschild_radius_adv", "phys_gravitational_time_dilation",
+    "phys_gravitational_redshift", "phys_isco_radius",
+    # v13.0: Material Science
+    "mat_hooke_stress", "mat_thermal_expansion", "mat_poisson_transverse_strain",
+    "mat_bulk_modulus", "mat_shear_modulus", "mat_fourier_heat_flux",
+    # v13.0: Neuromorphic Computing
+    "neuro_lif", "neuro_izhikevich", "neuro_adex",
+    "neuro_hebbian_update", "neuro_stdp_delta", "neuro_stdp_update",
+    "neuro_bcm_update", "neuro_homeostatic_scaling",
+    "neuro_firing_rate", "neuro_isi_stats", "neuro_population_decode", "neuro_fano_factor",
+    "neuro_small_world_network", "neuro_scale_free_network",
+    "neuro_esn_forward",
+    "neuro_spike_correlation", "neuro_spike_entropy", "neuro_burst_detection",
+    "neuro_neat_compatibility", "neuro_sigmoid", "neuro_mutual_information",
+    "neuro_kuramoto_step",
+    # v13.0: Advanced Evolutionary Computation
+    "evo_differential_evolution", "evo_pso_step", "evo_cma_es_step",
+    "evo_nsga2_sort", "evo_crowding_distance",
+    "evo_novelty_score", "evo_map_elites_insert", "evo_map_elites_coverage",
+    "evo_island_migrate", "evo_simulated_annealing",
+    "evo_coevolution_fitness", "evo_adapt_f", "evo_adapt_cr",
+    "evo_fitness_distance_correlation",
 ]
 

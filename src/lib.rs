@@ -1,9 +1,11 @@
-//! Vitalis v10.0 — A JIT-compiled programming language with built-in code evolution,
+//! Vitalis v13.0 — A JIT-compiled programming language with built-in code evolution,
 //! multi-domain algorithm libraries, and native performance via Cranelift.
 //!
-//! Final community release. This library provides the compiler pipeline
-//! (lex → parse → type-check → IR → JIT) and a C FFI bridge so Python code
-//! (via ctypes) and other languages can compile and execute `.sl` code natively.
+//! Enterprise-grade release with 38 modules spanning quantum computing, bioinformatics,
+//! neuromorphic computation, advanced evolutionary algorithms, and physical sciences.
+//! This library provides the compiler pipeline (lex → parse → type-check → IR → JIT)
+//! and a C FFI bridge so Python code (via ctypes) and other languages can compile
+//! and execute `.sl` code natively.
 //!
 //! # Architecture
 //!
@@ -15,9 +17,10 @@
 //!                                                   Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v10.0 — 33 modules)
+//! # Module Domains (v13.0 — 38 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Evolution**: evolution, engine, meta_evolution, optimizer
+//! - **Advanced Evolution**: evolution_advanced (DE, PSO, CMA-ES, NSGA-II, MAP-Elites)
 //! - **Memory**: memory (engram store)
 //! - **Performance**: hotpath, simd_ops
 //! - **Signal Processing**: signal_processing (FFT, DSP, filtering)
@@ -27,8 +30,11 @@
 //! - **Numerical Methods**: numerical (linear algebra, calculus, interpolation)
 //! - **Compression**: compression (RLE, Huffman, LZ77, BWT, delta)
 //! - **Probability & Statistics**: probability (distributions, regression, tests)
-//! - **Quantum & Advanced Math**: quantum, quantum_math, advanced_math
-//! - **Science & Physics**: science (mechanics, thermo, EM, nuclear, chemistry)
+//! - **Quantum Computing**: quantum, quantum_math, quantum_algorithms (Shor, VQE, QAOA, QPE)
+//! - **Advanced Mathematics**: advanced_math (number theory, tensors, Galois fields)
+//! - **Science & Physics**: science, chemistry_advanced (stat-mech, relativity, QM)
+//! - **Bioinformatics**: bioinformatics (DNA/RNA, alignment, epidemiology, kinetics)
+//! - **Neuromorphic Computing**: neuromorphic (LIF, Izhikevich, STDP, ESN, NEAT)
 //! - **Analytics & Reporting**: analytics (time-series, anomaly detection, forecasting)
 //! - **Security Guardrails**: security (validation, injection detection, sandboxing)
 //! - **Scoring & Fitness**: scoring (code quality, ELO, Pareto, A/B testing)
@@ -92,6 +98,21 @@ pub mod geometry;
 pub mod sorting;
 pub mod automata;
 pub mod combinatorial;
+
+// ── Quantum Algorithms (v13.0) ────────────────────────────────────────
+pub mod quantum_algorithms;
+
+// ── Bioinformatics (v13.0) ────────────────────────────────────────────
+pub mod bioinformatics;
+
+// ── Advanced Chemistry & Physics (v13.0) ──────────────────────────────
+pub mod chemistry_advanced;
+
+// ── Neuromorphic Computing (v13.0) ────────────────────────────────────
+pub mod neuromorphic;
+
+// ── Advanced Evolutionary Computation (v13.0) ─────────────────────────
+pub mod evolution_advanced;
 
 // ── FFI Bridge ───────────────────────────────────────────────────────
 pub mod bridge;
