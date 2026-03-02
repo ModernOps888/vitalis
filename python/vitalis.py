@@ -2907,6 +2907,573 @@ def tournament_fitness(wins, losses, draws):
 
 
 # ============================================================================
+# v10.0: Machine Learning
+# ============================================================================
+
+_lib.vitalis_kmeans.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
+_lib.vitalis_kmeans.restype = None
+
+_lib.vitalis_knn_classify.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_knn_classify.restype = ctypes.c_int32
+
+_lib.vitalis_naive_bayes.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_naive_bayes.restype = ctypes.c_int32
+
+_lib.vitalis_logistic_regression.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_size_t, ctypes.c_double, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_logistic_regression.restype = None
+
+_lib.vitalis_logistic_predict.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_logistic_predict.restype = ctypes.c_double
+
+_lib.vitalis_pca.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_pca.restype = None
+
+_lib.vitalis_decision_stump.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t), ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_decision_stump.restype = ctypes.c_double
+
+_lib.vitalis_dbscan.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t, ctypes.c_double, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
+_lib.vitalis_dbscan.restype = ctypes.c_int32
+
+_lib.vitalis_accuracy.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t]
+_lib.vitalis_accuracy.restype = ctypes.c_double
+
+_lib.vitalis_precision.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_int32]
+_lib.vitalis_precision.restype = ctypes.c_double
+
+_lib.vitalis_recall.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_int32]
+_lib.vitalis_recall.restype = ctypes.c_double
+
+_lib.vitalis_f1_score.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_int32]
+_lib.vitalis_f1_score.restype = ctypes.c_double
+
+_lib.vitalis_mse.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_mse.restype = ctypes.c_double
+
+_lib.vitalis_mae.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_mae.restype = ctypes.c_double
+
+_lib.vitalis_r2_score.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_r2_score.restype = ctypes.c_double
+
+_lib.vitalis_ml_cosine_similarity.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_ml_cosine_similarity.restype = ctypes.c_double
+
+_lib.vitalis_silhouette_score.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_size_t, ctypes.c_int32]
+_lib.vitalis_silhouette_score.restype = ctypes.c_double
+
+def ml_kmeans(data, n_samples, n_features, k, max_iter=100):
+    """K-means clustering. data is flattened [n_samples * n_features]. Returns cluster labels."""
+    flat = (ctypes.c_double * len(data))(*data)
+    labels = (ctypes.c_int32 * n_samples)()
+    _lib.vitalis_kmeans(flat, n_samples, n_features, k, max_iter, labels)
+    return list(labels)
+
+def ml_knn(train_data, train_labels, n_train, n_features, query, k):
+    """K-nearest neighbors classification. Returns predicted label."""
+    flat = (ctypes.c_double * len(train_data))(*train_data)
+    labs = (ctypes.c_int32 * n_train)(*train_labels)
+    q = (ctypes.c_double * n_features)(*query)
+    return _lib.vitalis_knn_classify(flat, labs, n_train, n_features, q, k)
+
+def ml_naive_bayes(train_data, train_labels, n_train, n_features, query):
+    """Gaussian Naive Bayes classification. Returns predicted label."""
+    flat = (ctypes.c_double * len(train_data))(*train_data)
+    labs = (ctypes.c_int32 * n_train)(*train_labels)
+    q = (ctypes.c_double * n_features)(*query)
+    return _lib.vitalis_naive_bayes(flat, labs, n_train, n_features, q)
+
+def ml_logistic_regression(data, labels, n_samples, n_features, lr=0.01, epochs=100):
+    """Train logistic regression. Returns weight vector [n_features + 1] (bias last)."""
+    flat = (ctypes.c_double * len(data))(*data)
+    labs = (ctypes.c_int32 * n_samples)(*labels)
+    weights = (ctypes.c_double * (n_features + 1))()
+    _lib.vitalis_logistic_regression(flat, labs, n_samples, n_features, lr, epochs, weights)
+    return list(weights)
+
+def ml_logistic_predict(features, weights):
+    """Predict probability using trained logistic regression weights."""
+    f = (ctypes.c_double * len(features))(*features)
+    w = (ctypes.c_double * len(weights))(*weights)
+    return _lib.vitalis_logistic_predict(f, w, len(features))
+
+def ml_pca(data, n_samples, n_features, n_components):
+    """PCA dimensionality reduction. Returns projected data [n_samples * n_components]."""
+    flat = (ctypes.c_double * len(data))(*data)
+    out = (ctypes.c_double * (n_samples * n_components))()
+    _lib.vitalis_pca(flat, n_samples, n_features, n_components, out)
+    return list(out)
+
+def ml_decision_stump(data, labels, n_samples, n_features):
+    """Train decision stump. Returns (gini, best_feature, best_threshold)."""
+    flat = (ctypes.c_double * len(data))(*data)
+    labs = (ctypes.c_int32 * n_samples)(*labels)
+    feat = ctypes.c_size_t()
+    thresh = ctypes.c_double()
+    gini = _lib.vitalis_decision_stump(flat, labs, n_samples, n_features, ctypes.byref(feat), ctypes.byref(thresh))
+    return gini, feat.value, thresh.value
+
+def ml_dbscan(data, n_samples, n_features, eps, min_pts):
+    """DBSCAN density clustering. Returns (n_clusters, labels)."""
+    flat = (ctypes.c_double * len(data))(*data)
+    labels = (ctypes.c_int32 * n_samples)()
+    nc = _lib.vitalis_dbscan(flat, n_samples, n_features, eps, min_pts, labels)
+    return nc, list(labels)
+
+def ml_accuracy(predicted, actual):
+    """Classification accuracy."""
+    n = len(predicted)
+    p = (ctypes.c_int32 * n)(*predicted)
+    a = (ctypes.c_int32 * n)(*actual)
+    return _lib.vitalis_accuracy(p, a, n)
+
+def ml_precision(predicted, actual, positive_label=1):
+    """Precision for binary classification."""
+    n = len(predicted)
+    p = (ctypes.c_int32 * n)(*predicted)
+    a = (ctypes.c_int32 * n)(*actual)
+    return _lib.vitalis_precision(p, a, n, positive_label)
+
+def ml_recall(predicted, actual, positive_label=1):
+    """Recall for binary classification."""
+    n = len(predicted)
+    p = (ctypes.c_int32 * n)(*predicted)
+    a = (ctypes.c_int32 * n)(*actual)
+    return _lib.vitalis_recall(p, a, n, positive_label)
+
+def ml_f1(predicted, actual, positive_label=1):
+    """F1 score for binary classification."""
+    n = len(predicted)
+    p = (ctypes.c_int32 * n)(*predicted)
+    a = (ctypes.c_int32 * n)(*actual)
+    return _lib.vitalis_f1_score(p, a, n, positive_label)
+
+def ml_mse(predicted, actual):
+    """Mean Squared Error."""
+    n = len(predicted)
+    p = (ctypes.c_double * n)(*predicted)
+    a = (ctypes.c_double * n)(*actual)
+    return _lib.vitalis_mse(p, a, n)
+
+def ml_mae(predicted, actual):
+    """Mean Absolute Error."""
+    n = len(predicted)
+    p = (ctypes.c_double * n)(*predicted)
+    a = (ctypes.c_double * n)(*actual)
+    return _lib.vitalis_mae(p, a, n)
+
+def ml_r2(predicted, actual):
+    """R² score."""
+    n = len(predicted)
+    p = (ctypes.c_double * n)(*predicted)
+    a = (ctypes.c_double * n)(*actual)
+    return _lib.vitalis_r2_score(p, a, n)
+
+def ml_cosine_similarity(a_vec, b_vec):
+    """Cosine similarity between two vectors."""
+    n = len(a_vec)
+    a = (ctypes.c_double * n)(*a_vec)
+    b = (ctypes.c_double * n)(*b_vec)
+    return _lib.vitalis_ml_cosine_similarity(a, b, n)
+
+def ml_silhouette(data, labels, n_samples, n_features, n_clusters):
+    """Silhouette score for clustering quality."""
+    flat = (ctypes.c_double * len(data))(*data)
+    labs = (ctypes.c_int32 * n_samples)(*labels)
+    return _lib.vitalis_silhouette_score(flat, labs, n_samples, n_features, n_clusters)
+
+
+# ============================================================================
+# v10.0: Computational Geometry
+# ============================================================================
+
+_lib.vitalis_convex_hull.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_convex_hull.restype = ctypes.c_int32
+
+_lib.vitalis_point_in_polygon.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_point_in_polygon.restype = ctypes.c_int32
+
+_lib.vitalis_line_intersection.argtypes = [ctypes.c_double]*8 + [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_line_intersection.restype = ctypes.c_int32
+
+_lib.vitalis_closest_pair.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_closest_pair.restype = ctypes.c_double
+
+_lib.vitalis_polygon_area.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_polygon_area.restype = ctypes.c_double
+
+_lib.vitalis_polygon_perimeter.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_polygon_perimeter.restype = ctypes.c_double
+
+_lib.vitalis_triangle_area.argtypes = [ctypes.c_double]*6
+_lib.vitalis_triangle_area.restype = ctypes.c_double
+
+_lib.vitalis_is_convex.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_is_convex.restype = ctypes.c_int32
+
+_lib.vitalis_distance_3d.argtypes = [ctypes.c_double]*6
+_lib.vitalis_distance_3d.restype = ctypes.c_double
+
+def geo_convex_hull(xs, ys):
+    """Convex hull of 2D points. Returns (hull_xs, hull_ys)."""
+    n = len(xs)
+    x = (ctypes.c_double * n)(*xs)
+    y = (ctypes.c_double * n)(*ys)
+    ox = (ctypes.c_double * n)()
+    oy = (ctypes.c_double * n)()
+    hn = _lib.vitalis_convex_hull(x, y, n, ox, oy)
+    return list(ox[:hn]), list(oy[:hn])
+
+def geo_point_in_polygon(px, py, xs, ys):
+    """Test if point (px,py) is inside polygon. Returns bool."""
+    n = len(xs)
+    x = (ctypes.c_double * n)(*xs)
+    y = (ctypes.c_double * n)(*ys)
+    return bool(_lib.vitalis_point_in_polygon(px, py, x, y, n))
+
+def geo_line_intersection(x1, y1, x2, y2, x3, y3, x4, y4):
+    """Line segment intersection. Returns (True, ix, iy) or (False, 0, 0)."""
+    ix = ctypes.c_double()
+    iy = ctypes.c_double()
+    r = _lib.vitalis_line_intersection(x1, y1, x2, y2, x3, y3, x4, y4, ctypes.byref(ix), ctypes.byref(iy))
+    return bool(r), ix.value, iy.value
+
+def geo_closest_pair(xs, ys):
+    """Closest pair of points. Returns min distance."""
+    n = len(xs)
+    x = (ctypes.c_double * n)(*xs)
+    y = (ctypes.c_double * n)(*ys)
+    return _lib.vitalis_closest_pair(x, y, n)
+
+def geo_polygon_area(xs, ys):
+    """Polygon area via Shoelace formula."""
+    n = len(xs)
+    x = (ctypes.c_double * n)(*xs)
+    y = (ctypes.c_double * n)(*ys)
+    return _lib.vitalis_polygon_area(x, y, n)
+
+def geo_polygon_perimeter(xs, ys):
+    """Polygon perimeter."""
+    n = len(xs)
+    x = (ctypes.c_double * n)(*xs)
+    y = (ctypes.c_double * n)(*ys)
+    return _lib.vitalis_polygon_perimeter(x, y, n)
+
+def geo_triangle_area(x1, y1, x2, y2, x3, y3):
+    """Triangle area from vertices."""
+    return _lib.vitalis_triangle_area(x1, y1, x2, y2, x3, y3)
+
+def geo_is_convex(xs, ys):
+    """Check if polygon is convex."""
+    n = len(xs)
+    x = (ctypes.c_double * n)(*xs)
+    y = (ctypes.c_double * n)(*ys)
+    return bool(_lib.vitalis_is_convex(x, y, n))
+
+def geo_distance_3d(x1, y1, z1, x2, y2, z2):
+    """Euclidean distance in 3D."""
+    return _lib.vitalis_distance_3d(x1, y1, z1, x2, y2, z2)
+
+
+# ============================================================================
+# v10.0: Sorting & Searching
+# ============================================================================
+
+_lib.vitalis_quicksort.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_quicksort.restype = None
+
+_lib.vitalis_mergesort.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_mergesort.restype = None
+
+_lib.vitalis_heapsort.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_heapsort.restype = None
+
+_lib.vitalis_radixsort.argtypes = [ctypes.POINTER(ctypes.c_int64), ctypes.c_size_t]
+_lib.vitalis_radixsort.restype = None
+
+_lib.vitalis_binary_search.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double]
+_lib.vitalis_binary_search.restype = ctypes.c_int64
+
+_lib.vitalis_quickselect.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_quickselect.restype = ctypes.c_double
+
+_lib.vitalis_is_sorted.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_is_sorted.restype = ctypes.c_int32
+
+_lib.vitalis_inversion_count.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_inversion_count.restype = ctypes.c_int64
+
+def sort_quicksort(data):
+    """QuickSort (in-place, median-of-three). Returns sorted list."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    _lib.vitalis_quicksort(arr, n)
+    return list(arr)
+
+def sort_mergesort(data):
+    """MergeSort. Returns sorted list."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    _lib.vitalis_mergesort(arr, n)
+    return list(arr)
+
+def sort_heapsort(data):
+    """HeapSort. Returns sorted list."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    _lib.vitalis_heapsort(arr, n)
+    return list(arr)
+
+def sort_radixsort(data):
+    """RadixSort for integers. Returns sorted list."""
+    n = len(data)
+    arr = (ctypes.c_int64 * n)(*data)
+    _lib.vitalis_radixsort(arr, n)
+    return list(arr)
+
+def sort_binary_search(sorted_data, target):
+    """Binary search in sorted array. Returns index or -1."""
+    n = len(sorted_data)
+    arr = (ctypes.c_double * n)(*sorted_data)
+    return _lib.vitalis_binary_search(arr, n, target)
+
+def sort_quickselect(data, k):
+    """Find k-th smallest element."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    return _lib.vitalis_quickselect(arr, n, k)
+
+def sort_is_sorted(data):
+    """Check if array is sorted."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    return bool(_lib.vitalis_is_sorted(arr, n))
+
+def sort_inversion_count(data):
+    """Count inversions in array."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    return _lib.vitalis_inversion_count(arr, n)
+
+
+# ============================================================================
+# v10.0: Automata & Pattern Matching
+# ============================================================================
+
+_lib.vitalis_aho_corasick.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t), ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t), ctypes.c_size_t]
+_lib.vitalis_aho_corasick.restype = ctypes.c_int32
+
+_lib.vitalis_regex_match.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+_lib.vitalis_regex_match.restype = ctypes.c_int32
+
+_lib.vitalis_levenshtein_within.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_levenshtein_within.restype = ctypes.c_int32
+
+_lib.vitalis_trie_new.argtypes = []
+_lib.vitalis_trie_new.restype = ctypes.c_void_p
+
+_lib.vitalis_trie_insert.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+_lib.vitalis_trie_insert.restype = None
+
+_lib.vitalis_trie_contains.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+_lib.vitalis_trie_contains.restype = ctypes.c_int32
+
+_lib.vitalis_trie_free.argtypes = [ctypes.c_void_p]
+_lib.vitalis_trie_free.restype = None
+
+_lib.vitalis_bloom_new.argtypes = [ctypes.c_size_t, ctypes.c_size_t]
+_lib.vitalis_bloom_new.restype = ctypes.c_void_p
+
+_lib.vitalis_bloom_insert.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
+_lib.vitalis_bloom_insert.restype = None
+
+_lib.vitalis_bloom_contains.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
+_lib.vitalis_bloom_contains.restype = ctypes.c_int32
+
+_lib.vitalis_bloom_free.argtypes = [ctypes.c_void_p]
+_lib.vitalis_bloom_free.restype = None
+
+def auto_aho_corasick(text, patterns):
+    """Aho-Corasick multi-pattern search. Returns number of matches."""
+    txt = text.encode() if isinstance(text, str) else text
+    pat_bytes = b""
+    offsets = []
+    for p in patterns:
+        pb = p.encode() if isinstance(p, str) else p
+        offsets.append(len(pat_bytes))
+        pat_bytes += pb
+    lens = [len(p.encode() if isinstance(p, str) else p) for p in patterns]
+    t = (ctypes.c_uint8 * len(txt))(*txt)
+    pb = (ctypes.c_uint8 * len(pat_bytes))(*pat_bytes)
+    o = (ctypes.c_size_t * len(patterns))(*offsets)
+    l = (ctypes.c_size_t * len(patterns))(*lens)
+    out = (ctypes.c_size_t * (len(txt) * len(patterns)))()
+    return _lib.vitalis_aho_corasick(t, len(txt), pb, o, len(patterns), l, len(patterns))
+
+def auto_regex_match(pattern, text):
+    """Simple regex match. Returns bool."""
+    pat = pattern.encode() if isinstance(pattern, str) else pattern
+    txt = text.encode() if isinstance(text, str) else text
+    p = (ctypes.c_uint8 * len(pat))(*pat)
+    t = (ctypes.c_uint8 * len(txt))(*txt)
+    return bool(_lib.vitalis_regex_match(p, len(pat), t, len(txt)))
+
+def auto_levenshtein_within(a, b, threshold):
+    """Check if Levenshtein distance <= threshold. Returns bool."""
+    ab = a.encode() if isinstance(a, str) else a
+    bb = b.encode() if isinstance(b, str) else b
+    pa = (ctypes.c_uint8 * len(ab))(*ab)
+    pb = (ctypes.c_uint8 * len(bb))(*bb)
+    return bool(_lib.vitalis_levenshtein_within(pa, len(ab), pb, len(bb), threshold))
+
+class Trie:
+    """Trie (prefix tree) backed by native Rust implementation."""
+    def __init__(self):
+        self._ptr = _lib.vitalis_trie_new()
+    def insert(self, word):
+        w = word.encode() if isinstance(word, str) else word
+        _lib.vitalis_trie_insert(self._ptr, (ctypes.c_uint8 * len(w))(*w), len(w))
+    def contains(self, word):
+        w = word.encode() if isinstance(word, str) else word
+        return bool(_lib.vitalis_trie_contains(self._ptr, (ctypes.c_uint8 * len(w))(*w), len(w)))
+    def __del__(self):
+        if self._ptr:
+            _lib.vitalis_trie_free(self._ptr)
+            self._ptr = None
+
+class BloomFilter:
+    """Bloom filter backed by native Rust implementation."""
+    def __init__(self, size=1024, n_hashes=3):
+        self._ptr = _lib.vitalis_bloom_new(size, n_hashes)
+    def insert(self, item):
+        _lib.vitalis_bloom_insert(self._ptr, item)
+    def contains(self, item):
+        return bool(_lib.vitalis_bloom_contains(self._ptr, item))
+    def __del__(self):
+        if self._ptr:
+            _lib.vitalis_bloom_free(self._ptr)
+            self._ptr = None
+
+
+# ============================================================================
+# v10.0: Combinatorial Optimization
+# ============================================================================
+
+_lib.vitalis_knapsack_01.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
+_lib.vitalis_knapsack_01.restype = ctypes.c_double
+
+_lib.vitalis_knapsack_fractional.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double]
+_lib.vitalis_knapsack_fractional.restype = ctypes.c_double
+
+_lib.vitalis_simplex.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_simplex.restype = ctypes.c_double
+
+_lib.vitalis_bin_packing_ffd.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_double, ctypes.POINTER(ctypes.c_int32)]
+_lib.vitalis_bin_packing_ffd.restype = ctypes.c_int32
+
+_lib.vitalis_coin_change.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_int32]
+_lib.vitalis_coin_change.restype = ctypes.c_int32
+
+_lib.vitalis_lis_length.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_lis_length.restype = ctypes.c_int32
+
+_lib.vitalis_job_scheduling.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+_lib.vitalis_job_scheduling.restype = ctypes.c_double
+
+_lib.vitalis_activity_selection.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
+_lib.vitalis_activity_selection.restype = ctypes.c_int32
+
+_lib.vitalis_matrix_chain_order.argtypes = [ctypes.POINTER(ctypes.c_int64), ctypes.c_size_t]
+_lib.vitalis_matrix_chain_order.restype = ctypes.c_int64
+
+_lib.vitalis_genetic_sphere.argtypes = [ctypes.c_size_t, ctypes.c_double, ctypes.c_double, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_double, ctypes.c_uint64, ctypes.POINTER(ctypes.c_double)]
+_lib.vitalis_genetic_sphere.restype = ctypes.c_double
+
+_lib.vitalis_tsp_nearest_neighbor.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t, ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t)]
+_lib.vitalis_tsp_nearest_neighbor.restype = ctypes.c_double
+
+def opt_knapsack_01(weights, values, capacity):
+    """0/1 Knapsack DP. Returns (max_value, selected_indices)."""
+    n = len(weights)
+    w = (ctypes.c_double * n)(*weights)
+    v = (ctypes.c_double * n)(*values)
+    sel = (ctypes.c_int32 * n)()
+    val = _lib.vitalis_knapsack_01(w, v, n, capacity, sel)
+    return val, [i for i in range(n) if sel[i]]
+
+def opt_knapsack_fractional(weights, values, capacity):
+    """Fractional knapsack (greedy). Returns max value."""
+    n = len(weights)
+    w = (ctypes.c_double * n)(*weights)
+    v = (ctypes.c_double * n)(*values)
+    return _lib.vitalis_knapsack_fractional(w, v, n, capacity)
+
+def opt_simplex(a_matrix, b_vec, c_vec, m, n):
+    """Simplex LP: maximize c^T x s.t. Ax<=b. Returns (opt_value, x)."""
+    a = (ctypes.c_double * len(a_matrix))(*a_matrix)
+    b = (ctypes.c_double * m)(*b_vec)
+    c = (ctypes.c_double * n)(*c_vec)
+    x = (ctypes.c_double * n)()
+    val = _lib.vitalis_simplex(a, b, c, m, n, x)
+    return val, list(x)
+
+def opt_bin_packing(items, bin_capacity):
+    """First Fit Decreasing bin packing. Returns (n_bins, assignments)."""
+    n = len(items)
+    it = (ctypes.c_double * n)(*items)
+    assign = (ctypes.c_int32 * n)()
+    bins = _lib.vitalis_bin_packing_ffd(it, n, bin_capacity, assign)
+    return bins, list(assign)
+
+def opt_coin_change(coins, amount):
+    """Minimum coins to make amount. Returns count or -1."""
+    n = len(coins)
+    c = (ctypes.c_int32 * n)(*coins)
+    return _lib.vitalis_coin_change(c, n, amount)
+
+def opt_lis_length(data):
+    """Length of longest increasing subsequence."""
+    n = len(data)
+    arr = (ctypes.c_double * n)(*data)
+    return _lib.vitalis_lis_length(arr, n)
+
+def opt_job_scheduling(starts, ends, values):
+    """Weighted job scheduling. Returns max value."""
+    n = len(starts)
+    s = (ctypes.c_double * n)(*starts)
+    e = (ctypes.c_double * n)(*ends)
+    v = (ctypes.c_double * n)(*values)
+    return _lib.vitalis_job_scheduling(s, e, v, n)
+
+def opt_activity_selection(starts, ends):
+    """Activity selection (greedy). Returns (count, selected_mask)."""
+    n = len(starts)
+    s = (ctypes.c_double * n)(*starts)
+    e = (ctypes.c_double * n)(*ends)
+    sel = (ctypes.c_int32 * n)()
+    count = _lib.vitalis_activity_selection(s, e, n, sel)
+    return count, list(sel)
+
+def opt_matrix_chain(dims):
+    """Matrix chain multiplication order. Returns min scalar multiplications."""
+    n = len(dims) - 1
+    d = (ctypes.c_int64 * len(dims))(*dims)
+    return _lib.vitalis_matrix_chain_order(d, n)
+
+def opt_genetic_sphere(dimensions, lo=-5.0, hi=5.0, pop=50, generations=100, mutation_rate=0.1, seed=42):
+    """Genetic algorithm on sphere function. Returns (fitness, best_solution)."""
+    best = (ctypes.c_double * dimensions)()
+    fit = _lib.vitalis_genetic_sphere(dimensions, lo, hi, pop, generations, mutation_rate, seed, best)
+    return fit, list(best)
+
+def opt_tsp_nearest_neighbor(dist_matrix, n, start=0):
+    """TSP nearest-neighbor heuristic. Returns (length, tour)."""
+    d = (ctypes.c_double * len(dist_matrix))(*dist_matrix)
+    tour = (ctypes.c_size_t * n)()
+    length = _lib.vitalis_tsp_nearest_neighbor(d, n, start, tour)
+    return length, list(tour)
+
+
+# ============================================================================
 # Module metadata
 # ============================================================================
 
@@ -3032,5 +3599,25 @@ __all__ = [
     "latency_score", "efficiency_ratio", "throughput_efficiency",
     "system_health", "score_decay_fitness", "sigmoid_fitness",
     "tournament_fitness",
+    # v10.0: Machine Learning
+    "ml_kmeans", "ml_knn", "ml_naive_bayes", "ml_logistic_regression",
+    "ml_logistic_predict", "ml_pca", "ml_decision_stump", "ml_dbscan",
+    "ml_accuracy", "ml_precision", "ml_recall", "ml_f1",
+    "ml_mse", "ml_mae", "ml_r2", "ml_cosine_similarity", "ml_silhouette",
+    # v10.0: Computational Geometry
+    "geo_convex_hull", "geo_point_in_polygon", "geo_line_intersection",
+    "geo_closest_pair", "geo_polygon_area", "geo_polygon_perimeter",
+    "geo_triangle_area", "geo_is_convex", "geo_distance_3d",
+    # v10.0: Sorting & Searching
+    "sort_quicksort", "sort_mergesort", "sort_heapsort", "sort_radixsort",
+    "sort_binary_search", "sort_quickselect", "sort_is_sorted", "sort_inversion_count",
+    # v10.0: Automata & Pattern Matching
+    "auto_aho_corasick", "auto_regex_match", "auto_levenshtein_within",
+    "Trie", "BloomFilter",
+    # v10.0: Combinatorial Optimization
+    "opt_knapsack_01", "opt_knapsack_fractional", "opt_simplex",
+    "opt_bin_packing", "opt_coin_change", "opt_lis_length",
+    "opt_job_scheduling", "opt_activity_selection", "opt_matrix_chain",
+    "opt_genetic_sphere", "opt_tsp_nearest_neighbor",
 ]
 

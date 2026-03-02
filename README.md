@@ -15,8 +15,8 @@
 
 [![Rust](https://img.shields.io/badge/Rust-Edition%202024-F74C00?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Cranelift](https://img.shields.io/badge/Backend-Cranelift%200.116-4B8BBE?style=flat-square)](https://cranelift.dev/)
-[![Tests](https://img.shields.io/badge/Tests-470%20passing-00C853?style=flat-square)](.)
-[![LOC](https://img.shields.io/badge/Rust%20LOC-24%2C769-blueviolet?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/Tests-542%20passing-00C853?style=flat-square)](.)
+[![LOC](https://img.shields.io/badge/Rust%20LOC-28%2C412-blueviolet?style=flat-square)](.)
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache--2.0-blue?style=flat-square)](LICENSE-MIT)
 [![CI](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml/badge.svg)](https://github.com/ModernOps888/vitalis/actions/workflows/ci.yml)
 
@@ -26,7 +26,7 @@
 │                  → IR (SSA) → Cranelift JIT → Native  │
 │                                                        │
 │   7.5× faster than Python  ·  29.1× peak speedup      │
-│   470 tests  ·  31 source files  ·  14 algo libraries  │
+│   542 tests  ·  36 source files  ·  19 algo libraries  │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -45,8 +45,8 @@
 - [Architecture](#️-architecture)
 - [Language Features](#-language-features)
 - [Code Evolution](#-code-evolution--the-killer-feature)
-- [Python Integration](#-python-integration-304-apis)
-- [Algorithm Libraries](#-14-algorithm-libraries)
+- [Python Integration](#-python-integration-354-apis)
+- [Algorithm Libraries](#-19-algorithm-libraries)
 - [Benchmarks](#-benchmarks-vitalis-vs-python)
 - [Hot-Path Native Ops](#-hot-path-native-operations)
 - [CLI Reference](#️-cli-reference)
@@ -76,7 +76,7 @@ Most languages make you choose: **fast** or **flexible**. Vitalis gives you both
 
 2. **Functions that evolve themselves** — Mark any function `@evolvable`. Mutate it at runtime. Score its fitness. Roll back if it regresses. The compiler tracks every generation. Your code literally gets better over time.
 
-3. **Python as a first-class citizen** — Import `vitalis` in Python, get 304 native Rust functions. No subprocess, no REST API, no serialization. Pure FFI.
+3. **Python as a first-class citizen** — Import `vitalis` in Python, get 354 native Rust functions. No subprocess, no REST API, no serialization. Pure FFI.
 
 ```rust
 // hello.sl — Your first Vitalis program
@@ -334,9 +334,9 @@ Beyond basic `@evolvable`, Vitalis includes a full evolution engine:
 
 ---
 
-## 🐍 Python Integration (304 APIs)
+## 🐍 Python Integration (354 APIs)
 
-Vitalis ships a complete Python wrapper (`python/vitalis.py`, 2,500 LOC) with 304 exported functions. Import it and call native Rust from Python — no subprocess, no REST API, just FFI.
+Vitalis ships a complete Python wrapper (`python/vitalis.py`, 3,600 LOC) with 354 exported functions. Import it and call native Rust from Python — no subprocess, no REST API, just FFI.
 
 ### Core Compiler
 
@@ -423,7 +423,7 @@ reg = vitalis.linear_regression(xs, ys)       # Least squares
 
 ---
 
-## 📦 14 Algorithm Libraries
+## 📦 19 Algorithm Libraries
 
 Every module is written in pure Rust with full test coverage. All functions are callable from Python via FFI.
 
@@ -522,6 +522,41 @@ SQL injection detection · XSS detection · Path traversal detection · Command 
 <summary><b>📏 Scoring & Metrics</b> — 470 LOC · 19 tests</summary>
 
 Halstead software metrics · Maintainability index · Tech debt ratio · Elo rating (update + expected) · Welch's t-test · Cohen's d · Mann-Whitney U · Wilson score · Bayesian A/B testing · Pareto dominance/ranking · Geometric/Harmonic/Power mean · Latency scoring · System health composite
+
+</details>
+
+<details>
+<summary><b>🧠 Machine Learning</b> — 580 LOC · 14 tests <sup>v10.0</sup></summary>
+
+K-means clustering · KNN classification · Gaussian Naive Bayes · Logistic regression (train + predict) · PCA (power iteration) · SVD (singular values) · Decision stump (Gini) · DBSCAN density clustering · LDA 2-class · Adam/SGD/RMSProp optimizers · Accuracy/Precision/Recall/F1 · MSE/MAE/R² · Silhouette score · Cosine similarity · K-fold cross-validation
+
+</details>
+
+<details>
+<summary><b>📐 Computational Geometry</b> — 490 LOC · 18 tests <sup>v10.0</sup></summary>
+
+Convex hull (Andrew's monotone chain) · Point-in-polygon (ray casting) · Line segment intersection · Closest pair of points · Polygon area/centroid/perimeter · Triangle area · Is-convex check · Point-to-line/segment distance · Circumscribed circle · Minimum enclosing circle (Welzl's) · Bounding box · Fan triangulation · 2D rotation · Collinearity · Angle between vectors · 3D cross product/distance · Spherical-to-Cartesian
+
+</details>
+
+<details>
+<summary><b>🔀 Sorting & Searching</b> — 380 LOC · 15 tests <sup>v10.0</sup></summary>
+
+QuickSort (median-of-three) · MergeSort · HeapSort · RadixSort · InsertionSort · ShellSort (Knuth) · CountingSort · Binary search · Lower/Upper bound · Interpolation search · QuickSelect (k-th) · Reservoir sampling · Is-sorted check · Inversion count · Partial sort · Rank computation
+
+</details>
+
+<details>
+<summary><b>🤖 Automata & Patterns</b> — 440 LOC · 10 tests <sup>v10.0</sup></summary>
+
+Aho-Corasick multi-pattern search (full automaton with fail links) · Bloom filter (create/insert/contains) · Count-Min Sketch (create/add/estimate) · Simple regex engine (`.`, `*`, `+`, `?`, `|`, `[a-z]`) · Trie (prefix tree: insert/contains/starts_with/count_prefix) · Finite state machine simulator · Levenshtein automaton (threshold check)
+
+</details>
+
+<details>
+<summary><b>🎯 Combinatorial Optimization</b> — 470 LOC · 12 tests <sup>v10.0</sup></summary>
+
+0/1 Knapsack (DP) · Fractional knapsack (greedy) · Hungarian assignment · Simplex LP solver · Genetic algorithm (sphere function) · Ant colony optimization (TSP) · TSP nearest neighbor · First Fit Decreasing bin packing · Weighted job scheduling · Coin change (DP) · Longest increasing subsequence · Activity selection · Matrix chain multiplication
 
 </details>
 
@@ -694,7 +729,7 @@ vitalis/
 │   ├── optimizer.rs            # Multi-pass optimization
 │   ├── simd_ops.rs             # SIMD-accelerated operations
 │   │
-│   │  ── Algorithm Libraries (14 modules, 9,778 LOC) ──
+│   │  ── Algorithm Libraries (19 modules, 12,138 LOC) ──
 │   ├── signal_processing.rs    # FFT, filters, windowing
 │   ├── crypto.rs               # SHA-256, HMAC, Base64, CRC
 │   ├── graph.rs                # BFS, Dijkstra, PageRank, SCC
@@ -711,7 +746,7 @@ vitalis/
 │   └── scoring.rs              # Halstead, Elo, A/B testing
 │
 ├── python/
-│   └── vitalis.py              # Python wrapper — 2,500 LOC, 304 exports
+│   └── vitalis.py              # Python wrapper — 3,600 LOC, 354 exports
 ├── examples/                   # 8 example .sl programs
 ├── docs/
 │   ├── LANGUAGE_GUIDE.md       # Complete language reference

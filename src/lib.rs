@@ -1,4 +1,4 @@
-//! Vitalis v9.0 — A JIT-compiled programming language with built-in code evolution,
+//! Vitalis v10.0 — A JIT-compiled programming language with built-in code evolution,
 //! multi-domain algorithm libraries, and native performance via Cranelift.
 //!
 //! Final community release. This library provides the compiler pipeline
@@ -15,7 +15,7 @@
 //!                                                   Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v9.0 — 28 modules)
+//! # Module Domains (v10.0 — 33 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Evolution**: evolution, engine, meta_evolution, optimizer
 //! - **Memory**: memory (engram store)
@@ -32,6 +32,11 @@
 //! - **Analytics & Reporting**: analytics (time-series, anomaly detection, forecasting)
 //! - **Security Guardrails**: security (validation, injection detection, sandboxing)
 //! - **Scoring & Fitness**: scoring (code quality, ELO, Pareto, A/B testing)
+//! - **Machine Learning**: ml (k-means, KNN, Naive Bayes, PCA, DBSCAN, LDA)
+//! - **Computational Geometry**: geometry (convex hull, Voronoi, Welzl, triangulation)
+//! - **Sorting & Searching**: sorting (quicksort, mergesort, radixsort, binary search)
+//! - **Automata & Patterns**: automata (Aho-Corasick, Bloom filter, tries, regex)
+//! - **Combinatorial Optimization**: combinatorial (knapsack, TSP, simplex, genetic)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -80,6 +85,13 @@ pub mod security;
 
 // ── Scoring & Fitness Evaluation (v9.0) ──────────────────────────────
 pub mod scoring;
+
+// ── Machine Learning, Geometry, Sorting, Automata, Optimization (v10.0)
+pub mod ml;
+pub mod geometry;
+pub mod sorting;
+pub mod automata;
+pub mod combinatorial;
 
 // ── FFI Bridge ───────────────────────────────────────────────────────
 pub mod bridge;
