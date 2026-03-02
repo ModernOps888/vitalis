@@ -72,76 +72,77 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 The compiler transforms source code through six stages, each producing a well-defined intermediate form:
 
 ```mermaid
-graph LR
-    subgraph " "
-        direction LR
-        A["📄 Source<br><code>.sl</code>"] --> B["🔤 Lexer<br><code>lexer.rs</code>"]
-        B --> C["🌳 Parser<br><code>parser.rs</code>"]
-        C --> D["✅ Type Checker<br><code>types.rs</code>"]
-        D --> E["📐 IR Builder<br><code>ir.rs</code>"]
-        E --> F["⚡ Codegen<br><code>codegen.rs</code>"]
-        F --> G["🖥 Native<br>Machine Code"]
-    end
+flowchart TB
+    A["📄 Source Code\n.sl files"] -->|tokenize| B["🔤 LEXER\nlexer.rs"]
+    B -->|parse| C["🌳 PARSER\nparser.rs"]
+    C -->|validate| D["✅ TYPE CHECKER\ntypes.rs"]
+    D -->|lower| E["📐 IR BUILDER\nir.rs"]
+    E -->|compile| F["⚡ CODEGEN\ncodegen.rs"]
+    F -->|emit| G["🖥️ NATIVE MACHINE CODE\nx86-64"]
 
-    style A fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style C fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style D fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style E fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style F fill:#1a1a2e,stroke:#e94560,color:#fff
-    style G fill:#16213e,stroke:#00c853,color:#fff
+    style A fill:#2d1b69,stroke:#a855f7,stroke-width:3px,color:#f0e6ff,font-weight:bold
+    style B fill:#1e3a5f,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
+    style C fill:#1e3a5f,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
+    style D fill:#1e3a5f,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
+    style E fill:#1e3a5f,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
+    style F fill:#4a1942,stroke:#f472b6,stroke-width:3px,color:#fce7f3,font-weight:bold
+    style G fill:#0f3d1e,stroke:#4ade80,stroke-width:4px,color:#dcfce7,font-weight:bold
 ```
 
 ### Compiler Pipeline Detail
 
 ```mermaid
-graph TB
-    subgraph LEX ["🔤 Stage 1 — Lexer"]
-        L1[/"Source text"/] --> L2["Logos tokenizer<br>~80 token variants"]
-        L2 --> L3[/"Token stream"/]
+flowchart TB
+    subgraph LEX ["🔤 STAGE 1 · LEXER"]
+        direction TB
+        L1(["📄 Source text"]) --> L2["Logos zero-copy tokenizer\n~80 token variants"]
+        L2 --> L3(["Token stream"])
     end
 
-    subgraph PARSE ["🌳 Stage 2 — Parser"]
-        P1["Recursive descent<br>+ Pratt precedence"] --> P2["30+ Expr variants<br>10 Stmt variants<br>12 TopLevel variants"]
-        P2 --> P3[/"AST with Span tracking"/]
+    subgraph PARSE ["🌳 STAGE 2 · PARSER"]
+        direction TB
+        P1["Recursive descent + Pratt precedence"] --> P2["30+ Expr · 10 Stmt · 12 TopLevel"]
+        P2 --> P3(["AST with Span tracking"])
     end
 
-    subgraph TYPE ["✅ Stage 3 — Type Checker"]
-        T1["Two-pass analysis"] --> T2["Pass 1: Collect signatures"]
-        T2 --> T3["Pass 2: Check bodies"]
-        T3 --> T4[/"Typed + validated AST"/]
+    subgraph TYPE ["✅ STAGE 3 · TYPE CHECKER"]
+        direction TB
+        T1["Pass 1 → Collect all signatures"] --> T2["Pass 2 → Check all bodies"]
+        T2 --> T3(["Fully typed + validated AST"])
     end
 
-    subgraph IR ["📐 Stage 4 — IR Builder"]
-        I1["SSA construction"] --> I2["26+ IR instructions"]
-        I2 --> I3["Struct layout · Field access<br>Loop stack · Closure capture"]
-        I3 --> I4[/"SSA IR Module"/]
+    subgraph IR ["📐 STAGE 4 · IR BUILDER"]
+        direction TB
+        I1["SSA construction · 26+ instructions"] --> I2["Struct layout · Closures · Loops"]
+        I2 --> I3(["SSA IR Module"])
     end
 
-    subgraph CODEGEN ["⚡ Stage 5 — Codegen"]
-        C1["Cranelift 0.116"] --> C2["Register allocation<br>Instruction selection"]
+    subgraph CG ["⚡ STAGE 5 · CODEGEN"]
+        direction TB
+        C1["Cranelift 0.116 JIT"] --> C2["Register alloc · Instruction select"]
         C2 --> C3["204 extern C runtime functions"]
-        C3 --> C4[/"Native x86-64 machine code"/]
+        C3 --> C4(["Native x86-64 machine code"])
     end
 
-    subgraph FFI ["🐍 Stage 6 — FFI Bridge"]
-        F1["bridge.rs — extern C ABI"] --> F2["vitalis.dll / .so"]
-        F2 --> F3["vitalis.py — ctypes wrapper"]
-        F3 --> F4[/"Python interop"/]
+    subgraph FFI ["🐍 STAGE 6 · FFI BRIDGE"]
+        direction TB
+        F1["bridge.rs · extern C ABI"] --> F2["vitalis.dll / libvitalis.so"]
+        F2 --> F3["vitalis.py · ctypes"]
+        F3 --> F4(["Python interop"])
     end
 
-    L3 --> PARSE
-    P3 --> TYPE
-    T4 --> IR
-    I4 --> CODEGEN
-    C4 --> FFI
+    LEX ==> PARSE
+    PARSE ==> TYPE
+    TYPE ==> IR
+    IR ==> CG
+    CG ==> FFI
 
-    style LEX fill:#0d1117,stroke:#58a6ff,color:#c9d1d9
-    style PARSE fill:#0d1117,stroke:#58a6ff,color:#c9d1d9
-    style TYPE fill:#0d1117,stroke:#58a6ff,color:#c9d1d9
-    style IR fill:#0d1117,stroke:#58a6ff,color:#c9d1d9
-    style CODEGEN fill:#0d1117,stroke:#f78166,color:#c9d1d9
-    style FFI fill:#0d1117,stroke:#3fb950,color:#c9d1d9
+    style LEX fill:#0c1222,stroke:#38bdf8,stroke-width:2px,color:#e0f2fe
+    style PARSE fill:#0c1222,stroke:#818cf8,stroke-width:2px,color:#e0e7ff
+    style TYPE fill:#0c1222,stroke:#a78bfa,stroke-width:2px,color:#ede9fe
+    style IR fill:#0c1222,stroke:#c084fc,stroke-width:2px,color:#f3e8ff
+    style CG fill:#1a0c0c,stroke:#fb923c,stroke-width:3px,color:#fff7ed
+    style FFI fill:#0c1a0c,stroke:#4ade80,stroke-width:3px,color:#dcfce7
 ```
 
 <br>
@@ -151,52 +152,63 @@ graph TB
 Every source file has a single responsibility. The codebase is organized into **four layers**:
 
 ```mermaid
-graph TB
-    subgraph CORE ["⚙️ Core Compiler — 10,400 LOC"]
-        lexer["lexer.rs<br><sub>637 lines · Logos tokenizer</sub>"]
-        parser["parser.rs<br><sub>1,905 lines · Recursive descent</sub>"]
-        ast["ast.rs<br><sub>594 lines · 30+ expression types</sub>"]
-        types["types.rs<br><sub>929 lines · Two-pass checker</sub>"]
-        ir["ir.rs<br><sub>2,025 lines · SSA builder</sub>"]
-        codegen["codegen.rs<br><sub>3,852 lines · Cranelift JIT</sub>"]
-        stdlib["stdlib.rs<br><sub>290 lines · 200 builtins</sub>"]
+block-beta
+    columns 4
+
+    block:CORE:4
+        columns 4
+        A["⚙️ CORE COMPILER · 10,400 LOC"]:4
+        B["lexer.rs\n637 lines"]
+        C["parser.rs\n1,905 lines"]
+        D["ast.rs\n594 lines"]
+        E["types.rs\n929 lines"]
+        F["ir.rs\n2,025 lines"]
+        G["codegen.rs\n3,852 lines"]
+        H["stdlib.rs\n290 lines"]
+        I["bridge.rs\n845 lines"]
     end
 
-    subgraph EVO ["🧬 Evolution Engine — 2,500 LOC"]
-        evolution["evolution.rs<br><sub>Generational tracking</sub>"]
-        evo_adv["evolution_advanced.rs<br><sub>Multi-strategy evolution</sub>"]
-        meta_evo["meta_evolution.rs<br><sub>Self-modifying strategies</sub>"]
+    block:EVO:2
+        columns 1
+        J["🧬 EVOLUTION · 2,500 LOC"]
+        K["evolution.rs\nGenerational tracking"]
+        L["evolution_advanced.rs\nMulti-strategy"]
+        M["meta_evolution.rs\nSelf-modifying"]
     end
 
-    subgraph MATH ["📊 Domain Libraries — 17,000 LOC"]
-        ml["ml.rs<br><sub>Neural nets · Regression</sub>"]
-        quantum["quantum.rs + algorithms + math<br><sub>Quantum circuits · Grover</sub>"]
-        graph["graph.rs<br><sub>Dijkstra · BFS · MST</sub>"]
-        numerical["numerical.rs<br><sub>ODE · Integration · FFT</sub>"]
-        signal["signal_processing.rs<br><sub>DSP · Filters · Convolution</sub>"]
-        bio["bioinformatics.rs<br><sub>DNA · Alignment · BLAST</sub>"]
-        neuro["neuromorphic.rs<br><sub>Spiking neurons · STDP</sub>"]
-        crypto["crypto.rs + security.rs<br><sub>SHA-256 · AES · HMAC</sub>"]
-        MORE["geometry · sorting · automata<br>combinatorial · probability<br>analytics · compression · chemistry"]
+    block:PERF:2
+        columns 1
+        N["🚀 PERFORMANCE · 5,800 LOC"]
+        O["hotpath.rs · 2,106 lines"]
+        P["simd_ops.rs · 846 lines"]
+        Q["optimizer.rs · 1,294 lines"]
     end
 
-    subgraph PERF ["🚀 Performance Layer — 5,800 LOC"]
-        hotpath["hotpath.rs<br><sub>2,106 lines · Native Rust ops</sub>"]
-        simd["simd_ops.rs<br><sub>846 lines · SIMD vectorization</sub>"]
-        optimizer["optimizer.rs<br><sub>1,294 lines · IR optimization</sub>"]
-        engine["engine.rs<br><sub>852 lines · Pipeline engine</sub>"]
-        memory["memory.rs<br><sub>802 lines · Engram memory</sub>"]
-        scoring["scoring.rs<br><sub>470 lines · Fitness scoring</sub>"]
+    block:MATH:4
+        columns 4
+        R["📊 DOMAIN LIBRARIES · 17,000 LOC"]:4
+        S["ml.rs\nNeural nets"]
+        T["quantum.rs\nCircuits"]
+        U["graph.rs\nDijkstra"]
+        V["numerical.rs\nODE · FFT"]
+        W["signal.rs\nDSP"]
+        X["bio.rs\nDNA"]
+        Y["neuro.rs\nSpiking"]
+        Z["crypto.rs\nSHA-256"]
     end
 
     CORE --> EVO
-    CORE --> MATH
     CORE --> PERF
+    CORE --> MATH
 
-    style CORE fill:#161b22,stroke:#58a6ff,color:#c9d1d9
-    style EVO fill:#161b22,stroke:#f778ba,color:#c9d1d9
-    style MATH fill:#161b22,stroke:#d2a8ff,color:#c9d1d9
-    style PERF fill:#161b22,stroke:#f78166,color:#c9d1d9
+    style CORE fill:#0c1222,stroke:#38bdf8,stroke-width:3px,color:#bae6fd
+    style EVO fill:#1a0c22,stroke:#e879f9,stroke-width:3px,color:#f5d0fe
+    style PERF fill:#1a0c0c,stroke:#fb923c,stroke-width:3px,color:#fed7aa
+    style MATH fill:#0c1a22,stroke:#a78bfa,stroke-width:3px,color:#ddd6fe
+    style A fill:#1e3a5f,stroke:#38bdf8,color:#e0f2fe
+    style J fill:#2d1042,stroke:#e879f9,color:#f5d0fe
+    style N fill:#2d1a0a,stroke:#fb923c,color:#fed7aa
+    style R fill:#1a1040,stroke:#a78bfa,color:#ddd6fe
 ```
 
 <br>
@@ -480,24 +492,24 @@ let status: i64 = http_status("https://example.com");
 Vitalis's signature feature: **programs that evolve themselves.**
 
 ```mermaid
-graph LR
-    subgraph CYCLE ["Evolution Cycle"]
-        direction LR
-        R["Register<br>@evolvable fn"] --> M["Mutate<br>source code"]
-        M --> E["Evaluate<br>fitness score"]
-        E --> S{"Fitter?"}
-        S -->|Yes| P["Promote<br>new generation"]
-        S -->|No| K["Rollback<br>keep previous"]
-        P --> M
-        K --> M
-    end
+flowchart TB
+    R(["📝 REGISTER\n@evolvable fn"]) ==> M
 
-    style R fill:#1a1a2e,stroke:#e94560,color:#fff
-    style M fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style E fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style S fill:#1a1a2e,stroke:#f0db4f,color:#fff
-    style P fill:#1a1a2e,stroke:#00c853,color:#fff
-    style K fill:#1a1a2e,stroke:#ff5252,color:#fff
+    M["🧪 MUTATE\nsource code"] ==> E["📊 EVALUATE\nfitness score"]
+    E ==> S{"🏆 Fitter?"}
+
+    S -->|"✅ Yes"| P["⬆️ PROMOTE\nnew generation"]
+    S -->|"❌ No"| K["⬇️ ROLLBACK\nkeep previous"]
+
+    P -.->|"next cycle"| M
+    K -.->|"retry"| M
+
+    style R fill:#2d1b69,stroke:#a855f7,stroke-width:3px,color:#f0e6ff,font-weight:bold
+    style M fill:#1e3a5f,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
+    style E fill:#1e3a5f,stroke:#818cf8,stroke-width:2px,color:#e0e7ff
+    style S fill:#4a3800,stroke:#fbbf24,stroke-width:3px,color:#fef3c7,font-weight:bold
+    style P fill:#0f3d1e,stroke:#4ade80,stroke-width:3px,color:#dcfce7,font-weight:bold
+    style K fill:#3d0f0f,stroke:#f87171,stroke-width:3px,color:#fee2e2,font-weight:bold
 ```
 
 ```rust
@@ -541,40 +553,41 @@ Eight features that no other language combines:
 
 ```mermaid
 mindmap
-  root((Vitalis))
-    🧬 Code Evolution
+  root(("🧬 VITALIS"))
+    ::icon(🧬)
+    🧬 **Code Evolution**
       @evolvable functions
       Generational tracking
       Fitness-driven mutation
-      Auto-rollback
-    🧠 Engram Memory
-      Persistent state
-      Pattern recall
-      Cross-session learning
-    🔄 Meta-Evolution
+      Automatic rollback on regression
+    🧠 **Engram Memory**
+      Persistent cross-session state
+      Pattern recall and recognition
+      Temporal decay and reinforcement
+    🔄 **Meta-Evolution**
       Strategies that evolve themselves
-      Multi-strategy selection
-      Adaptive mutation rates
-    ⚡ Predictive JIT
-      Cranelift native codegen
-      Hot-path optimization
-      SIMD vectorization
-    🔐 Capability Safety
-      Sandboxed execution
-      Permission-based I/O
-      Asimov's Laws enforcement
-    🧪 Origin Tracking
-      Every AST node has Span
-      Full provenance chain
-      Debug trace to source
-    🔗 Pipe Operator
-      Data flow pipelines
-      Functional composition
-      Stage-based processing
-    💭 Consciousness Keywords
-      memorize / recall / forget
-      reflect / evolve / mutate
-      sandbox / rollback
+      Multi-strategy tournament selection
+      Adaptive mutation rates via EMA
+    ⚡ **Cranelift JIT**
+      Native x86-64 machine code
+      Hot-path bypass to Rust
+      SIMD vectorized operations
+    🔐 **Capability Safety**
+      Sandboxed execution environment
+      Permission-based file and network I/O
+      Asimov's Laws enforcement layer
+    🧪 **Origin Tracking**
+      Every AST node carries Span
+      Full provenance chain to source
+      Debug trace through IR to native
+    🔗 **Pipe Operator**
+      Declarative data flow pipelines
+      Functional stage composition
+      First-class pipeline values
+    💭 **Consciousness Keywords**
+      memorize · recall · forget
+      reflect · evolve · mutate
+      sandbox · rollback · pipeline
 ```
 
 <br>
@@ -753,20 +766,29 @@ The Cranelift JIT backend compiles Vitalis code to native x86-64 machine code **
 Performance-critical operations bypass the JIT entirely and call native Rust functions directly:
 
 ```mermaid
-graph LR
-    V["Vitalis Code"] --> JIT["Cranelift JIT<br><sub>General code path</sub>"]
-    V --> HP["Hot-Path<br><sub>Native Rust FFI</sub>"]
-    
-    JIT --> X86["x86-64 native"]
-    HP --> SIMD["SIMD vectorized"]
-    HP --> NATIVE["Zero-copy Rust"]
-    
-    style V fill:#1a1a2e,stroke:#58a6ff,color:#fff
-    style JIT fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style HP fill:#1a1a2e,stroke:#e94560,color:#fff
-    style X86 fill:#161b22,stroke:#8b949e,color:#c9d1d9
-    style SIMD fill:#161b22,stroke:#f78166,color:#c9d1d9
-    style NATIVE fill:#161b22,stroke:#3fb950,color:#c9d1d9
+flowchart TB
+    V["📄 Vitalis Code"] --> JIT
+    V --> HP
+
+    subgraph JIT ["⚡ CRANELIFT JIT"]
+        direction TB
+        J1["IR lowering"] --> J2["Register allocation"]
+        J2 --> J3(["x86-64 native code"])
+    end
+
+    subgraph HP ["🚀 HOT-PATH BYPASS"]
+        direction TB
+        H1["Direct Rust FFI"] --> H2["SIMD vectorized ops"]
+        H1 --> H3["Zero-copy native"]
+        H2 --> H4(["< 1ns overhead"])
+        H3 --> H4
+    end
+
+    style V fill:#2d1b69,stroke:#a855f7,stroke-width:3px,color:#f0e6ff,font-weight:bold
+    style JIT fill:#0c1222,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
+    style HP fill:#1a0c0c,stroke:#f97316,stroke-width:3px,color:#fed7aa
+    style H4 fill:#0f3d1e,stroke:#4ade80,stroke-width:2px,color:#dcfce7
+    style J3 fill:#1e3a5f,stroke:#60a5fa,stroke-width:2px,color:#dbeafe
 ```
 
 <br>
@@ -892,37 +914,48 @@ Vitalis uses Rust Edition 2024 which has stricter rules:
 
 ```mermaid
 timeline
-    title Vitalis Evolution Timeline
-    
-    v1 - v5 : Core compiler
-             : Lexer + Parser + AST
-             : Cranelift JIT backend
-             : Basic types (i64, f64, bool, str)
-    
-    v6 - v10 : Standard library
-              : 100+ math functions
-              : String operations
-              : Array heap runtime
-    
-    v11 - v15 : Language features
-               : Closures + Lambdas
-               : File I/O + Maps + JSON
-               : Error handling
-               : Evolution engine
-    
-    v16 - v19 : General-purpose
-               : Structs + Impl blocks
-               : Try/Catch + Throw
-               : Sets + Tuples + Regex
-               : Modules + Networking
-               : Async stubs + Iterators
-    
-    v20+ : Future
-          : Full async runtime
-          : Trait system
-          : Generic types
-          : Package manager
-          : LSP server
+    title Vitalis — From Zero to Self-Evolving Language
+
+    v1 · Foundation
+        : Lexer with Logos tokenizer
+        : Recursive-descent Parser
+        : AST with 30+ expression types
+        : Cranelift 0.116 JIT backend
+
+    v5 · Type System
+        : Two-pass type checker
+        : i64, f64, bool, str types
+        : Heap-allocated arrays
+        : SSA-form IR builder
+
+    v10 · Standard Library
+        : 100+ math functions
+        : String operations + interning
+        : Array methods + sorting
+        : Random + hash + bit ops
+
+    v15 · Language Power
+        : Closures + Lambda expressions
+        : File I/O + Maps + JSON
+        : Error handling system
+        : Evolution engine + @evolvable
+        : 46 new stdlib functions
+
+    v19 · General Purpose
+        : Structs + Impl blocks
+        : Try/Catch/Throw
+        : Sets + Tuples + Regex
+        : Module system with namespaces
+        : HTTP networking + async stubs
+        : Iterator protocol + comprehensions
+
+    v20+ · The Future
+        : Full async/await runtime
+        : Trait system + generics
+        : Package manager + registry
+        : LSP server + IDE support
+        : WebAssembly target
+        : GPU compute backend
 ```
 
 <br>
