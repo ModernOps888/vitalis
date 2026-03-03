@@ -1,12 +1,16 @@
-//! Vitalis v21.0 — A JIT-compiled language with async/await, generics, WASM target,
+//! Vitalis v22.0 — A JIT/AOT-compiled language with async/await, generics, WASM target,
 //! LSP IDE support, GPU compute, package management, impl blocks, try/catch, closures
 //! with capture, stdlib functions, built-in code evolution, multi-domain algorithm
-//! libraries, and native Cranelift JIT performance.
+//! libraries, lifetime annotations, region analysis, effect system, capability types,
+//! incremental codegen, hot-reload, self-hosted compiler bootstrap, native AOT
+//! compilation, cross-compilation (x86_64, AArch64, RISC-V), and native Cranelift
+//! JIT performance.
 //!
-//! Enterprise-grade release with 47 modules spanning async runtimes, type-system
+//! Enterprise-grade release with 58 modules spanning async runtimes, type-system
 //! generics, WebAssembly compilation, GPU compute shaders, language server protocol,
 //! package management, quantum computing, bioinformatics, neuromorphic computation,
-//! advanced evolutionary algorithms, and physical sciences.
+//! advanced evolutionary algorithms, physical sciences, lifetime/region analysis,
+//! effect systems, AOT compilation, and cross-compilation targets.
 //! This library provides the compiler pipeline (lex → parse → type-check → IR → JIT)
 //! and a C FFI bridge so Python code (via ctypes) and other languages can compile
 //! and execute `.sl` code natively.
@@ -23,7 +27,7 @@
 //!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v21.0 — 47 modules)
+//! # Module Domains (v22.0 — 58 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
 //! - **Generics**: generics (type params, monomorphization, type inference, bounds)
@@ -55,6 +59,12 @@
 //! - **Sorting & Searching**: sorting (quicksort, mergesort, radixsort, binary search)
 //! - **Automata & Patterns**: automata (Aho-Corasick, Bloom filter, tries, regex)
 //! - **Combinatorial Optimization**: combinatorial (knapsack, TSP, simplex, genetic)
+//! - **Lifetime Annotations**: lifetimes (region variables, borrow scoping, outlives constraints)
+//! - **Effect System**: effects (IO, Net, FS, Async, GPU effects, capability tokens)
+//! - **Hot-Reload**: hot_reload (file watcher, incremental compile, live function swap)
+//! - **Self-Hosted Bootstrap**: bootstrap (Stage 0/1/2 pipeline, cross-validation)
+//! - **Native AOT Compilation**: aot (ObjectModule backend, static linking, standalone executables)
+//! - **Cross-Compilation**: cross_compile (x86_64, AArch64, RISC-V targets, ABI configs)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -161,3 +171,21 @@ pub mod dap;
 
 // ── v22: Interactive REPL ────────────────────────────────────────────
 pub mod repl;
+
+// ── v22: Lifetime Annotations & Region Analysis ─────────────────────
+pub mod lifetimes;
+
+// ── v22: Effect System & Capability Types ───────────────────────────
+pub mod effects;
+
+// ── v22: Hot-Reload Engine ──────────────────────────────────────────
+pub mod hot_reload;
+
+// ── v22: Self-Hosted Compiler Bootstrap ─────────────────────────────
+pub mod bootstrap;
+
+// ── v22: Native AOT Compilation ─────────────────────────────────────
+pub mod aot;
+
+// ── v22: Cross-Compilation Targets (ARM, RISC-V) ────────────────────
+pub mod cross_compile;

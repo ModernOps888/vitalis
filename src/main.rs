@@ -65,6 +65,21 @@ enum Command {
     },
     /// Start the interactive REPL
     Repl,
+    /// Build a standalone native executable (AOT compilation)
+    Build {
+        /// Path to the .sl source file
+        file: PathBuf,
+        /// Output file path
+        #[arg(short, long, default_value = "a.out")]
+        output: PathBuf,
+        /// Target triple (e.g., x86_64-linux-gnu, aarch64-linux-gnu, riscv64-linux-gnu)
+        #[arg(short, long)]
+        target: Option<String>,
+    },
+    /// List available cross-compilation targets
+    Targets,
+    /// Run the compiler bootstrap pipeline
+    Bootstrap,
 }
 
 fn read_source(path: &PathBuf) -> Result<String> {
@@ -166,6 +181,59 @@ fn main() -> Result<()> {
         Command::Repl => {
             vitalis::repl::run_interactive();
             Ok(())
+        }
+
+        Command::Build { file, output, target } => {
+            let source = read_source(&file)?;
+
+            let target_triple = if let Some(t) = target {
+                vitalis::aot::TargetTriple::parse(&t)
+                    .ok_or_else(|| miette!("unknown target: '{}'. Use `vtc targets` to list available targets.", t))?
+            } else {
+                vitalis::aot::TargetTriple::host()
+            };
+
+            let config = vitalis::aot::AotConfig {
+                target: target_triple,
+                output,
+                verbose: true,
+                ..Default::default()
+            };
+
+            let mut compiler = vitalis::aot::AotCompiler::new(config);
+            match compiler.compile_source(&source) {
+                Ok(result) => {
+                    println!("{}", result);
+                    Ok(())
+                }
+                Err(e) => Err(miette!("{}", e)),
+            }
+        }
+
+        Command::Targets => {
+            let cc = vitalis::cross_compile::CrossCompiler::new();
+            println!("{}", cc);
+            for target_name in cc.available_targets() {
+                if let Some(info) = cc.target_info(target_name) {
+                    println!("\n{}", info);
+                }
+            }
+            Ok(())
+        }
+
+        Command::Bootstrap => {
+            let config = vitalis::bootstrap::BootstrapConfig {
+                verbose: true,
+                ..Default::default()
+            };
+            let mut pipeline = vitalis::bootstrap::BootstrapPipeline::new(config);
+            let report = pipeline.run_full_bootstrap();
+            println!("{}", report);
+            if report.is_success() {
+                Ok(())
+            } else {
+                Err(miette!("bootstrap failed"))
+            }
         }
     }
 }

@@ -9,16 +9,16 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-976_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-37%2C813-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C043_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-41%2C772-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Version](https://img.shields.io/badge/v22.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
-Vitalis compiles to native machine code via Cranelift JIT, with first-class support for<br>
+Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
 self-modifying programs, genetic code evolution, and real-time fitness tracking.
 
-*Written from scratch in Rust. No LLVM. No interpreter. No VM. Pure native JIT.*
+*Written from scratch in Rust. No LLVM. No interpreter. No VM. JIT + AOT native compilation.*
 
 <br>
 
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**52**<br>
+**58**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**37,813**<br>
+**41,772**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**976**<br>
+**1,043**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -149,7 +149,7 @@ flowchart TB
 
 ### Module Map
 
-Every source file has a single responsibility. The codebase is organized into **four layers**:
+Every source file has a single responsibility. The codebase is organized into **six layers**:
 
 ```mermaid
 block-beta
@@ -184,6 +184,22 @@ block-beta
         Q["optimizer.rs · 1,294 lines"]
     end
 
+    block:SAFETY:2
+        columns 1
+        SA["🛡️ SAFETY & TOOLING · 3,900 LOC"]
+        SB["lifetimes.rs\nRegion analysis"]
+        SC["effects.rs\nCapability types"]
+        SD["hot_reload.rs\nLive reload"]
+    end
+
+    block:NATIVE:2
+        columns 1
+        NA["🎯 NATIVE TARGETS · 1,800 LOC"]
+        NB["aot.rs\nAOT compilation"]
+        NC["cross_compile.rs\nARM · RISC-V"]
+        ND["bootstrap.rs\nSelf-hosted"]
+    end
+
     block:MATH:4
         columns 4
         R["📊 DOMAIN LIBRARIES · 17,000 LOC"]:4
@@ -199,15 +215,21 @@ block-beta
 
     CORE --> EVO
     CORE --> PERF
+    CORE --> SAFETY
+    CORE --> NATIVE
     CORE --> MATH
 
     style CORE fill:#0c1222,stroke:#38bdf8,stroke-width:3px,color:#bae6fd
     style EVO fill:#1a0c22,stroke:#e879f9,stroke-width:3px,color:#f5d0fe
     style PERF fill:#1a0c0c,stroke:#fb923c,stroke-width:3px,color:#fed7aa
+    style SAFETY fill:#0c1a0c,stroke:#4ade80,stroke-width:3px,color:#dcfce7
+    style NATIVE fill:#1a1a0c,stroke:#fbbf24,stroke-width:3px,color:#fef3c7
     style MATH fill:#0c1a22,stroke:#a78bfa,stroke-width:3px,color:#ddd6fe
     style A fill:#1e3a5f,stroke:#38bdf8,color:#e0f2fe
     style J fill:#2d1042,stroke:#e879f9,color:#f5d0fe
     style N fill:#2d1a0a,stroke:#fb923c,color:#fed7aa
+    style SA fill:#0f3d1e,stroke:#4ade80,color:#dcfce7
+    style NA fill:#3d3d0a,stroke:#fbbf24,color:#fef3c7
     style R fill:#1a1040,stroke:#a78bfa,color:#ddd6fe
 ```
 
@@ -232,11 +254,23 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 870 tests
+# Run all 1,043 tests
 cargo test
 
 # Compile and run a .sl file
 cargo run -- run examples/hello.sl
+
+# AOT compile to standalone executable
+cargo run -- build examples/hello.sl --output hello
+
+# Cross-compile for ARM64
+cargo run -- build examples/hello.sl --target aarch64-unknown-linux-gnu
+
+# List available cross-compilation targets
+cargo run -- targets
+
+# Run bootstrap pipeline
+cargo run -- bootstrap examples/hello.sl
 ```
 
 ### Hello World
@@ -568,11 +602,15 @@ mindmap
       Strategies that evolve themselves
       Multi-strategy tournament selection
       Adaptive mutation rates via EMA
-    ⚡ **Cranelift JIT**
+    ⚡ **Cranelift JIT + AOT**
       Native x86-64 machine code
+      Ahead-of-time standalone executables
+      Cross-compilation (ARM64, RISC-V)
       Hot-path bypass to Rust
       SIMD vectorized operations
     🔐 **Capability Safety**
+      Effect system with capability types
+      Lifetime annotations + region analysis
       Sandboxed execution environment
       Permission-based file and network I/O
       Asimov's Laws enforcement layer
@@ -752,7 +790,7 @@ vitalis.evo_rollback("fn_name", gen)
 
 ### Compilation Speed
 
-The Cranelift JIT backend compiles Vitalis code to native x86-64 machine code **at runtime** — no ahead-of-time compilation step required.
+The Cranelift backend compiles Vitalis code to native x86-64 machine code via **JIT** at runtime or **AOT** for standalone executables. Cross-compilation to AArch64 (ARM64) and RISC-V 64 is also supported.
 
 | Metric | Value |
 |--------|-------|
@@ -760,6 +798,7 @@ The Cranelift JIT backend compiles Vitalis code to native x86-64 machine code **
 | Full pipeline (lex → native) | < 5ms for typical programs |
 | Runtime overhead vs C | ~1.2x (Cranelift optimization level) |
 | Hot-path Rust ops | 0x overhead (direct native calls) |
+| AOT targets | x86-64, AArch64, RISC-V 64 |
 
 ### Hot-Path Architecture
 
@@ -795,11 +834,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-976 tests across every compiler stage and v22 subsystem:
+1,043 tests across every compiler stage and v22 subsystem:
 
 ```
 $ cargo test
-test result: ok. 976 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1043 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -823,6 +862,12 @@ test result: ok. 976 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Incremental compilation | 22 | Hash caching, dep graph, topo sort |
 | DAP debugger | 28 | Breakpoints, stack, variables, stepping |
 | REPL | 15 | Interactive eval, commands, history |
+| Lifetime analysis | 10 | Region-based memory safety, borrow lifetimes |
+| Effect system | 10 | Capability types, algebraic effects |
+| Hot reload | 9 | File watching, incremental recompilation |
+| Bootstrap pipeline | 10 | Stage 0/1/2, self-hosted compiler |
+| AOT compilation | 10 | Native ahead-of-time code generation |
+| Cross-compilation | 18 | x86-64, AArch64, RISC-V targets |
 
 <br>
 
@@ -887,7 +932,14 @@ vitalis/
 │   ├── trait_dispatch.rs     # Trait dispatch — vtables, method resolution
 │   ├── incremental.rs        # Incremental compilation — hash caching, dep graph
 │   ├── dap.rs                # Debug Adapter Protocol — breakpoints, stack, stepping
-│   └── repl.rs               # Interactive REPL — eval, commands, history
+│   ├── repl.rs               # Interactive REPL — eval, commands, history
+│   │
+│   ├── lifetimes.rs          # Lifetime annotations — region analysis, borrow scopes
+│   ├── effects.rs            # Effect system — capability types, algebraic effects
+│   ├── hot_reload.rs         # Hot reload — file watching, incremental recompilation
+│   ├── bootstrap.rs          # Self-hosted bootstrap — Stage 0/1/2 pipeline
+│   ├── aot.rs                # AOT compilation — native ahead-of-time code generation
+│   └── cross_compile.rs      # Cross-compilation — x86-64, AArch64, RISC-V targets
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -997,15 +1049,21 @@ timeline
         : Full trait dispatch with vtables + method resolution
         : Debug Adapter Protocol (breakpoints, stack, variables, stepping)
         : Interactive REPL (eval, commands, history)
-        : 976 tests passing · 52 modules · 37,813 LOC
+        : Lifetime annotations + region-based memory analysis
+        : Effect system + capability types + algebraic effects
+        : Incremental codegen + hot-reload with file watching
+        : Self-hosted compiler bootstrap (Stage 0/1/2 pipeline)
+        : Native AOT compilation (standalone executables)
+        : Cross-compilation targets (x86-64, AArch64, RISC-V)
+        : 1,043 tests passing · 58 modules · 41,772 LOC
 
     v23+ · The Future
-        : Lifetime annotations + region analysis
-        : Effect system + capability types
-        : Incremental codegen + hot-reload
-        : Self-hosted compiler bootstrap
-        : Native AOT compilation (non-JIT)
-        : Cross-compilation targets (ARM, RISC-V)
+        : Borrow checker with full NLL (non-lexical lifetimes)
+        : Effect handlers with resumptions
+        : Distributed compilation across nodes
+        : WASM AOT target (compile .sl to .wasm files)
+        : ARM/RISC-V hardware validation
+        : Package registry server + vitalis install
 ```
 
 <br>
