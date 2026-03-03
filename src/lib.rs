@@ -1,9 +1,12 @@
-//! Vitalis v19.0 — A JIT-compiled language with impl blocks, try/catch, closures with capture,
-//! stdlib functions (strings, file I/O, maps, error handling, JSON, system), built-in
-//! code evolution, multi-domain algorithm libraries, and native Cranelift JIT performance.
+//! Vitalis v21.0 — A JIT-compiled language with async/await, generics, WASM target,
+//! LSP IDE support, GPU compute, package management, impl blocks, try/catch, closures
+//! with capture, stdlib functions, built-in code evolution, multi-domain algorithm
+//! libraries, and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 38 modules spanning quantum computing, bioinformatics,
-//! neuromorphic computation, advanced evolutionary algorithms, and physical sciences.
+//! Enterprise-grade release with 47 modules spanning async runtimes, type-system
+//! generics, WebAssembly compilation, GPU compute shaders, language server protocol,
+//! package management, quantum computing, bioinformatics, neuromorphic computation,
+//! advanced evolutionary algorithms, and physical sciences.
 //! This library provides the compiler pipeline (lex → parse → type-check → IR → JIT)
 //! and a C FFI bridge so Python code (via ctypes) and other languages can compile
 //! and execute `.sl` code natively.
@@ -12,14 +15,22 @@
 //!
 //! ```text
 //! Source (.sl) → Lexer → Parser → AST → TypeChecker → IR → Cranelift JIT → native
-//!                                                            ↕
-//!                                                   C FFI bridge (bridge.rs)
-//!                                                            ↕
-//!                                                   Python (vitalis.py)
+//!                                                      ↕           ↕
+//!                                                  WASM Target  GPU Compute
+//!                                                      ↕
+//!                                             C FFI bridge (bridge.rs)
+//!                                                      ↕
+//!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v13.0 — 38 modules)
+//! # Module Domains (v21.0 — 47 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
+//! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
+//! - **Generics**: generics (type params, monomorphization, type inference, bounds)
+//! - **Package Manager**: package_manager (SemVer, registry, dependency resolution)
+//! - **LSP Server**: lsp (diagnostics, completion, hover, go-to-def, symbols)
+//! - **WebAssembly**: wasm_target (module builder, sections, LEB128, validation)
+//! - **GPU Compute**: gpu_compute (buffers, kernels, pipelines, shader builder)
 //! - **Evolution**: evolution, engine, meta_evolution, optimizer
 //! - **Advanced Evolution**: evolution_advanced (DE, PSO, CMA-ES, NSGA-II, MAP-Elites)
 //! - **Memory**: memory (engram store)
@@ -53,6 +64,24 @@ pub mod types;
 pub mod ir;
 pub mod codegen;
 pub mod stdlib;
+
+// ── Async Runtime (v21.0) ────────────────────────────────────────────
+pub mod async_runtime;
+
+// ── Generics & Type Parameters (v21.0) ───────────────────────────────
+pub mod generics;
+
+// ── Package Manager & Registry (v21.0) ───────────────────────────────
+pub mod package_manager;
+
+// ── LSP Server & IDE Support (v21.0) ─────────────────────────────────
+pub mod lsp;
+
+// ── WebAssembly Target (v21.0) ───────────────────────────────────────
+pub mod wasm_target;
+
+// ── GPU Compute Backend (v21.0) ──────────────────────────────────────
+pub mod gpu_compute;
 
 // ── Evolution & Self-Modification ────────────────────────────────────
 pub mod evolution;

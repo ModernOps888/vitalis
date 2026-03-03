@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-741_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-32%2C349-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-870_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-35%2C856-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v20.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v21.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**41**<br>
+**47**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**32,349**<br>
+**35,856**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**741**<br>
+**870**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -232,7 +232,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 741 tests
+# Run all 870 tests
 cargo test
 
 # Compile and run a .sl file
@@ -795,11 +795,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-741 tests across every compiler stage:
+870 tests across every compiler stage and v21 subsystem:
 
 ```
 $ cargo test
-test result: ok. 741 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 870 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -812,6 +812,12 @@ test result: ok. 741 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Runtime stdlib | 120+ | All 200+ functions |
 | Evolution | 20+ | Register, evolve, rollback |
 | Domain modules | 80+ | Math, quantum, ML, crypto |
+| Async runtime | 15 | Executor, tasks, channels, futures |
+| Generics | 20 | Type params, monomorphization, bounds |
+| Package manager | 22 | SemVer, registry, dependency resolver |
+| LSP server | 25 | Diagnostics, completions, symbols |
+| WASM target | 25 | Module builder, LEB128, sections |
+| GPU compute | 22 | Buffers, kernels, pipelines, shaders |
 
 <br>
 
@@ -863,7 +869,14 @@ vitalis/
 │   ├── string_algorithms.rs  # KMP, Rabin-Karp, suffix arrays
 │   ├── crypto.rs             # SHA-256, AES, HMAC
 │   ├── security.rs           # Sanitization, capability checks
-│   └── science.rs            # Physics simulations
+│   ├── science.rs            # Physics simulations
+│   │
+│   ├── async_runtime.rs      # Async/await runtime — executor, channels, futures
+│   ├── generics.rs           # Generics — type params, monomorphization, bounds
+│   ├── package_manager.rs    # Package manager — SemVer, registry, resolution
+│   ├── lsp.rs                # LSP server — diagnostics, completion, hover, symbols
+│   ├── wasm_target.rs        # WASM target — module builder, LEB128, sections
+│   └── gpu_compute.rs        # GPU compute — buffers, kernels, pipelines, shaders
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -958,13 +971,22 @@ timeline
         : Bare self parameter sugar
         : 741 tests passing
 
-    v21+ · The Future
-        : Full async/await runtime
-        : Generics + type parameters
-        : Package manager + registry
-        : LSP server + IDE support
-        : WebAssembly target
-        : GPU compute backend
+    v21 · Async, Generics, WASM & GPU
+        : Full async/await runtime (executor, channels, futures)
+        : Generics + type parameters + monomorphization
+        : Package manager + registry + dependency resolver
+        : LSP server + IDE support (diagnostics, completion, hover)
+        : WebAssembly target (module builder, LEB128, sections)
+        : GPU compute backend (buffers, kernels, pipelines, shaders)
+        : 870 tests passing · 47 modules · 35,856 LOC
+
+    v22+ · The Future
+        : Borrow checker + lifetime analysis
+        : Incremental compilation + caching
+        : Full trait impls with dispatch
+        : Debugger protocol (DAP) support
+        : REPL + interactive mode
+        : Self-hosted compiler bootstrap
 ```
 
 <br>
