@@ -10,9 +10,10 @@
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Tests](https://img.shields.io/badge/Tests-748_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-35%2C632-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![LOC](https://img.shields.io/badge/LOC-39%2C962-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v20.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v3.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Community](https://img.shields.io/badge/Community-Welcome-ff69b4?style=for-the-badge&logo=github&logoColor=white)](#-community--ecosystem)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT, with first-class support for<br>
@@ -46,7 +47,7 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 </td>
 <td width="25%" align="center">
 
-**35,632**<br>
+**39,962**<br>
 <sub>Lines of Rust</sub>
 
 </td>
@@ -594,9 +595,10 @@ mindmap
       GPU compute with CUDA kernels
       BPE tokenizer + training loop
     🔐 **Capability Safety**
-      Sandboxed execution environment
-      Permission-based file and network I/O
-      Asimov's Laws enforcement layer
+      Permission-scoped execution
+      Resource quotas — memory, CPU, recursion
+      Input sanitization & validation
+      Sandboxed file/network I/O
     🧪 **Origin Tracking**
       Every AST node carries Span
       Full provenance chain to source
@@ -609,9 +611,9 @@ mindmap
 
 <br>
 
-## 🤖 Nova ML Engine <sup>v20.0</sup>
+## 🤖 Nova ML Engine <sup>v3.0</sup>
 
-Vitalis v20.0 ships a **complete deep learning engine** — tensors, transformer architectures,
+Vitalis v3.0 ships a **complete deep learning engine** — tensors, transformer architectures,
 GPU compute, training infrastructure, BPE tokenization, and inference — all in pure Rust,
 exposed through FFI for use from Vitalis programs and Python.
 
@@ -1037,63 +1039,129 @@ Vitalis uses Rust Edition 2024 which has stricter rules:
 
 ```mermaid
 timeline
-    title Vitalis — From Zero to Self-Evolving Language
+    title Vitalis Compiler — Release Timeline
 
-    v1 · Foundation
-        : Lexer with Logos tokenizer
-        : Recursive-descent Parser
-        : AST with 30+ expression types
-        : Cranelift 0.116 JIT backend
+    section v1.0 — Foundation
+        Lexer & Parser : Logos zero-copy tokenizer, recursive-descent + Pratt parser
+        AST & IR : 30+ expression types, SSA-form intermediate representation
+        Cranelift JIT : Native x86-64 codegen via Cranelift 0.116
+        CLI Binary : vtc with run, eval, check, dump-ast, dump-ir, lex
 
-    v5 · Type System
-        : Two-pass type checker
-        : i64, f64, bool, str types
-        : Heap-allocated arrays
-        : SSA-form IR builder
+    section v1.5 — Type System & Evolution
+        Two-pass type checker : Scope chains, inference, generics
+        Pattern matching : Exhaustive checks, nested destructuring
+        @evolvable functions : Generational tracking, fitness scoring, rollback
+        Meta-evolution : Strategies that evolve themselves
 
-    v10 · Standard Library
-        : 100+ math functions
-        : String operations + interning
-        : Array methods + sorting
-        : Random + hash + bit ops
+    section v2.0 — Standard Library & Domain Libraries
+        200+ stdlib functions : Math, strings, collections, I/O, regex, HTTP
+        14 domain libraries : Crypto, graph, quantum, signal, numerical, bio
+        80 FFI exports : C ABI for Python/Rust/native interop
+        Python wrapper : vitalis.py with 304+ functions
 
-    v15 · Language Power
-        : Closures + Lambda expressions
-        : File I/O + Maps + JSON
-        : Error handling system
-        : Evolution engine + @evolvable
-        : 46 new stdlib functions
+    section v2.5 — Language Maturity
+        Closures & lambdas : First-class functions with captured environments
+        Structs, enums, impl : User-defined types with methods
+        Module system : Hierarchical namespaces with visibility control
+        Error handling : Try/catch/throw, error propagation
+        Sets, tuples, regex : Extended collections + pattern matching
 
-    v19 · General Purpose
-        : Structs + Impl blocks
-        : Try/Catch/Throw
-        : Sets + Tuples + Regex
-        : Module system with namespaces
-        : HTTP networking + async stubs
-        : Iterator protocol + comprehensions
+    section v3.0 — Nova ML Engine & Community Release ✨
+        6 ML modules : Tensors, transformers, GPU, training, BPE, inference
+        42 ML FFI exports : Full native ML pipeline callable from Python
+        11 CUDA kernels : Matmul, attention, softmax, RMSNorm, AdamW, RoPE
+        39,962 lines · 748 tests : 47 source files, zero failures
+        Community release : MIT/Apache-2.0, CONTRIBUTING, SECURITY, CI/CD
 
-    v20 · Nova ML Engine
-        : Tensor engine with autograd (33+ ops)
-        : Transformer architecture (RoPE, GQA, SwiGLU)
-        : GPU compute backend (11 CUDA kernels)
-        : ML training pipeline (AdamW, cosine LR)
-        : BPE tokenizer (train/encode/decode)
-        : Model inference (top-k/top-p sampling)
-        : 42 FFI exports · 748 tests
+    section v3.1 — Async & Traits (Next)
+        async/await runtime : Cooperative task scheduler with futures
+        Trait system : Interfaces, bounds, default implementations
+        Generics : Parametric polymorphism, monomorphization
+        stdlib async I/O : Non-blocking file, network, timer primitives
 
-    v21+ · The Future
-        : Full async/await runtime
-        : Trait system + user-defined generics
-        : Package manager + registry
-        : LSP server + IDE support
-        : WebAssembly compilation target
+    section v3.2 — Tooling & New Targets
+        LSP server : Completions, hover, diagnostics, go-to-definition
+        Package manager : Dependency resolution, registry, lockfiles
+        WASM target : Compile to WebAssembly for browser/edge
+        Formatter & linter : Opinionated auto-format with lint rules
+
+    section v4.0 — Self-Hosted
+        Self-hosted compiler : Vitalis compiler written in Vitalis
+        Incremental compilation : Sub-second rebuilds with dependency tracking
+        Distributed evolution : Multi-node parallel evolution with consensus
+        GPU compute stdlib : First-class CUDA/Vulkan compute from .sl code
 ```
+
+<br>
+
+## 🌍 Community & Ecosystem
+
+Vitalis is an open-source project and we welcome contributors of all experience levels.
+
+### Getting Involved
+
+| Channel | Link |
+|---------|------|
+| 🐛 Bug Reports | [GitHub Issues](https://github.com/ModernOps888/vitalis/issues) |
+| 💡 Feature Requests | [GitHub Discussions](https://github.com/ModernOps888/vitalis/discussions) |
+| 🔀 Pull Requests | [Contributing Guide](CONTRIBUTING.md) |
+
+### Areas Welcoming Contributions
+
+**Compiler & Runtime**
+- Type system improvements (generics, traits, GATs)
+- IR optimization passes (inlining, loop unrolling, vectorization)
+- New compilation targets (WASM, ARM64)
+- REPL enhancements and debugger integration
+
+**Standard Library & Ecosystem**
+- New stdlib modules (datetime, serialization, networking)
+- Domain library expansions (linear algebra, optimization)
+- Package manager design and registry infrastructure
+- Documentation, tutorials, and example programs
+
+**ML / Nova Engine**
+- Additional neural network layers and architectures
+- Training optimizations (mixed precision, gradient checkpointing)
+- CUDA kernel improvements and new GPU backends
+- Python wrapper (`vitalis.py`) API coverage
+
+**Tooling & Developer Experience**
+- LSP server implementation (completions, diagnostics, hover)
+- Syntax highlighting grammars (VS Code, Tree-sitter)
+- Formatter, linter, and static analysis tools
+- CI/CD pipeline and benchmark infrastructure
+
+### Acknowledgments
+
+Vitalis is built with exceptional open-source software:
+
+- [Cranelift](https://cranelift.dev/) — Code generation backend
+- [Logos](https://logos.maciej.codes/) — Zero-copy lexer generator
+- [Miette](https://github.com/zkat-miette/miette) — Diagnostic error reporting
+- [Clap](https://docs.rs/clap/) — CLI argument parsing
+
+Thank you to every contributor, tester, and community member who helps make Vitalis better.
+
+<br>
+
+## 🛡️ Security
+
+Vitalis takes security seriously. The compiler and runtime enforce **capability-based sandboxing**, **permission-scoped execution**, and **resource quotas** (memory, CPU time, recursion depth) to prevent untrusted code from causing harm.
+
+If you discover a security vulnerability, **please do not open a public issue.** Instead, follow our responsible disclosure process outlined in [SECURITY.md](SECURITY.md).
+
+Key security properties:
+- **Sandboxed execution** — evolved/untrusted code runs in isolated contexts with no ambient authority
+- **Resource quotas** — hard limits on memory allocation, CPU cycles, and stack depth
+- **Permission scoping** — file I/O, network access, and system calls require explicit capability grants
+- **Input validation** — all external inputs are sanitized before processing
 
 <br>
 
 ## 📄 License
 
-[MIT License](LICENSE) — use it, fork it, evolve it.
+Dual-licensed under [MIT](LICENSE-MIT) and [Apache-2.0](LICENSE-APACHE) — use it, fork it, evolve it.
 
 <br>
 

@@ -72,15 +72,21 @@ Source (.sl) → Lexer → Parser → AST → TypeChecker → IR → Cranelift J
 |--------|---------|
 | `lexer.rs` | Logos-based zero-copy tokenizer |
 | `parser.rs` | Recursive-descent + Pratt parser |
-| `ast.rs` | 27 expression variants with origin tracking |
-| `types.rs` | Two-pass type checker with scope chains |
+| `ast.rs` | 30+ expression variants with origin tracking |
+| `types.rs` | Two-pass type checker with scope chains & inference |
 | `ir.rs` | SSA-form intermediate representation |
 | `codegen.rs` | Cranelift 0.116 JIT backend |
-| `stdlib.rs` | Built-in functions (98 functions) |
+| `stdlib.rs` | Built-in functions (200+ functions) |
 | `evolution.rs` | `@evolvable` function registry + rollback |
 | `engine.rs` | Autonomous evolution cycle runner |
-| `hotpath.rs` | Native Rust fast-path operations (44 ops) |
-| `bridge.rs` | C FFI exports for Python/C interop |
+| `hotpath.rs` | Native Rust fast-path operations (80+ ops) |
+| `bridge.rs` | C FFI exports for Python/C interop (122 exports) |
+| `tensor_engine.rs` | N-dimensional tensors, autograd, 33+ ops |
+| `deep_learning.rs` | Transformer, attention, RoPE, SwiGLU |
+| `gpu_compute.rs` | CUDA runtime, 11 PTX kernels, memory pool |
+| `ml_training.rs` | AdamW, cosine LR, DataLoader, Trainer |
+| `bpe_tokenizer.rs` | Byte-pair encoding tokenizer |
+| `model_inference.rs` | Top-k/top-p sampling, model configs |
 
 ## Areas Where Help Is Welcome
 

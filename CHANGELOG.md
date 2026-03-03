@@ -5,6 +5,47 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2025-07-14
+
+### Changed — Community Release (renamed from internal v20.0.0)
+
+Vitalis v3.0 marks the first **community release** — a clean public version number
+replacing the internal v20.0.0 milestone. No functionality was removed; this release
+focuses on project maturity, documentation, and community infrastructure.
+
+### Highlights
+
+- **39,962 lines of code** across 47 source files
+- **748 tests** — all passing, zero failures
+- **Dual MIT / Apache-2.0 license** for maximum compatibility
+- **200+ stdlib functions**, 14 domain libraries, 80+ FFI exports
+- **Nova ML Engine** — tensors, transformers, GPU compute, training, BPE, inference (42 ML FFI exports)
+- **11 CUDA PTX kernels** — matmul, attention, softmax, RMSNorm, AdamW, RoPE, and more
+
+### Added
+
+- `CONTRIBUTING.md` — updated architecture overview, module table, and contribution areas
+- `SECURITY.md` — v3.0.x support matrix, capability-based security model, responsible disclosure process
+- README: v3.0 roadmap timeline (v1.0 → v4.0 public milestones)
+- README: Community & Ecosystem section (getting involved, contribution areas, acknowledgments)
+- README: Security section with capability-based sandboxing overview
+- README: Community badge
+
+### Changed
+
+- Version numbering: internal v20.0.0 → public v3.0.0
+- Cargo.toml: updated version, description, and metadata
+- README: refreshed all stats (39,962 LOC, 748 tests, 47 files)
+- README: replaced internal roadmap milestones (v1/v5/v10/v15/v19/v20/v21) with public milestones (v1.0–v4.0)
+- README: replaced Asimov's Laws reference with real capability safety architecture
+
+### Security
+
+- Documented capability-based security model in SECURITY.md
+- Permission-scoped execution, resource quotas, sandboxed evolution, input sanitization
+
+---
+
 ## [20.0.0] - 2025-01-25
 
 ### Added — Nova ML Engine (6 modules, 42 FFI exports, +4,196 LOC)

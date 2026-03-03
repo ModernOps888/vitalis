@@ -1,8 +1,8 @@
 [package]
 name = "vitalis"
-version = "20.0.0"
+version = "3.0.0"
 edition = "2024"
-description = "Vitalis v20.0 — JIT-compiled language with closures, 46 stdlib functions, 24 algorithm libraries, self-evolving @evolvable functions, Nova ML engine (tensors, transformers, GPU, training, BPE) — Cranelift JIT"
+description = "Vitalis v3.0 — JIT-compiled language with 200+ stdlib functions, 14 domain libraries, closures, structs, modules, self-evolving @evolvable functions, Nova ML engine (tensors, transformers, GPU, training, BPE), 748 tests — Cranelift JIT"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ModernOps888/vitalis"
 homepage = "https://github.com/ModernOps888/vitalis"
