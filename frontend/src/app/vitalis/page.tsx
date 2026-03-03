@@ -169,7 +169,10 @@ function Reveal({children,className="",delay=0}:{children:React.ReactNode;classN
   useEffect(()=>{
     const el=ref.current; if(!el)return;
     const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){setV(true);obs.disconnect();}},{threshold:0.08,rootMargin:"0px 0px -60px 0px"});
-    obs.observe(el); return()=>obs.disconnect();
+    obs.observe(el);
+    // Fallback: ensure content visible after 1.2s even if observer fails
+    const timer=setTimeout(()=>setV(true),1200);
+    return()=>{obs.disconnect();clearTimeout(timer);};
   },[]);
   return(
     <div ref={ref} style={{opacity:v?1:0,transform:v?"translateY(0)":"translateY(24px)",transition:`opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`}} className={className}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import Link from "next/link";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES
@@ -586,6 +587,7 @@ function Reveal({ children, className = "", delay = 0 }: {
    COMPONENT: Floating Navigation Dots
    ═══════════════════════════════════════════════════════════ */
 const NAV_SECTIONS = [
+  { id: "deep-dives", label: "Projects" },
   { id: "overview", label: "Overview" },
   { id: "architecture", label: "Architecture" },
   { id: "compiler", label: "Compiler" },
@@ -599,7 +601,6 @@ const NAV_SECTIONS = [
   { id: "consciousness", label: "Consciousness" },
   { id: "infra", label: "Infrastructure" },
   { id: "inventory", label: "Inventory" },
-  { id: "deep-dives", label: "Deep Dives" },
 ];
 
 function FloatingNav() {
@@ -1112,10 +1113,69 @@ export default function TechStackPage() {
             <span className="last-update">Updated {lastUpdate.toLocaleTimeString()}</span>
           )}
         </div>
+        <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
+          <a
+            href="/consulting"
+            className="consulting-cta"
+          >
+            Book a Consultation
+          </a>
+        </div>
       </header>
 
       {/* ═══════════ STICKY SECTION NAV ═══════════ */}
       <StickyNav />
+
+      {/* ═══════════ PROJECT DEEP DIVES ═══════════ */}
+      <div id="deep-dives" className="container" style={{ marginTop: 20 }}>
+        <Reveal>
+          <section>
+            <SectionHeader icon="🔬" title="Projects" badge="DEEP DIVES" badgeType="native" />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 20 }}>
+              <Link href="/nova" style={{ textDecoration: "none", color: "inherit" }}>
+                <Card borderColor={ALIEN.orange}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                    <span style={{ fontSize: 28 }}>⚡</span>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: ALIEN.orange }}>NOVA</div>
+                      <div style={{ fontSize: 11, color: ALIEN.dim }}>Self-Evolving Native LLM Engine</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#b0b0cc", lineHeight: 1.6, margin: "0 0 12px" }}>
+                    From-scratch LLM training in pure Rust + CUDA. Custom tensor library, autograd, BPE tokenizer,
+                    transformer architecture — 12,119 LOC, 57 source files, RTX 5060 GPU.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Rust", "CUDA", "~5M params", "Custom Tensors"].map(t => (
+                      <span key={t} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 12, border: `1px solid ${ALIEN.orange}30`, color: ALIEN.orange, background: `${ALIEN.orange}08` }}>{t}</span>
+                    ))}
+                  </div>
+                </Card>
+              </Link>
+              <Link href="/vitalis" style={{ textDecoration: "none", color: "inherit" }}>
+                <Card borderColor={ALIEN.green}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                    <span style={{ fontSize: 28 }}>🧪</span>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: ALIEN.green }}>VITALIS</div>
+                      <div style={{ fontSize: 11, color: ALIEN.dim }}>AI-Native Programming Language v21</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#b0b0cc", lineHeight: 1.6, margin: "0 0 12px" }}>
+                    Custom language with Cranelift JIT, SIMD, generics, async/await, WASM target, LSP server,
+                    GPU compute — 47 modules, 870 tests, 35,856 LOC. 88× faster than Python.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Cranelift JIT", "870 Tests", "SIMD/AVX2", "47 Modules"].map(t => (
+                      <span key={t} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 12, border: `1px solid ${ALIEN.green}30`, color: ALIEN.green, background: `${ALIEN.green}08` }}>{t}</span>
+                    ))}
+                  </div>
+                </Card>
+              </Link>
+            </div>
+          </section>
+        </Reveal>
+      </div>
 
       {/* ═══════════ LIVE METRICS BAR ═══════════ */}
       {stats && (
@@ -2438,57 +2498,6 @@ export default function TechStackPage() {
         </Reveal>
       </div>
 
-      {/* ═══════════ PROJECT DEEP DIVES ═══════════ */}
-      <div id="deep-dives" className="container">
-        <Reveal>
-          <section style={{ marginTop: 48 }}>
-            <SectionHeader icon="🔬" title="Deep Dives" badge="Projects" badgeType="native" />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 20 }}>
-              <a href="/nova" style={{ textDecoration: "none", color: "inherit" }}>
-                <Card borderColor={ALIEN.orange}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                    <span style={{ fontSize: 28 }}>⚡</span>
-                    <div>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: ALIEN.orange }}>NOVA</div>
-                      <div style={{ fontSize: 11, color: ALIEN.dim }}>Self-Evolving Native LLM Engine</div>
-                    </div>
-                  </div>
-                  <p style={{ fontSize: 12, color: "#b0b0cc", lineHeight: 1.6, margin: "0 0 12px" }}>
-                    From-scratch LLM training in pure Rust + CUDA. Custom tensor library, autograd, BPE tokenizer,
-                    transformer architecture — 12,119 LOC, 57 source files, RTX 5060 GPU.
-                  </p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {["Rust", "CUDA", "~5M params", "Custom Tensors"].map(t => (
-                      <span key={t} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 12, border: `1px solid ${ALIEN.orange}30`, color: ALIEN.orange, background: `${ALIEN.orange}08` }}>{t}</span>
-                    ))}
-                  </div>
-                </Card>
-              </a>
-              <a href="/vitalis" style={{ textDecoration: "none", color: "inherit" }}>
-                <Card borderColor={ALIEN.green}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                    <span style={{ fontSize: 28 }}>🧪</span>
-                    <div>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: ALIEN.green }}>VITALIS</div>
-                      <div style={{ fontSize: 11, color: ALIEN.dim }}>AI-Native Programming Language v21</div>
-                    </div>
-                  </div>
-                  <p style={{ fontSize: 12, color: "#b0b0cc", lineHeight: 1.6, margin: "0 0 12px" }}>
-                    Custom language with Cranelift JIT, SIMD, generics, async/await, WASM target, LSP server,
-                    GPU compute — 47 modules, 870 tests, 35,856 LOC. 88× faster than Python.
-                  </p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {["Cranelift JIT", "870 Tests", "SIMD/AVX2", "47 Modules"].map(t => (
-                      <span key={t} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 12, border: `1px solid ${ALIEN.green}30`, color: ALIEN.green, background: `${ALIEN.green}08` }}>{t}</span>
-                    ))}
-                  </div>
-                </Card>
-              </a>
-            </div>
-          </section>
-        </Reveal>
-      </div>
-
       {/* ═══════════ FOOTER ═══════════ */}
       <div className="container">
         <footer className="alien-footer">
@@ -2664,6 +2673,34 @@ export default function TechStackPage() {
         .hero-subtitle { font-size: 1rem; color: #c8d6e5; margin: 0 0 0.5rem; letter-spacing: 0.15em; font-weight: 300; }
         .hero-tagline { font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim); opacity: 0.6; margin: 0 0 1.5rem; }
         .hero-status { display: flex; align-items: center; justify-content: center; gap: 12px; }
+
+        /* ── Consulting CTA Button ── */
+        .consulting-cta {
+          display: inline-block;
+          padding: 16px 48px;
+          font-size: 1.1rem;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #0a0e17;
+          background: linear-gradient(135deg, var(--alien-cyan) 0%, var(--alien-green) 100%);
+          border: none;
+          border-radius: 50px;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 0 20px rgba(0,240,255,0.3), 0 0 40px rgba(57,255,20,0.15);
+          position: relative;
+          overflow: hidden;
+        }
+        .consulting-cta:hover {
+          transform: translateY(-2px) scale(1.04);
+          box-shadow: 0 0 30px rgba(0,240,255,0.5), 0 0 60px rgba(57,255,20,0.3), 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .consulting-cta:active {
+          transform: translateY(0) scale(0.98);
+        }
+
         .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #4b5563; transition: all 0.3s; }
         .status-dot.alive {
           background: var(--alien-green);
