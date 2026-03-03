@@ -789,12 +789,37 @@ export default function TechStackPage() {
       <div className="holo-scan" />
       <ScrollProgress />
 
-      {/* Nebula / Atomic orbital background */}
+      {/* Nebula / Atomic orbital background — holographic cyberpunk */}
       <div className="nebula-atomic">
-        <div className="nebula-core" />
-        <div className="orbital orbital-1"><div className="electron" /></div>
-        <div className="orbital orbital-2"><div className="electron" /></div>
-        <div className="orbital orbital-3"><div className="electron" /></div>
+        {/* Energy field haze layers */}
+        <div className="nebula-field nebula-field-1" />
+        <div className="nebula-field nebula-field-2" />
+        {/* Holographic scan disc */}
+        <div className="holo-disc" />
+        {/* Core with multi-layer glow */}
+        <div className="nebula-core">
+          <div className="core-ring core-ring-1" />
+          <div className="core-ring core-ring-2" />
+        </div>
+        {/* 5 orbital rings with electrons + trails */}
+        <div className="orbital orbital-1">
+          <div className="electron"><div className="e-trail" /></div>
+          <div className="electron e2"><div className="e-trail" /></div>
+        </div>
+        <div className="orbital orbital-2">
+          <div className="electron"><div className="e-trail" /></div>
+        </div>
+        <div className="orbital orbital-3">
+          <div className="electron"><div className="e-trail" /></div>
+          <div className="electron e2"><div className="e-trail" /></div>
+        </div>
+        <div className="orbital orbital-4">
+          <div className="electron"><div className="e-trail" /></div>
+        </div>
+        <div className="orbital orbital-5">
+          <div className="electron"><div className="e-trail" /></div>
+          <div className="electron e2"><div className="e-trail" /></div>
+        </div>
       </div>
 
       <div className="holo-shapes">
@@ -3095,77 +3120,231 @@ export default function TechStackPage() {
           100% { opacity: 0.45; }
         }
 
-        /* ═══════ NEBULA / ATOMIC ORBITAL BACKGROUND ═══════ */
+        /* ═══════ NEBULA / ATOMIC ORBITAL BACKGROUND — HOLOGRAPHIC CYBERPUNK ═══════ */
         .nebula-atomic {
           position: fixed;
           top: 50%; left: 50%;
           transform: translate(-50%, -50%);
-          width: 700px; height: 700px;
+          width: 900px; height: 900px;
           z-index: 0; pointer-events: none;
           contain: strict;
-          perspective: 800px;
+          perspective: 1000px;
           transform-style: preserve-3d;
         }
+
+        /* Energy field haze — soft radial glow layers */
+        .nebula-field {
+          position: absolute; top: 50%; left: 50%;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+        }
+        .nebula-field-1 {
+          width: 600px; height: 600px;
+          background: radial-gradient(circle, rgba(0,240,255,0.04) 0%, rgba(176,38,255,0.02) 40%, transparent 70%);
+          animation: fieldBreath1 8s ease-in-out infinite alternate;
+        }
+        .nebula-field-2 {
+          width: 480px; height: 480px;
+          background: radial-gradient(circle, rgba(255,0,229,0.03) 0%, rgba(0,240,255,0.015) 45%, transparent 70%);
+          animation: fieldBreath2 10s ease-in-out infinite alternate;
+        }
+        @keyframes fieldBreath1 {
+          0%   { opacity: 0.3; transform: translate(-50%,-50%) scale(1); }
+          100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1.08); }
+        }
+        @keyframes fieldBreath2 {
+          0%   { opacity: 0.25; transform: translate(-50%,-50%) scale(1.05); }
+          100% { opacity: 0.5;  transform: translate(-50%,-50%) scale(0.95); }
+        }
+
+        /* Holographic scan disc — flat rotating ring with gradient */
+        .holo-disc {
+          position: absolute; top: 50%; left: 50%;
+          width: 500px; height: 500px;
+          margin-top: -250px; margin-left: -250px;
+          border-radius: 50%;
+          border: 1px solid transparent;
+          background: conic-gradient(from 0deg, transparent 0%, rgba(0,240,255,0.06) 15%, transparent 30%, rgba(255,0,229,0.04) 50%, transparent 65%, rgba(176,38,255,0.05) 80%, transparent 100%);
+          -webkit-mask: radial-gradient(circle, transparent 48%, black 49%, black 51%, transparent 52%);
+          mask: radial-gradient(circle, transparent 48%, black 49%, black 51%, transparent 52%);
+          transform: rotateX(72deg);
+          animation: discSpin 40s linear infinite;
+          opacity: 0.7;
+        }
+        @keyframes discSpin {
+          0%   { transform: rotateX(72deg) rotateZ(0deg); }
+          100% { transform: rotateX(72deg) rotateZ(360deg); }
+        }
+
+        /* Core — multi-layer pulsing nucleus */
         .nebula-core {
           position: absolute; top: 50%; left: 50%;
-          width: 8px; height: 8px;
+          width: 14px; height: 14px;
           transform: translate(-50%, -50%);
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(0,240,255,0.6) 0%, rgba(176,38,255,0.2) 50%, transparent 70%);
-          box-shadow: 0 0 60px 20px rgba(0,240,255,0.08), 0 0 120px 40px rgba(176,38,255,0.04);
-          animation: corePulse 6s ease-in-out infinite alternate;
+          background: radial-gradient(circle,
+            rgba(0,240,255,0.8) 0%,
+            rgba(255,0,229,0.3) 40%,
+            rgba(176,38,255,0.1) 60%,
+            transparent 80%
+          );
+          box-shadow:
+            0 0 40px 12px rgba(0,240,255,0.12),
+            0 0 80px 30px rgba(255,0,229,0.06),
+            0 0 120px 50px rgba(176,38,255,0.03);
+          animation: corePulse 5s ease-in-out infinite alternate;
+        }
+        .core-ring {
+          position: absolute; top: 50%; left: 50%;
+          border-radius: 50%;
+          border: 1px solid;
+          transform: translate(-50%, -50%);
+          animation: coreRingPulse 4s ease-in-out infinite alternate;
+        }
+        .core-ring-1 {
+          width: 30px; height: 30px;
+          border-color: rgba(0,240,255,0.15);
+          box-shadow: 0 0 10px rgba(0,240,255,0.05);
+        }
+        .core-ring-2 {
+          width: 50px; height: 50px;
+          border-color: rgba(255,0,229,0.08);
+          box-shadow: 0 0 12px rgba(255,0,229,0.03);
+          animation-delay: -2s;
         }
         @keyframes corePulse {
-          0%   { opacity: 0.5; box-shadow: 0 0 60px 20px rgba(0,240,255,0.08), 0 0 120px 40px rgba(176,38,255,0.04); }
-          100% { opacity: 0.9; box-shadow: 0 0 80px 30px rgba(0,240,255,0.12), 0 0 160px 60px rgba(176,38,255,0.06); }
+          0%   { opacity: 0.5; box-shadow: 0 0 40px 12px rgba(0,240,255,0.08), 0 0 80px 30px rgba(255,0,229,0.04), 0 0 120px 50px rgba(176,38,255,0.02); }
+          100% { opacity: 1;   box-shadow: 0 0 60px 20px rgba(0,240,255,0.15), 0 0 100px 40px rgba(255,0,229,0.08), 0 0 160px 70px rgba(176,38,255,0.04); }
+        }
+        @keyframes coreRingPulse {
+          0%   { opacity: 0.4; transform: translate(-50%,-50%) scale(1); }
+          100% { opacity: 0.8; transform: translate(-50%,-50%) scale(1.2); }
         }
 
+        /* Orbital rings — holographic borders with gradient */
         .orbital {
           position: absolute; top: 50%; left: 50%;
-          border: 1px solid rgba(0,240,255,0.06);
           border-radius: 50%;
           transform-origin: center center;
+          transform-style: preserve-3d;
         }
         .orbital-1 {
-          width: 280px; height: 280px;
-          margin-top: -140px; margin-left: -140px;
-          transform: rotateX(65deg) rotateZ(0deg);
-          animation: orbit1 28s linear infinite;
+          width: 200px; height: 200px;
+          margin-top: -100px; margin-left: -100px;
+          border: 1px solid rgba(0,240,255,0.1);
+          box-shadow: 0 0 15px rgba(0,240,255,0.03), inset 0 0 15px rgba(0,240,255,0.02);
+          transform: rotateX(68deg) rotateZ(0deg);
+          animation: orbit1 24s linear infinite;
         }
         .orbital-2 {
-          width: 420px; height: 420px;
-          margin-top: -210px; margin-left: -210px;
-          border-color: rgba(255,0,229,0.05);
-          transform: rotateX(70deg) rotateZ(60deg);
-          animation: orbit2 38s linear infinite;
+          width: 320px; height: 320px;
+          margin-top: -160px; margin-left: -160px;
+          border: 1px solid rgba(255,0,229,0.08);
+          box-shadow: 0 0 18px rgba(255,0,229,0.025), inset 0 0 18px rgba(255,0,229,0.015);
+          transform: rotateX(62deg) rotateZ(45deg);
+          animation: orbit2 34s linear infinite;
         }
         .orbital-3 {
-          width: 580px; height: 580px;
-          margin-top: -290px; margin-left: -290px;
-          border-color: rgba(176,38,255,0.04);
-          transform: rotateX(60deg) rotateZ(120deg);
-          animation: orbit3 52s linear infinite;
+          width: 440px; height: 440px;
+          margin-top: -220px; margin-left: -220px;
+          border: 1px solid rgba(176,38,255,0.06);
+          box-shadow: 0 0 20px rgba(176,38,255,0.02), inset 0 0 20px rgba(176,38,255,0.01);
+          transform: rotateX(72deg) rotateZ(90deg);
+          animation: orbit3 46s linear infinite;
         }
-        @keyframes orbit1 { 0% { transform: rotateX(65deg) rotateZ(0deg); }   100% { transform: rotateX(65deg) rotateZ(360deg); } }
-        @keyframes orbit2 { 0% { transform: rotateX(70deg) rotateZ(60deg); }  100% { transform: rotateX(70deg) rotateZ(420deg); } }
-        @keyframes orbit3 { 0% { transform: rotateX(60deg) rotateZ(120deg); } 100% { transform: rotateX(60deg) rotateZ(480deg); } }
+        .orbital-4 {
+          width: 560px; height: 560px;
+          margin-top: -280px; margin-left: -280px;
+          border: 1px solid rgba(0,240,255,0.04);
+          box-shadow: 0 0 22px rgba(0,240,255,0.015), inset 0 0 22px rgba(0,240,255,0.008);
+          transform: rotateX(55deg) rotateZ(135deg);
+          animation: orbit4 58s linear infinite;
+        }
+        .orbital-5 {
+          width: 700px; height: 700px;
+          margin-top: -350px; margin-left: -350px;
+          border: 1px solid rgba(255,0,229,0.03);
+          box-shadow: 0 0 25px rgba(255,0,229,0.01), inset 0 0 25px rgba(255,0,229,0.005);
+          transform: rotateX(66deg) rotateZ(170deg);
+          animation: orbit5 72s linear infinite;
+        }
 
+        @keyframes orbit1 { 0% { transform: rotateX(68deg) rotateZ(0deg); }   100% { transform: rotateX(68deg) rotateZ(360deg); } }
+        @keyframes orbit2 { 0% { transform: rotateX(62deg) rotateZ(45deg); }  100% { transform: rotateX(62deg) rotateZ(405deg); } }
+        @keyframes orbit3 { 0% { transform: rotateX(72deg) rotateZ(90deg); }  100% { transform: rotateX(72deg) rotateZ(450deg); } }
+        @keyframes orbit4 { 0% { transform: rotateX(55deg) rotateZ(135deg); } 100% { transform: rotateX(55deg) rotateZ(495deg); } }
+        @keyframes orbit5 { 0% { transform: rotateX(66deg) rotateZ(170deg); } 100% { transform: rotateX(66deg) rotateZ(530deg); } }
+
+        /* Electrons — glowing particles with holographic trail */
         .electron {
-          position: absolute; top: -3px; left: 50%;
-          width: 6px; height: 6px;
-          margin-left: -3px;
+          position: absolute; top: -4px; left: 50%;
+          width: 8px; height: 8px;
+          margin-left: -4px;
           border-radius: 50%;
-          background: rgba(0,240,255,0.7);
-          box-shadow: 0 0 12px 4px rgba(0,240,255,0.3), 0 0 30px 8px rgba(0,240,255,0.1);
+          background: radial-gradient(circle, rgba(0,240,255,0.9) 0%, rgba(0,240,255,0.4) 50%, transparent 70%);
+          box-shadow: 0 0 14px 5px rgba(0,240,255,0.35), 0 0 40px 10px rgba(0,240,255,0.12);
         }
+        .electron .e-trail {
+          position: absolute; top: 50%; left: 50%;
+          width: 40px; height: 2px;
+          margin-top: -1px; margin-left: -38px;
+          background: linear-gradient(90deg, transparent, rgba(0,240,255,0.25));
+          border-radius: 2px;
+          filter: blur(1px);
+        }
+        /* Second electron offset to bottom of ring */
+        .electron.e2 {
+          top: auto; bottom: -4px;
+          opacity: 0.7;
+        }
+        .electron.e2 .e-trail {
+          margin-left: 2px;
+          background: linear-gradient(270deg, transparent, rgba(0,240,255,0.2));
+        }
+
+        /* Orbital 2 electrons — magenta */
         .orbital-2 .electron {
-          background: rgba(255,0,229,0.6);
-          box-shadow: 0 0 12px 4px rgba(255,0,229,0.25), 0 0 30px 8px rgba(255,0,229,0.08);
+          background: radial-gradient(circle, rgba(255,0,229,0.85) 0%, rgba(255,0,229,0.35) 50%, transparent 70%);
+          box-shadow: 0 0 14px 5px rgba(255,0,229,0.3), 0 0 40px 10px rgba(255,0,229,0.1);
         }
+        .orbital-2 .e-trail {
+          background: linear-gradient(90deg, transparent, rgba(255,0,229,0.2));
+        }
+
+        /* Orbital 3 electrons — violet */
         .orbital-3 .electron {
-          background: rgba(176,38,255,0.5);
-          box-shadow: 0 0 12px 4px rgba(176,38,255,0.2), 0 0 30px 8px rgba(176,38,255,0.06);
+          background: radial-gradient(circle, rgba(176,38,255,0.8) 0%, rgba(176,38,255,0.3) 50%, transparent 70%);
+          box-shadow: 0 0 14px 5px rgba(176,38,255,0.25), 0 0 40px 10px rgba(176,38,255,0.08);
         }
+        .orbital-3 .e-trail {
+          background: linear-gradient(90deg, transparent, rgba(176,38,255,0.2));
+        }
+
+        /* Orbital 4 electrons — cyan variant */
+        .orbital-4 .electron {
+          background: radial-gradient(circle, rgba(0,200,255,0.7) 0%, rgba(0,200,255,0.25) 50%, transparent 70%);
+          box-shadow: 0 0 12px 4px rgba(0,200,255,0.2), 0 0 35px 8px rgba(0,200,255,0.06);
+          width: 6px; height: 6px; margin-left: -3px; top: -3px;
+          opacity: 0.6;
+        }
+        .orbital-4 .e-trail {
+          background: linear-gradient(90deg, transparent, rgba(0,200,255,0.15));
+          width: 30px;
+        }
+
+        /* Orbital 5 electrons — magenta dim */
+        .orbital-5 .electron {
+          background: radial-gradient(circle, rgba(255,0,229,0.6) 0%, rgba(255,0,229,0.2) 50%, transparent 70%);
+          box-shadow: 0 0 10px 3px rgba(255,0,229,0.15), 0 0 30px 6px rgba(255,0,229,0.05);
+          width: 5px; height: 5px; margin-left: -2.5px; top: -2.5px;
+          opacity: 0.5;
+        }
+        .orbital-5 .e-trail {
+          background: linear-gradient(90deg, transparent, rgba(255,0,229,0.12));
+          width: 25px;
+        }
+        .orbital-5 .electron.e2 { top: auto; bottom: -2.5px; }
 
         /* ═══════ FLOATING HOLOGRAPHIC SHAPES ═══════ */
         .holo-shapes {
