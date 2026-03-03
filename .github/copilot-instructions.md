@@ -28,13 +28,13 @@ When working in ANY repo, NEVER:
 
 ## Vitalis — Project Overview
 
-**Vitalis** is a compiled programming language built from scratch in Rust. Version 26.0.0, Rust edition 2024.
+**Vitalis** is a compiled programming language built from scratch in Rust. Version 27.0.0, Rust edition 2024.
 
 | Stat | Value |
 |------|-------|
-| LOC | ~53,359 |
-| Source files | 67 `.rs` modules in `src/` |
-| Tests | 1,458 (all inline `#[cfg(test)]`) |
+| LOC | ~57,196 |
+| Source files | 70 `.rs` modules in `src/` |
+| Tests | 1,586 (all inline `#[cfg(test)]`) |
 | Stdlib builtins | ~196 functions |
 | Codegen backend | Cranelift 0.116 (JIT + AOT) |
 | LLVM dependency | None |
@@ -57,7 +57,7 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
     → Backend: Cranelift JIT (codegen.rs) | AOT ObjectModule (aot.rs) | WASM (wasm_target.rs)
 ```
 
-### Module Map (67 files)
+### Module Map (70 files)
 
 **Core Compiler Pipeline:**
 | Module | Purpose |
@@ -102,6 +102,13 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 | `macro_system.rs` | Hygienic macro expansion: token trees, derive macros (Debug, Clone, etc.), pattern matching |
 | `const_eval.rs` | Compile-time evaluation: const fns, static assertions, constant folding, overflow detection |
 | `iterators.rs` | Lazy iterator protocol: 13 adapters, generator→state-machine lowering, terminal operations |
+
+**v27 Modules:**
+| Module | Purpose |
+|--------|--------|
+| `concurrency.rs` | Structured concurrency: Mutex, RwLock, channels (MPSC), Select, WaitGroup, atomics, scoped tasks, deadlock detection |
+| `type_inference.rs` | Hindley-Milner Algorithm W, unification, bidirectional checking, union/intersection types, flow-sensitive narrowing |
+| `documentation.rs` | Doc-comment parser, API documentation model, Markdown/HTML/plaintext output, cross-references, example extraction |
 
 **Evolution System:**
 | Module | Purpose |
@@ -162,7 +169,7 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 ```powershell
 cd C:\Vitalis-OSS
 cargo build --release          # → target/release/vtc.exe + vitalis.dll
-cargo test --release           # 1,458 tests
+cargo test --release           # 1,586 tests
 cargo run --release -- run examples/hello.sl  # Run .sl file
 cargo run --release -- repl    # Interactive REPL
 cargo run --release -- build examples/hello.sl -o hello.exe  # AOT compile
@@ -300,7 +307,7 @@ When referencing the website, use `infinitytechstack.uk` URLs. This is the PUBLI
 - NEVER commit Infinity code to any public repo
 
 ### Testing
-- Run `cargo test --release` — all 1,458 Vitalis tests must pass
+- Run `cargo test --release` — all 1,586 Vitalis tests must pass
 - Nova: `cargo test --release` — all 75 tests must pass
 - No external test frameworks — pure `#[test]` + `assert!`/`assert_eq!`
 

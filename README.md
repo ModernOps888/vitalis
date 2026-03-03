@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C458_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-53%2C359-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C586_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-57%2C196-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v26.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v27.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**67**<br>
+**70**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**53,359**<br>
+**57,196**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,458**<br>
+**1,586**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -257,7 +257,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 1,458 tests
+# Run all 1,586 tests
 cargo test
 
 # Compile and run a .sl file
@@ -837,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,458 tests across every compiler stage and all subsystems through v26:
+1,586 tests across every compiler stage and all subsystems through v27:
 
 ```
 $ cargo test
-test result: ok. 1458 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1586 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -880,6 +880,9 @@ test result: ok. 1458 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Macro system | 35 | Token trees, hygiene, derives, pattern matching |
 | Compile-time evaluation | 35 | Const exprs, const fns, static assertions, folding |
 | Iterator / generator protocol | 40 | Adapters, pipelines, state machines, terminals |
+| Structured concurrency | 45 | Mutex, RwLock, channels, Select, WaitGroup, atomics, deadlock detection |
+| Type inference | 40 | Hindley-Milner, unification, bidirectional, union/intersection, narrowing |
+| Documentation generation | 30 | Doc comment parsing, API model, Markdown/HTML output, cross-refs |
 
 <br>
 
@@ -962,7 +965,11 @@ vitalis/
 │   │
 │   ├── macro_system.rs       # Macro system — hygienic expansion, derives, token trees
 │   ├── const_eval.rs         # Compile-time eval — const exprs, const fns, static asserts
-│   └── iterators.rs          # Iterator protocol — lazy adapters, generators, state machines
+│   ├── iterators.rs          # Iterator protocol — lazy adapters, generators, state machines
+│   │
+│   ├── concurrency.rs        # Structured concurrency — Mutex, RwLock, channels, Select, atomics
+│   ├── type_inference.rs     # Type inference — Hindley-Milner, unification, bidirectional
+│   └── documentation.rs      # Documentation gen — doc comments, API model, Markdown/HTML
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1114,16 +1121,28 @@ timeline
         : Terminal operations (collect, count, sum, fold, any, all, find)
         : 1,458 tests passing · 67 modules · 53,359 LOC
 
-    v27+ · The Future
+    v27 · Concurrency, Type Inference & Documentation
+        : Structured concurrency (Mutex, RwLock, channels, Select, WaitGroup, atomics)
+        : Scoped tasks with lifecycle management and deadlock detection
+        : Hindley-Milner type inference with Algorithm W and let-polymorphism
+        : Bidirectional type checking with union/intersection types
+        : Flow-sensitive type narrowing and subtype checking
+        : Documentation generation (doc comments, API model, Markdown/HTML/plaintext)
+        : Cross-reference resolution and example extraction from doc comments
+        : 1,586 tests passing · 70 modules · 57,196 LOC
+
+    v28+ · The Future
         : WASM AOT target (compile .sl to standalone .wasm files)
         : Package registry server + vitalis install
         : Distributed compilation across nodes
         : ARM/RISC-V hardware validation on real devices
         : Profile-guided JIT optimization (PGO)
-        : Async channels and structured concurrency
+        : Async streams and reactive programming
         : Multi-language FFI (C, C++, JS)
         : Dependent types and proof-carrying code
         : Module-level parallelism in compilation
+        : Language server protocol v2 (semantic tokens, inlay hints)
+        : Interactive playground and web IDE
 ```
 
 <br>

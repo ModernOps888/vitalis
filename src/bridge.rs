@@ -778,7 +778,7 @@ mod tests {
         let ver = slang_version();
         assert!(!ver.is_null());
         let s = unsafe { CStr::from_ptr(ver) }.to_str().unwrap();
-        assert_eq!(s, "26.0.0");
+        assert_eq!(s, "27.0.0");
         unsafe { slang_free_string(ver) };
     }
 

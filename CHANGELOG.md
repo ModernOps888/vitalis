@@ -5,6 +5,52 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [27.0.0] - 2026-07-03
+
+### Added
+
+#### Structured Concurrency
+- **`concurrency.rs`** (820+ LOC, 45 tests) — Structured concurrency primitives
+  - **Mutex**: lock/try_lock/unlock with wait-queue promotion and poison detection
+  - **RwLock**: Multiple concurrent readers, exclusive writer, read/write lock states
+  - **Channels**: Bounded and unbounded MPSC channels with send/recv/try_recv/close/drain
+  - **Select**: Multiplexed channel operations with recv/send/default cases
+  - **WaitGroup**: Task completion synchronization (add/done/is_done/pending)
+  - **AtomicInt / AtomicBool**: Atomic operations with 5 ordering modes (Relaxed→SeqCst)
+  - **Scoped Tasks**: TaskScope with spawn/start/complete/fail/cancel_all lifecycle
+  - **Deadlock Detection**: DFS-based cycle detection in wait-for graphs
+  - **ConcValue**: 6 value types (Int, Float, Bool, Str, List, Void)
+  - **ChannelRegistry**: Named channel storage with register/get/close_all
+
+#### Advanced Type Inference
+- **`type_inference.rs`** (750+ LOC, 40 tests) — Hindley-Milner type inference engine
+  - **Algorithm W**: Full implementation with fresh variable generation and let-polymorphism
+  - **Unification**: Handles concrete types, variables, functions, lists, options, results, tuples
+  - **Bidirectional Checking**: Synthesize and Check modes for better error messages
+  - **Union / Intersection Types**: Flattening, subtype checking, flow-sensitive narrowing
+  - **Type Schemes**: Polymorphic ∀-quantification with generalize/instantiate
+  - **Substitution**: Recursive application with cycle detection to prevent infinite loops
+  - **Occurs Check**: Prevents infinite type construction
+  - **InferExpr**: 11 expression variants (IntLit, FloatLit, BoolLit, StrLit, Var, App, Lambda, Let, If, Ascription, MakeTuple, MakeList)
+  - **Never (⊥)**: Bottom type as subtype of everything
+
+#### Documentation Generation
+- **`documentation.rs`** (680+ LOC, 30 tests) — Documentation generation system
+  - **Doc Comment Parser**: Parses `///` and `/** */` comments with @param, @returns, @example, @see, @since, @deprecated, @throws, @note, @warning tags
+  - **API Model**: DocModule, DocFunction, DocStruct, DocEnum, DocTrait, DocTypeAlias
+  - **Output Formats**: Markdown, HTML, and PlainText generators
+  - **Cross-References**: RefResolver with index_module, qualified name lookup, external URLs
+  - **Example Extraction**: Extracts code examples from doc comments across all modules
+  - **Dependency Graphs**: Module dependency graph builder with Mermaid diagram output
+  - **DocIndex**: Full documentation index with table of contents generation
+  - **Visibility**: Public/Private/Internal visibility tracking
+
+### Changed
+- Version bumped from 26.0.0 → 27.0.0
+- Module count: 67 → 70 (concurrency, type_inference, documentation)
+- Test count: 1,458 → 1,586 (+128 new tests)
+- LOC: ~53,359 → ~57,196 (~3,837 new lines)
+
 ## [26.0.0] - 2026-06-10
 
 ### Added

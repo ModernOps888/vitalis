@@ -1,6 +1,10 @@
-//! Vitalis v26.0 — A JIT/AOT-compiled language with hygienic macro system,
-//! compile-time evaluation (const fn, const generics, static_assert),
-//! lazy iterator protocol with generator/yield support,
+//! Vitalis v27.0 — A JIT/AOT-compiled language with structured concurrency
+//! (Mutex, RwLock, channels, Select, WaitGroup, atomics, scoped tasks, deadlock detection),
+//! advanced type inference (Hindley-Milner Algorithm W, unification, bidirectional checking,
+//! union/intersection types, flow-sensitive narrowing),
+//! documentation generation (doc-comment parser, API model, Markdown/HTML output,
+//! cross-references, example extraction, dependency graphs),
+//! hygienic macro system, compile-time evaluation, lazy iterator protocol,
 //! code formatter, static linter,
 //! refinement types, algebraic effect handlers, pattern exhaustiveness checking,
 //! or-patterns, non-lexical lifetimes (NLL), async/await, generics, WASM target,
@@ -11,7 +15,8 @@
 //! native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
 //! and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 67 modules spanning macro system, compile-time
+//! Enterprise-grade release with 70 modules spanning structured concurrency,
+//! type inference, documentation generation, macro system, compile-time
 //! evaluation, iterator/generator protocol, code formatting, static linting,
 //! refinement types, algebraic effect handlers, pattern exhaustiveness analysis,
 //! NLL borrow analysis, async runtimes,
@@ -35,7 +40,7 @@
 //!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v26.0 — 67 modules)
+//! # Module Domains (v27.0 — 70 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
 //! - **Generics**: generics (type params, monomorphization, type inference, bounds)
@@ -82,6 +87,9 @@
 //! - **Macro System**: macro_system (hygienic macros, derive, token trees, pattern matching)
 //! - **Compile-Time Eval**: const_eval (const fn, const generics, static_assert, folding)
 //! - **Iterator Protocol**: iterators (lazy iterators, generators, adapters, state machines)
+//! - **Structured Concurrency**: concurrency (Mutex, RwLock, channels, Select, WaitGroup, atomics, scoped tasks)
+//! - **Type Inference**: type_inference (Hindley-Milner, unification, bidirectional, union/intersection, narrowing)
+//! - **Documentation Generation**: documentation (doc-comment parsing, API model, Markdown/HTML output, cross-refs)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -223,3 +231,8 @@ pub mod refinement_types;
 pub mod macro_system;
 pub mod const_eval;
 pub mod iterators;
+
+// ── v27: Structured Concurrency, Type Inference & Documentation ─────
+pub mod concurrency;
+pub mod type_inference;
+pub mod documentation;
