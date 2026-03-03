@@ -59,6 +59,10 @@ pub enum TopLevel {
     ExternBlock(ExternBlock),
     /// Impl block: impl TypeName { fn methods... }
     Impl(ImplBlock),
+    /// Trait definition: trait Name { fn sig; ... }
+    Trait(TraitDef),
+    /// Type alias: type Name = ExistingType;
+    TypeAlias(TypeAliasDef),
     /// An annotation applied to the next item
     Annotated {
         annotations: Vec<Annotation>,
@@ -546,9 +550,38 @@ pub struct EnumVariant {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub type_name: String,
+    pub trait_name: Option<String>,
     pub methods: Vec<Function>,
     pub span: Span,
 }
+// ─── Trait Definition ────────────────────────────────────────────────
+#[derive(Debug, Clone)]
+pub struct TraitDef {
+    pub name: String,
+    pub methods: Vec<TraitMethod>,
+    pub is_pub: bool,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone)]
+pub struct TraitMethod {
+    pub name: String,
+    pub params: Vec<Param>,
+    pub return_type: Option<TypeExpr>,
+    pub has_default: bool,
+    pub default_body: Option<Block>,
+    pub span: Span,
+}
+
+// ─── Type Alias ─────────────────────────────────────────────────────
+#[derive(Debug, Clone)]
+pub struct TypeAliasDef {
+    pub name: String,
+    pub ty: TypeExpr,
+    pub is_pub: bool,
+    pub span: Span,
+}
+
 // ─── Module ─────────────────────────────────────────────────────────────
 #[derive(Debug, Clone)]
 pub struct ModuleDef {

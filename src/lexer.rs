@@ -634,4 +634,44 @@ mod tests {
         assert_eq!(tokens[4].token, Token::Explore);
         assert_eq!(tokens[5].token, Token::Exploit);
     }
+
+    #[test]
+    fn test_impl_trait_self_tokens() {
+        let (tokens, errors) = lex("impl trait self");
+        assert!(errors.is_empty());
+        assert_eq!(tokens[0].token, Token::Impl);
+        assert_eq!(tokens[1].token, Token::Trait);
+        assert_eq!(tokens[2].token, Token::SelfKw);
+    }
+
+    #[test]
+    fn test_type_keyword() {
+        let (tokens, _) = lex("type");
+        assert_eq!(tokens[0].token, Token::TypeKw);
+    }
+
+    #[test]
+    fn test_async_await_spawn() {
+        let (tokens, _) = lex("async await spawn");
+        assert_eq!(tokens[0].token, Token::Async);
+        assert_eq!(tokens[1].token, Token::Await);
+        assert_eq!(tokens[2].token, Token::Spawn);
+    }
+
+    #[test]
+    fn test_pub_keyword() {
+        let (tokens, _) = lex("pub fn main() {}");
+        assert_eq!(tokens[0].token, Token::Pub);
+        assert_eq!(tokens[1].token, Token::Fn);
+    }
+
+    #[test]
+    fn test_safety_keywords() {
+        let (tokens, _) = lex("trust_tier capability immutable evolvable");
+        assert_eq!(tokens[0].token, Token::TrustTier);
+        assert_eq!(tokens[1].token, Token::Capability);
+        assert_eq!(tokens[2].token, Token::Immutable);
+        assert_eq!(tokens[3].token, Token::Evolvable);
+    }
+
 }

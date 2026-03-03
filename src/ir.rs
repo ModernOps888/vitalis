@@ -254,6 +254,12 @@ pub struct IrBuilder {
     mutable_var_types: HashMap<String, IrType>,
     /// v18: Struct field layouts: struct_name → [(field_name, index)]
     struct_defs: HashMap<String, Vec<String>>,
+    /// Method registry: type_name → { method_name → mangled_name }
+    method_registry: HashMap<String, HashMap<String, String>>,
+    /// Enum definitions: enum_name → [(variant_name, field_count)]
+    enum_defs: HashMap<String, Vec<(String, usize)>>,
+    /// Type aliases: alias_name → resolved IrType
+    type_aliases: HashMap<String, IrType>,
     /// v18: Tracks which struct type each variable holds (for method dispatch)
     var_struct_types: HashMap<String, String>,
     /// v18: Loop context stack: (continue_bb, break_bb) for break/continue
@@ -400,6 +406,9 @@ impl IrBuilder {
             value_types: HashMap::new(),
             mutable_var_types: HashMap::new(),
             struct_defs: HashMap::new(),
+            method_registry: HashMap::new(),
+            enum_defs: HashMap::new(),
+            type_aliases: HashMap::new(),
             var_struct_types: HashMap::new(),
             loop_stack: Vec::new(),
             module_prefix: Vec::new(),
@@ -500,6 +509,11 @@ impl IrBuilder {
                 // Collect impl method signatures as TypeName_method
                 for method in &imp.methods {
                     let mangled = format!("{}_{}", imp.type_name, method.name);
+                    // Register in method_registry for dispatch
+                    self.method_registry
+                        .entry(imp.type_name.clone())
+                        .or_insert_with(HashMap::new)
+                        .insert(method.name.clone(), mangled.clone());
                     // Add implicit self param (Ptr) if first param is "self"
                     let mut params: Vec<IrType> = Vec::new();
                     for p in &method.params {
@@ -516,6 +530,7 @@ impl IrBuilder {
                 }
             }
             ast::TopLevel::Annotated { item, .. } => self.collect_fn_sig(item),
+            ast::TopLevel::Trait(_) | ast::TopLevel::TypeAlias(_) => {}
             ast::TopLevel::Module(m) => {
                 self.module_prefix.push(m.name.clone());
                 for sub in &m.items {
@@ -573,7 +588,26 @@ impl IrBuilder {
                 // just record in locals when encountered
                 // For v18, consts are handled at lower_expr/Ident time
             }
-            _ => {} // Structs/enums/imports don't produce IR directly
+            ast::TopLevel::Struct(s) => {
+                // Register struct field layout
+                let field_names: Vec<String> = s.fields.iter().map(|f| f.name.clone()).collect();
+                self.struct_defs.insert(s.name.clone(), field_names);
+            }
+            ast::TopLevel::Enum(e) => {
+                // Register enum variant layout
+                let variants: Vec<(String, usize)> = e.variants.iter()
+                    .map(|v| (v.name.clone(), v.fields.len()))
+                    .collect();
+                self.enum_defs.insert(e.name.clone(), variants);
+            }
+            ast::TopLevel::TypeAlias(ta) => {
+                let ir_ty = self.type_expr_to_ir(&ta.ty);
+                self.type_aliases.insert(ta.name.clone(), ir_ty);
+            }
+            ast::TopLevel::Trait(_) => {
+                // Trait defs are type-level only; methods come via impl blocks
+            }
+            _ => {} // Imports don't produce IR directly
         }
     }
 
@@ -2022,4 +2056,69 @@ fn main() -> i64 {
         assert_eq!(module.functions[1].name, "utils_triple");
         assert_eq!(module.functions[2].name, "main");
     }
+
+    // ── v20: Trait/TypeAlias/Enum/Method registry tests ─────────
+
+    #[test]
+    fn test_lower_trait_def_no_crash() {
+        // Trait defs should be accepted without generating IR
+        let module = lower_src("trait Drawable { fn draw(self); } fn main() -> i64 { 0 }");
+        assert!(!module.functions.is_empty());
+    }
+
+    #[test]
+    fn test_lower_type_alias_no_crash() {
+        let module = lower_src("type Meters = f64; fn main() -> i64 { 0 }");
+        assert!(!module.functions.is_empty());
+    }
+
+    #[test]
+    fn test_lower_enum_definition() {
+        let module = lower_src("enum Color { Red, Green, Blue } fn main() -> i64 { 0 }");
+        assert!(!module.functions.is_empty());
+    }
+
+    #[test]
+    fn test_lower_impl_method() {
+        let module = lower_src("struct Point { x: i64, y: i64 } impl Point { fn get_x(self: Point) -> i64 { self.x } } fn main() -> i64 { 0 }");
+        let has_mangled = module.functions.iter().any(|f| f.name == "Point_get_x");
+        assert!(has_mangled, "Expected mangled method Point_get_x");
+    }
+
+    #[test]
+    fn test_lower_impl_multiple_methods() {
+        let module = lower_src("struct Vec2 { x: i64, y: i64 } impl Vec2 { fn get_x(self: Vec2) -> i64 { self.x } fn get_y(self: Vec2) -> i64 { self.y } } fn main() -> i64 { 0 }");
+        let has_x = module.functions.iter().any(|f| f.name == "Vec2_get_x");
+        let has_y = module.functions.iter().any(|f| f.name == "Vec2_get_y");
+        assert!(has_x && has_y, "Expected both Vec2_get_x and Vec2_get_y");
+    }
+
+    #[test]
+    fn test_lower_match_literal_multi_arm() {
+        let module = lower_src("fn main() -> i64 { let x = 2; match x { 1 => 10, 2 => 20, _ => 0 } }");
+        let main_fn = module.functions.iter().find(|f| f.name == "main").unwrap();
+        // Should have multiple blocks for match arms
+        assert!(main_fn.blocks.len() > 1, "Match should produce multiple blocks");
+    }
+
+    #[test]
+    fn test_lower_match_wildcard_only() {
+        let module = lower_src("fn main() -> i64 { let x = 5; match x { _ => 42 } }");
+        assert!(!module.functions.is_empty());
+    }
+
+    #[test]
+    fn test_lower_lambda_captures() {
+        let module = lower_src("fn main() -> i64 { let a = 10; let f = |x: i64| a + x; 0 }");
+        let has_lambda = module.functions.iter().any(|f| f.name.starts_with("__lambda"));
+        assert!(has_lambda, "Expected a lambda function");
+    }
+
+    #[test]
+    fn test_lower_lambda_no_captures() {
+        let module = lower_src("fn main() -> i64 { let f = |x: i64| x * 2; 0 }");
+        let has_lambda = module.functions.iter().any(|f| f.name.starts_with("__lambda"));
+        assert!(has_lambda, "Expected a lambda function");
+    }
+
 }

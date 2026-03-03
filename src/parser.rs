@@ -157,7 +157,10 @@ impl Parser {
                     | Token::Import
                     | Token::Pub
                     | Token::Evolve
-                    | Token::Memory,
+                    | Token::Memory
+                    | Token::Impl
+                    | Token::Trait
+                    | Token::TypeKw,
                 ) => return,
                 _ => {
                     self.advance();
@@ -223,6 +226,8 @@ impl Parser {
             TopLevel::Const(c) => &c.span,
             TopLevel::ExternBlock(e) => &e.span,
             TopLevel::Impl(imp) => &imp.span,
+            TopLevel::Trait(t) => &t.span,
+            TopLevel::TypeAlias(ta) => &ta.span,
             TopLevel::Annotated { span, .. } => span,
         }
     }
@@ -326,6 +331,8 @@ impl Parser {
                 let imp = self.parse_impl_block()?;
                 Ok(TopLevel::Impl(imp))
             }
+            Some(Token::Trait) => self.parse_trait_def(),
+            Some(Token::TypeKw) => self.parse_type_alias(),
             _ => {
                 let span = self.peek_span();
                 Err(ParseError {
@@ -384,6 +391,22 @@ impl Parser {
     }
 
     fn parse_param(&mut self) -> ParseResult<Param> {
+        // Handle bare self parameter (no type annotation)
+        if self.check(&Token::SelfKw) {
+            // Peek ahead: if next token after self is NOT ':', treat as bare self
+            let span = self.peek_span();
+            if self.pos + 1 < self.tokens.len() && self.tokens[self.pos + 1].token != Token::Colon {
+                self.advance();
+                return Ok(Param {
+                    name: "self".to_string(),
+                    ty: TypeExpr::Named("Self".to_string(), span.clone()),
+                    default: None,
+                    span,
+                });
+            }
+            // Otherwise fall through: the existing code handles 'self: Type'
+        }
+
         let span = self.peek_span();
         // v18: Accept `self` keyword as parameter name for impl methods
         let name = if self.check(&Token::SelfKw) {
@@ -746,6 +769,81 @@ impl Parser {
         })
     }
 
+    // ── Trait Definition ──────────────────────────────
+    fn parse_trait_def(&mut self) -> ParseResult<TopLevel> {
+        let start = self.peek_span();
+        let is_pub = false; // pub handled by caller
+        self.expect(&Token::Trait)?;
+        let (name, _) = self.expect_ident()?;
+        self.expect(&Token::LBrace)?;
+
+        let mut methods = Vec::new();
+        while !self.check(&Token::RBrace) && !self.at_end() {
+            let method_start = self.peek_span();
+            if self.check(&Token::Fn) || self.check(&Token::Async) {
+                self.advance(); // consume fn/async
+                let (method_name, _) = self.expect_ident()?;
+                self.expect(&Token::LParen)?;
+                let mut params = Vec::new();
+                while !self.check(&Token::RParen) && !self.at_end() {
+                    params.push(self.parse_param()?);
+                    if !self.eat(&Token::Comma) { break; }
+                }
+                self.expect(&Token::RParen)?;
+                let return_type = if self.eat(&Token::Arrow) {
+                    Some(self.parse_type()?)
+                } else {
+                    None
+                };
+                // Check for default body or semicolon
+                let (has_default, default_body) = if self.check(&Token::LBrace) {
+                    let body = self.parse_block()?;
+                    (true, Some(body))
+                } else {
+                    self.eat(&Token::Semicolon);
+                    (false, None)
+                };
+                let method_span = method_start.merge(&self.peek_span());
+                methods.push(TraitMethod {
+                    name: method_name,
+                    params,
+                    return_type,
+                    has_default,
+                    default_body,
+                    span: method_span,
+                });
+            } else {
+                self.advance(); // skip unknown
+            }
+        }
+
+        let end = self.peek_span();
+        self.expect(&Token::RBrace)?;
+        Ok(TopLevel::Trait(TraitDef {
+            name,
+            methods,
+            is_pub,
+            span: start.merge(&end),
+        }))
+    }
+
+    // ── Type Alias ───────────────────────────────────────
+    fn parse_type_alias(&mut self) -> ParseResult<TopLevel> {
+        let start = self.peek_span();
+        self.expect(&Token::TypeKw)?;
+        let (name, _) = self.expect_ident()?;
+        self.expect(&Token::Eq)?;
+        let ty = self.parse_type()?;
+        self.expect(&Token::Semicolon)?;
+        let span = start.merge(ty.span());
+        Ok(TopLevel::TypeAlias(TypeAliasDef {
+            name,
+            ty,
+            is_pub: false,
+            span,
+        }))
+    }
+
     // ── Impl Block ──────────────────────────────────────────────────
     // impl TypeName { fn method(&self, ...) -> T { ... } ... }
     fn parse_impl_block(&mut self) -> ParseResult<ImplBlock> {
@@ -770,6 +868,7 @@ impl Parser {
 
         Ok(ImplBlock {
             type_name,
+            trait_name: None,
             methods,
             span: start.merge(&end),
         })
@@ -1194,6 +1293,17 @@ impl Parser {
                     expr = Expr::Index {
                         object: Box::new(expr),
                         index: Box::new(index),
+                        span,
+                    };
+                }
+                // Cast: expr as Type
+                Some(Token::As) => {
+                    self.advance();
+                    let ty = self.parse_type()?;
+                    let span = expr.span().merge(ty.span());
+                    expr = Expr::Cast {
+                        expr: Box::new(expr),
+                        ty,
                         span,
                     };
                 }
@@ -1902,4 +2012,177 @@ fn main() -> i64 { math::add(1, 2) }
             other => panic!("expected Function, got {:?}", other),
         }
     }
+
+    // ── v20: Trait + TypeAlias + Cast tests ──────────────────────
+
+    #[test]
+    fn test_parse_trait_def() {
+        let (prog, errors) = parse("trait Drawable { fn draw(self); fn area(self) -> f64; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[0] {
+            TopLevel::Trait(t) => {
+                assert_eq!(t.name, "Drawable");
+                assert_eq!(t.methods.len(), 2);
+                assert_eq!(t.methods[0].name, "draw");
+                assert_eq!(t.methods[1].name, "area");
+                assert!(t.methods[1].return_type.is_some());
+            }
+            _ => panic!("expected trait"),
+        }
+    }
+
+    #[test]
+    fn test_parse_trait_with_default_body() {
+        let (prog, errors) = parse("trait Greet { fn hello(self) -> i64 { 42 } }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[0] {
+            TopLevel::Trait(t) => {
+                assert_eq!(t.methods[0].has_default, true);
+                assert!(t.methods[0].default_body.is_some());
+            }
+            _ => panic!("expected trait"),
+        }
+    }
+
+    #[test]
+    fn test_parse_empty_trait() {
+        let (prog, errors) = parse("trait Marker {}");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[0] {
+            TopLevel::Trait(t) => {
+                assert_eq!(t.name, "Marker");
+                assert!(t.methods.is_empty());
+            }
+            _ => panic!("expected trait"),
+        }
+    }
+
+    #[test]
+    fn test_parse_type_alias() {
+        let (prog, errors) = parse("type Meters = f64;");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[0] {
+            TopLevel::TypeAlias(ta) => {
+                assert_eq!(ta.name, "Meters");
+            }
+            _ => panic!("expected type alias"),
+        }
+    }
+
+    #[test]
+    fn test_parse_type_alias_generic() {
+        let (prog, errors) = parse("type Result = Option[i64];");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[0] {
+            TopLevel::TypeAlias(ta) => {
+                assert_eq!(ta.name, "Result");
+            }
+            _ => panic!("expected type alias"),
+        }
+    }
+
+    #[test]
+    fn test_parse_cast_expr() {
+        let (_prog, errors) = parse("fn test() { let x = 42 as f64; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_cast_chain() {
+        let (_prog, errors) = parse("fn test() { let x = 42 as f64 as i64; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_bare_self_param() {
+        let (prog, errors) = parse("impl Foo { fn bar(self) -> i64 { 0 } }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[0] {
+            TopLevel::Impl(imp) => {
+                assert_eq!(imp.methods[0].params[0].name, "self");
+            }
+            _ => panic!("expected impl"),
+        }
+    }
+
+    #[test]
+    fn test_parse_self_with_type() {
+        let (_prog, errors) = parse("impl Foo { fn bar(self: Foo) -> i64 { 0 } }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_impl_trait_name_none() {
+        let (prog, errors) = parse("struct X {} impl X { fn f(self) -> i64 { 1 } }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[1] {
+            TopLevel::Impl(imp) => {
+                assert_eq!(imp.type_name, "X");
+                assert!(imp.trait_name.is_none());
+            }
+            _ => panic!("expected impl"),
+        }
+    }
+
+    #[test]
+    fn test_parse_empty_impl() {
+        let (prog, errors) = parse("struct Foo {} impl Foo {}");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        match &prog.items[1] {
+            TopLevel::Impl(imp) => {
+                assert_eq!(imp.type_name, "Foo");
+                assert!(imp.methods.is_empty());
+            }
+            _ => panic!("expected impl"),
+        }
+    }
+
+    #[test]
+    fn test_parse_lambda() {
+        let (_prog, errors) = parse("fn test() { let f = |x: i64| x * 2; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_lambda_block_body() {
+        let (_prog, errors) = parse("fn test() { let f = |x: i64, y: i64| -> i64 { x + y }; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_for_range() {
+        let (_prog, errors) = parse("fn test() { for i in 0..10 { println(i); } }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_nested_if() {
+        let (_prog, errors) = parse("fn test() { if true { if false { 1 } else { 2 } } else { 3 } }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_chained_method_calls() {
+        let (_prog, errors) = parse("fn test() { a.b().c().d(); }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_try_operator() {
+        let (_prog, errors) = parse("fn test() { let x = foo()?; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_array_literal() {
+        let (_prog, errors) = parse("fn test() { let arr = [1, 2, 3, 4, 5]; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
+    #[test]
+    fn test_parse_index_expr() {
+        let (_prog, errors) = parse("fn test() { let arr = [1, 2, 3]; let x = arr[0]; }");
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+    }
+
 }
