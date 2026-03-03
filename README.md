@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C177_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-45%2C703-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C284_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-47%2C743-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v24.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v25.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**61**<br>
+**64**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**45,703**<br>
+**47,743**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,177**<br>
+**1,284**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -837,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,177 tests across every compiler stage and all subsystems through v24:
+1,284 tests across every compiler stage and all subsystems through v25:
 
 ```
 $ cargo test
-test result: ok. 1177 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1284 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -874,6 +874,9 @@ test result: ok. 1177 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | NLL borrow analysis | 44 | CFG, liveness, NLL regions, conflict detection |
 | Effect handlers | 39 | Handler stack, continuations, dispatch, composition |
 | Pattern exhaustiveness | 51 | Usefulness, redundancy, or-patterns, nested destructuring |
+| Formatter | 33 | AST formatting, config, idempotency, all node types |
+| Linter | 30 | 17 lint rules, unused detection, naming, dead code |
+| Refinement types | 44 | Predicates, solver, subtyping, registry, bounds |
 
 <br>
 
@@ -948,7 +951,11 @@ vitalis/
 │   ├── cross_compile.rs      # Cross-compilation — x86-64, AArch64, RISC-V targets
 │   ├── nll.rs                # Non-lexical lifetimes — CFG, liveness, NLL borrow regions
 │   ├── effect_handlers.rs    # Algebraic effect handlers — resume/abort continuations
-│   └── pattern_exhaustiveness.rs  # Pattern exhaustiveness — usefulness, redundancy, or-patterns
+│   ├── pattern_exhaustiveness.rs  # Pattern exhaustiveness — usefulness, redundancy, or-patterns
+│   │
+│   ├── formatter.rs          # Code formatter — AST-based pretty-printer with config
+│   ├── linter.rs             # Static linter — 17 rules, unused detection, naming
+│   └── refinement_types.rs   # Refinement types — constraint solver, subtyping, predicates
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1084,14 +1091,21 @@ timeline
         : AST extensions (Or, Tuple patterns, Handle expression)
         : 1,177 tests passing · 61 modules · 45,703 LOC
 
-    v25+ · The Future
-        : Code formatter and linter (vtc fmt, vtc lint)
+    v25 · Formatter, Linter & Refinement Types
+        : AST-based code formatter with configurable style (vtc fmt)
+        : Static linter with 17 lint rules and configurable severity
+        : Refinement types with constraint solver and subtype checking
+        : Built-in refinements (Positive, Natural, NonZero, Percentage, Byte)
+        : Predicate language (Compare, And, Or, Not, Implies, Arith)
+        : 1,284 tests passing · 64 modules · 47,743 LOC
+
+    v26+ · The Future
         : WASM AOT target (compile .sl to standalone .wasm files)
         : Package registry server + vitalis install
         : Distributed compilation across nodes
         : ARM/RISC-V hardware validation on real devices
         : Profile-guided JIT optimization (PGO)
-        : Gradual typing with refinement types
+        : Async channels and structured concurrency
         : Multi-language FFI (C, C++, JS)
 ```
 

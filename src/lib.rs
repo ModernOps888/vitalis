@@ -1,14 +1,16 @@
-//! Vitalis v24.0 — A JIT/AOT-compiled language with algebraic effect handlers,
-//! pattern exhaustiveness checking, or-patterns, non-lexical lifetimes (NLL),
-//! async/await, generics, WASM target, LSP IDE support, GPU compute, package management,
-//! impl blocks, try/catch, closures with capture, stdlib functions, built-in code
-//! evolution, multi-domain algorithm libraries, lifetime annotations, region analysis,
-//! effect system, capability types, incremental codegen, hot-reload, self-hosted compiler
-//! bootstrap, native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
+//! Vitalis v25.0 — A JIT/AOT-compiled language with code formatter, static linter,
+//! refinement types, algebraic effect handlers, pattern exhaustiveness checking,
+//! or-patterns, non-lexical lifetimes (NLL), async/await, generics, WASM target,
+//! LSP IDE support, GPU compute, package management, impl blocks, try/catch,
+//! closures with capture, stdlib functions, built-in code evolution, multi-domain
+//! algorithm libraries, lifetime annotations, region analysis, effect system,
+//! capability types, incremental codegen, hot-reload, self-hosted compiler bootstrap,
+//! native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
 //! and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 61 modules spanning algebraic effect handlers, pattern
-//! exhaustiveness analysis, NLL borrow analysis, async runtimes,
+//! Enterprise-grade release with 64 modules spanning code formatting, static linting,
+//! refinement types, algebraic effect handlers, pattern exhaustiveness analysis,
+//! NLL borrow analysis, async runtimes,
 //! type-system generics, WebAssembly compilation, GPU compute shaders, language server
 //! protocol, package management, quantum computing, bioinformatics, neuromorphic
 //! computation, advanced evolutionary algorithms, physical sciences, lifetime/region
@@ -29,7 +31,7 @@
 //!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v23.0 — 59 modules)
+//! # Module Domains (v25.0 — 64 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
 //! - **Generics**: generics (type params, monomorphization, type inference, bounds)
@@ -70,6 +72,9 @@
 //! - **Non-Lexical Lifetimes**: nll (CFG builder, liveness analysis, NLL regions, conflict detection)
 //! - **Effect Handlers**: effect_handlers (algebraic effects, continuations, handler stacks)
 //! - **Pattern Analysis**: pattern_exhaustiveness (exhaustiveness, redundancy, or-patterns, witnesses)
+//! - **Code Formatter**: formatter (AST-based pretty-printer, configurable style)
+//! - **Static Linter**: linter (unused vars, naming, complexity, unreachable code)
+//! - **Refinement Types**: refinement_types (dependent types, constraint solver, subtyping)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -201,3 +206,8 @@ pub mod nll;
 // ── v24: Effect Handlers & Pattern Exhaustiveness ───────────────────
 pub mod effect_handlers;
 pub mod pattern_exhaustiveness;
+
+// ── v25: Code Formatter, Linter & Refinement Types ──────────────────
+pub mod formatter;
+pub mod linter;
+pub mod refinement_types;

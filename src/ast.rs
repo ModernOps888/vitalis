@@ -8,7 +8,7 @@
 use std::fmt;
 
 /// Byte-offset span in source code.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Span {
     pub start: usize,
     pub end: usize,

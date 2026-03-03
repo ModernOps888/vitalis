@@ -28,13 +28,13 @@ When working in ANY repo, NEVER:
 
 ## Vitalis — Project Overview
 
-**Vitalis** is a compiled programming language built from scratch in Rust. Version 23.0.0, Rust edition 2024.
+**Vitalis** is a compiled programming language built from scratch in Rust. Version 25.0.0, Rust edition 2024.
 
 | Stat | Value |
 |------|-------|
-| LOC | ~45,703 |
-| Source files | 61 `.rs` modules in `src/` |
-| Tests | 1,177 (all inline `#[cfg(test)]`) |
+| LOC | ~47,743 |
+| Source files | 64 `.rs` modules in `src/` |
+| Tests | 1,284 (all inline `#[cfg(test)]`) |
 | Stdlib builtins | ~196 functions |
 | Codegen backend | Cranelift 0.116 (JIT + AOT) |
 | LLVM dependency | None |

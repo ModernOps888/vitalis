@@ -5,6 +5,62 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [25.0.0] - 2026-06-06
+
+### Added
+
+#### Code Formatter
+- **`formatter.rs`** (640+ LOC, 33 tests) — AST-based code formatter/pretty-printer
+  - **FormatConfig**: Configurable indent size, max line width, trailing commas, brace style
+  - **Complete AST Coverage**: Every node type (functions, structs, enums, modules, imports, extern blocks, impl blocks, traits, type aliases, annotations) has a formatting rule
+  - **Expression Formatting**: All 30+ Expr variants formatted (binary ops, calls, method calls, if/else, match, lambdas, pipes, try/catch, parallel, ranges, casts, struct literals)
+  - **Statement Formatting**: Let bindings, while/for/loop, expression statements
+  - **Pattern Formatting**: Literal, ident, variant, wildcard, struct, or, tuple patterns
+  - **Import Sorting**: Optionally sorts imports alphabetically to the top of the file
+  - **Idempotency**: Formatting already-formatted code produces identical output
+  - **Convenience API**: `format_source()`, `format_source_with_config()`, `check_formatted()`
+
+#### Static Linter
+- **`linter.rs`** (650+ LOC, 30 tests) — Configurable static analysis with 17 lint rules
+  - **UnusedVariable**: Detects variables declared but never referenced (respects `_` prefix)
+  - **UnusedFunction**: Finds functions defined but never called
+  - **UnusedImport**: Identifies import statements with no usage
+  - **ShadowedVariable**: Warns when a variable shadows an outer binding
+  - **DeadCode**: Detects unreachable code after return/break/continue
+  - **EmptyBlock**: Flags blocks with no statements or expressions
+  - **NamingConvention**: Enforces snake_case for variables/functions, PascalCase for types
+  - **MissingReturnType**: Warns on functions without explicit return type
+  - **LargeFunction**: Flags functions exceeding configurable line threshold
+  - **DeepNesting**: Warns when nesting depth exceeds threshold
+  - **MagicNumber**: Detects unnamed numeric literals (excludes 0, 1, 2, -1)
+  - **EmptyMatchArm**: Flags match arms with empty bodies
+  - **UnusedParameter**: Detects function parameters never used
+  - **BoolComparison**: Warns on unnecessary `== true` / `== false` comparisons
+  - **RedundantReturn**: Identifies explicit return at tail position
+  - **LintConfig**: Enable/disable/suppress individual rules, configure thresholds
+  - **Convenience API**: `lint_source()`, `lint_source_with_config()`
+
+#### Refinement Types
+- **`refinement_types.rs`** (750+ LOC, 44 tests) — Refinement/dependent type system with constraint solver
+  - **RefinedType**: Base type + binder variable + logical predicate (`{ v: i64 | v > 0 }`)
+  - **Predicate Language**: True, False, Var, IntConst, FloatConst, BoolConst, Compare, And, Or, Not, Implies, Arith, App
+  - **ConstraintSolver**: Bounds-based satisfiability checking and entailment reasoning
+  - **Subtype Checking**: Verifies refined subtype relationships (e.g., Positive <: Natural)
+  - **Variable Bounds**: Tracks lower/upper bounds and not-equal constraints per variable
+  - **Built-in Refinements**: Positive, Natural, NonZero, Percentage, UnitInterval, Byte
+  - **RefinementRegistry**: Named refinement types with custom registration
+  - **Predicate Operations**: Substitution, negation, Display formatting
+  - **Comparison & Arithmetic Ops**: Full CmpOp (==, !=, <, <=, >, >=) and ArithOp (+, -, *, /, %) support
+
+#### AST Enhancement
+- **Span derives Copy**: `Span` now derives `Copy` for zero-cost pass-by-value (it only holds two `usize` fields)
+
+### Changed
+- Version bumped from 24.0.0 → 25.0.0
+- Module count: 61 → 64 (formatter, linter, refinement_types)
+- Test count: 1,177 → 1,284 (+107 new tests)
+- LOC: ~45,703 → ~47,743 (~2,040 new lines)
+
 ## [24.0.0] - 2026-03-03
 
 ### Added
