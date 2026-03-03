@@ -5,6 +5,82 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [20.0.0] - 2025-01-25
+
+### Added — Nova ML Engine (6 modules, 42 FFI exports, +4,196 LOC)
+
+#### Tensor Engine (`tensor_engine.rs`, ~700 LOC)
+- N-dimensional tensor type with `DType` support (F32, F64, I32, I64, Bool)
+- `Shape` validation, broadcasting rules, and contiguous stride layout
+- `Storage` abstraction with CPU/CUDA device targeting
+- 33+ tensor operations: arithmetic, matmul, transpose, reshape, slice, concat, stack, split
+- Full autograd engine: computation graph, backward pass, gradient accumulation
+- `GradientTape` for tracking operations and automatic differentiation
+- 7 FFI exports: `vt_tensor_create`, `vt_tensor_matmul`, `vt_tensor_backward`, etc.
+
+#### Deep Learning (`deep_learning.rs`, ~600 LOC)
+- `Linear` layer with Xavier initialization and optional bias
+- `RMSNorm` and `LayerNorm` normalization layers
+- `TokenEmbedding` with vocabulary-sized weight matrices
+- `MultiHeadAttention` with Rotary Position Embeddings (RoPE) and Grouped Query Attention (GQA)
+- `SwiGLUFFN` feed-forward network (SwiGLU activation, gate/up/down projections)
+- `TransformerBlock` combining attention + FFN + norm layers
+- `Transformer` model with configurable depth, width, heads, and KV-heads
+- 6 FFI exports: `vt_transformer_create`, `vt_transformer_forward`, etc.
+
+#### GPU Compute (`gpu_compute.rs`, ~400 LOC)
+- `DeviceInfo` struct for GPU detection (name, compute capability, VRAM)
+- `CudaRuntime` for device management and kernel dispatch
+- `GpuMemoryPool` with slab allocation and defragmentation
+- 11 CUDA PTX kernel sources: `vector_add`, `matrix_multiply`, `softmax`, `layer_norm`, `gelu`, `rope`, `cross_entropy`, `adam_update`, `reduce_sum`, `transpose`, `embedding_lookup`
+- 5 FFI exports: `vt_cuda_init`, `vt_cuda_device_count`, `vt_gpu_pool_create`, etc.
+
+#### ML Training (`ml_training.rs`, ~500 LOC)
+- `AdamW` optimizer with weight decay, bias correction, epsilon stability
+- `CosineScheduler` with warmup steps and minimum learning rate
+- `WarmupConstantScheduler` for linear LR warmup
+- `clip_grad_norm` for gradient clipping by max norm
+- `DataLoader` with batch iteration and optional shuffling
+- `TrainCache` for gradient and optimizer state management
+- `model_backward` function for loss-to-parameter gradient computation
+- `save_weights` / `load_weights` for model checkpointing
+- `Trainer` orchestrating forward → loss → backward → optimize loop
+- `TrainStep` result struct with loss, learning rate, gradient norm, throughput
+- 8 FFI exports: `vt_adamw_create`, `vt_trainer_create`, `vt_trainer_step`, etc.
+
+#### BPE Tokenizer (`bpe_tokenizer.rs`, ~300 LOC)
+- `BpeTokenizer` with byte-pair encoding merge rules
+- `train()` from corpus text with configurable vocabulary size
+- `encode()` text → token IDs, `decode()` token IDs → text
+- `save()` / `load()` for tokenizer persistence (JSON format)
+- Special token handling: `<pad>`, `<unk>`, `<bos>`, `<eos>`
+- 6 FFI exports: `vt_tokenizer_create`, `vt_tokenizer_train`, `vt_tokenizer_encode`, etc.
+
+#### Model Inference (`model_inference.rs`, ~400 LOC)
+- `ModelConfig` with 4 presets: tiny (5M), small (125M), medium (1B), large (3B)
+- `GenerateConfig` with temperature, top-k, top-p, repetition penalty, max tokens
+- `sample_token` with combined top-k filtering and nucleus (top-p) sampling
+- `generate()` autoregressive text generation with KV-cache support
+- `generate_with_info()` returning tokens, text, and generation statistics
+- 10 FFI exports: `vt_model_config_tiny` through `vt_generate`, etc.
+
+### Changed
+- `Cargo.toml` version bumped from 19.0.0 → 20.0.0
+- `lib.rs` expanded with 6 new `pub mod` declarations under "Nova ML Engine (v20.0)" section
+- `bridge.rs` version string updated to "20.0.0"
+- `README.md` comprehensive overhaul: new ML Engine section, updated stats, revised roadmap
+
+### Metrics
+| Metric | v19.0.0 | v20.0.0 | Delta |
+|--------|---------|---------|-------|
+| Rust source files | 41 | 47 | +6 |
+| Rust LOC (total) | ~31,400 | 35,632 | +4,196 |
+| Test cases | 708 | 748 | +40 |
+| FFI exports | ~30 | 42 | +12 |
+| Public functions | ~400 | 456 | +56 |
+
+---
+
 ## [9.0.0] - 2026-03-01
 
 ### Added

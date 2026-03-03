@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-708_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-35%2C774-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-748_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-35%2C632-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v19.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v20.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT, with first-class support for<br>
@@ -40,26 +40,26 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**41**<br>
+**47**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**35,774**<br>
+**35,632**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**708**<br>
+**748**<br>
 <sub>Tests passing</sub>
 
 </td>
 <td width="25%" align="center">
 
-**200+**<br>
-<sub>Stdlib functions</sub>
+**42**<br>
+<sub>FFI exports</sub>
 
 </td>
 </tr>
@@ -149,7 +149,7 @@ flowchart TB
 
 ### Module Map
 
-Every source file has a single responsibility. The codebase is organized into **four layers**:
+Every source file has a single responsibility. The codebase is organized into **five layers**:
 
 ```mermaid
 block-beta
@@ -184,6 +184,19 @@ block-beta
         Q["optimizer.rs · 1,294 lines"]
     end
 
+    block:ML:4
+        columns 4
+        ML1["🤖 NOVA ML ENGINE · 3,600 LOC (v20.0)"]:4
+        ML2["tensor_engine.rs\n700 lines"]
+        ML3["deep_learning.rs\n600 lines"]
+        ML4["gpu_compute.rs\n400 lines"]
+        ML5["ml_training.rs\n500 lines"]
+        ML6["bpe_tokenizer.rs\n300 lines"]
+        ML7["model_inference.rs\n400 lines"]
+        space3[""]
+        space4[""]
+    end
+
     block:MATH:4
         columns 4
         R["📊 DOMAIN LIBRARIES · 17,000 LOC"]:4
@@ -199,15 +212,18 @@ block-beta
 
     CORE --> EVO
     CORE --> PERF
+    CORE --> ML
     CORE --> MATH
 
     style CORE fill:#0c1222,stroke:#38bdf8,stroke-width:3px,color:#bae6fd
     style EVO fill:#1a0c22,stroke:#e879f9,stroke-width:3px,color:#f5d0fe
     style PERF fill:#1a0c0c,stroke:#fb923c,stroke-width:3px,color:#fed7aa
+    style ML fill:#0c1a1a,stroke:#22d3ee,stroke-width:3px,color:#cffafe
     style MATH fill:#0c1a22,stroke:#a78bfa,stroke-width:3px,color:#ddd6fe
     style A fill:#1e3a5f,stroke:#38bdf8,color:#e0f2fe
     style J fill:#2d1042,stroke:#e879f9,color:#f5d0fe
     style N fill:#2d1a0a,stroke:#fb923c,color:#fed7aa
+    style ML1 fill:#0a2d2d,stroke:#22d3ee,color:#cffafe
     style R fill:#1a1040,stroke:#a78bfa,color:#ddd6fe
 ```
 
@@ -232,7 +248,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 708 tests
+# Run all 748 tests
 cargo test
 
 # Compile and run a .sl file
@@ -572,6 +588,11 @@ mindmap
       Native x86-64 machine code
       Hot-path bypass to Rust
       SIMD vectorized operations
+    🤖 **Nova ML Engine**
+      Tensor ops with autograd
+      Transformer architectures
+      GPU compute with CUDA kernels
+      BPE tokenizer + training loop
     🔐 **Capability Safety**
       Sandboxed execution environment
       Permission-based file and network I/O
@@ -584,10 +605,103 @@ mindmap
       Declarative data flow pipelines
       Functional stage composition
       First-class pipeline values
-    💭 **Consciousness Keywords**
-      memorize · recall · forget
-      reflect · evolve · mutate
-      sandbox · rollback · pipeline
+```
+
+<br>
+
+## 🤖 Nova ML Engine <sup>v20.0</sup>
+
+Vitalis v20.0 ships a **complete deep learning engine** — tensors, transformer architectures,
+GPU compute, training infrastructure, BPE tokenization, and inference — all in pure Rust,
+exposed through FFI for use from Vitalis programs and Python.
+
+### Architecture
+
+```mermaid
+flowchart TB
+    T["🔢 TENSOR ENGINE\ntensor_engine.rs\n33+ ops · autograd"] --> DL
+    DL["🧠 DEEP LEARNING\ndeep_learning.rs\nRMSNorm · RoPE · GQA · SwiGLU"] --> TR
+    GPU["⚡ GPU COMPUTE\ngpu_compute.rs\n11 CUDA kernels"] --> TR
+    BPE["📝 BPE TOKENIZER\nbpe_tokenizer.rs\ntrain · encode · decode"] --> TR
+    TR["🏋️ ML TRAINING\nml_training.rs\nAdamW · cosine scheduler · backprop"] --> INF
+    INF["🎯 INFERENCE\nmodel_inference.rs\ntop-k · top-p · temperature"]
+
+    style T fill:#0c1a2d,stroke:#22d3ee,stroke-width:3px,color:#cffafe,font-weight:bold
+    style DL fill:#0c1a2d,stroke:#22d3ee,stroke-width:2px,color:#cffafe
+    style GPU fill:#1a0c0c,stroke:#f97316,stroke-width:3px,color:#fed7aa,font-weight:bold
+    style BPE fill:#0c1222,stroke:#818cf8,stroke-width:2px,color:#e0e7ff
+    style TR fill:#1a0c22,stroke:#e879f9,stroke-width:3px,color:#f5d0fe,font-weight:bold
+    style INF fill:#0f3d1e,stroke:#4ade80,stroke-width:3px,color:#dcfce7,font-weight:bold
+```
+
+### Modules
+
+| Module | LOC | Description |
+|--------|-----|-------------|
+| `tensor_engine.rs` | ~700 | N-dimensional tensors, 33+ ops (matmul, softmax, cross-entropy, embedding, GELU, SiLU), autograd with backward graph, broadcasting, Kaiming/Xavier init |
+| `deep_learning.rs` | ~600 | `Linear`, `RMSNorm`, `LayerNorm`, `TokenEmbedding`, `MultiHeadAttention` (RoPE, GQA, causal mask), `SwiGLUFFN`, `GeluFFN`, `TransformerBlock`, full `Transformer` model with tied weights |
+| `gpu_compute.rs` | ~400 | `DeviceInfo` (Blackwell/Ampere detection, BF16/FP16 support), `CudaRuntime`, `GpuMemoryPool`, 11 production PTX CUDA kernels (matmul, attention, softmax, RMSNorm, SwiGLU, GELU, embedding, AdamW, cross-entropy, RoPE) |
+| `ml_training.rs` | ~500 | `AdamW` optimizer (decoupled weight decay), `CosineScheduler` + `WarmupConstantScheduler`, gradient clipping, full analytical backward pass through transformer layers, `DataLoader`, binary checkpoint save/load, `Trainer` with step logging |
+| `bpe_tokenizer.rs` | ~300 | `BpeTokenizer` with `train` / `encode` / `decode` / `save` / `load`, special tokens (PAD/BOS/EOS/UNK), byte-level fallback, file serialization |
+| `model_inference.rs` | ~400 | `ModelConfig` presets (tiny 5M → large 3B), `GenerateConfig` (temperature, top-k, top-p, repetition penalty), autoregressive `generate()` with structured `GenerationResult` |
+
+### Model Presets
+
+| Preset | Params | d_model | Layers | Heads | d_ff | Context |
+|--------|--------|---------|--------|-------|------|---------|
+| `tiny_5m` | ~1.8M | 128 | 4 | 4 | 344 | 512 |
+| `small_125m` | ~125M | 768 | 12 | 12 | 2,048 | 2,048 |
+| `medium_1b` | ~1B | 2,048 | 22 | 16 | 5,461 | 4,096 |
+| `large_3b` | ~3B | 3,200 | 26 | 32 | 8,640 | 4,096 |
+
+### CUDA Kernels (PTX)
+
+11 production-ready kernel sources for GPU acceleration:
+
+| Kernel | Purpose |
+|--------|---------|
+| `MATMUL_KERNEL` | Tiled FP32 matrix multiplication (16×16 tiles) |
+| `MATMUL_FP16_KERNEL` | Half-precision matmul for Tensor Cores |
+| `ATTENTION_KERNEL` | Fused multi-head attention with causal mask |
+| `SOFTMAX_KERNEL` | Numerically stable softmax (row-wise) |
+| `RMSNORM_KERNEL` | Root Mean Square normalization |
+| `SWIGLU_KERNEL` | SwiGLU activation (gate × SiLU) |
+| `GELU_KERNEL` | Gaussian Error Linear Unit |
+| `EMBEDDING_KERNEL` | Token lookup with gather |
+| `ADAMW_KERNEL` | Fused AdamW optimizer step |
+| `CROSS_ENTROPY_KERNEL` | Cross-entropy loss with log-softmax |
+| `ROPE_KERNEL` | Rotary Position Embedding |
+
+### FFI Exports (ML)
+
+```python
+# Tensor operations
+handle = vitalis.vitalis_tensor_zeros(rows, cols)     # Create zero tensor
+handle = vitalis.vitalis_tensor_randn(rows, cols)     # Random normal tensor
+result = vitalis.vitalis_tensor_matmul(a, b)          # Matrix multiply
+value  = vitalis.vitalis_tensor_item(handle, idx)     # Get scalar value
+
+# Model management
+model  = vitalis.vitalis_transformer_new(preset)      # Create model (0=tiny, 1=small, 2=medium)
+params = vitalis.vitalis_transformer_params(model)     # Parameter count
+
+# Training
+opt    = vitalis.vitalis_adamw_new(lr, b1, b2, eps, wd) # Create optimizer
+lr     = vitalis.vitalis_cosine_lr(step, warmup, total, max_lr, min_lr)
+
+# Tokenizer
+tok    = vitalis.vitalis_tokenizer_new(vocab_size)    # Create BPE tokenizer
+vocab  = vitalis.vitalis_tokenizer_vocab_size(tok)    # Actual vocab size
+
+# GPU info
+avail  = vitalis.vitalis_gpu_available()              # GPU detected?
+vram   = vitalis.vitalis_gpu_memory_total()           # Total VRAM bytes
+count  = vitalis.vitalis_gpu_kernel_count()           # Number of kernels
+
+# Inference
+params = vitalis.vitalis_model_params(preset)         # Estimated param count
+vram   = vitalis.vitalis_model_vram(preset)           # Estimated VRAM bytes
+token  = vitalis.vitalis_sample_token(logits, vocab, temp, top_k, seed)
 ```
 
 <br>
@@ -795,11 +909,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-708 tests across every compiler stage:
+748 tests across every compiler stage:
 
 ```
 $ cargo test
-test result: ok. 708 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 748 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -812,6 +926,7 @@ test result: ok. 708 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Runtime stdlib | 120+ | All 200+ functions |
 | Evolution | 20+ | Register, evolve, rollback |
 | Domain modules | 80+ | Math, quantum, ML, crypto |
+| **Nova ML Engine** | **40+** | **Tensors, training, tokenizer, inference, GPU** |
 
 <br>
 
@@ -863,7 +978,15 @@ vitalis/
 │   ├── string_algorithms.rs  # KMP, Rabin-Karp, suffix arrays
 │   ├── crypto.rs             # SHA-256, AES, HMAC
 │   ├── security.rs           # Sanitization, capability checks
-│   └── science.rs            # Physics simulations
+│   ├── science.rs            # Physics simulations
+│   │
+│   │── ── Nova ML Engine (v20.0) ─────────────────
+│   ├── tensor_engine.rs      # N-dim tensors, 33+ ops, autograd
+│   ├── deep_learning.rs      # Transformer layers (RoPE, GQA, SwiGLU)
+│   ├── gpu_compute.rs        # CUDA runtime, 11 PTX kernels, memory pool
+│   ├── ml_training.rs        # AdamW, cosine scheduler, backward pass
+│   ├── bpe_tokenizer.rs      # BPE train/encode/decode/save/load
+│   └── model_inference.rs    # Model configs (5M-3B), sampling, generation
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -949,13 +1072,21 @@ timeline
         : HTTP networking + async stubs
         : Iterator protocol + comprehensions
 
-    v20+ · The Future
+    v20 · Nova ML Engine
+        : Tensor engine with autograd (33+ ops)
+        : Transformer architecture (RoPE, GQA, SwiGLU)
+        : GPU compute backend (11 CUDA kernels)
+        : ML training pipeline (AdamW, cosine LR)
+        : BPE tokenizer (train/encode/decode)
+        : Model inference (top-k/top-p sampling)
+        : 42 FFI exports · 748 tests
+
+    v21+ · The Future
         : Full async/await runtime
-        : Trait system + generics
+        : Trait system + user-defined generics
         : Package manager + registry
         : LSP server + IDE support
-        : WebAssembly target
-        : GPU compute backend
+        : WebAssembly compilation target
 ```
 
 <br>
