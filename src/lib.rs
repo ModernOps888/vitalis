@@ -146,3 +146,18 @@ pub mod evolution_advanced;
 
 // ── FFI Bridge ───────────────────────────────────────────────────────
 pub mod bridge;
+
+// ── v22: Borrow Checker & Ownership Analysis ─────────────────────────
+pub mod ownership;
+
+// ── v22: Incremental Compilation & Caching ───────────────────────────
+pub mod incremental;
+
+// ── v22: Full Trait Dispatch with VTables ────────────────────────────
+pub mod trait_dispatch;
+
+// ── v22: Debug Adapter Protocol (DAP) ────────────────────────────────
+pub mod dap;
+
+// ── v22: Interactive REPL ────────────────────────────────────────────
+pub mod repl;

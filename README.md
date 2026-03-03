@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-870_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-35%2C856-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-976_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-37%2C813-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v21.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v22.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**47**<br>
+**52**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**35,856**<br>
+**37,813**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**870**<br>
+**976**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -795,11 +795,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-870 tests across every compiler stage and v21 subsystem:
+976 tests across every compiler stage and v22 subsystem:
 
 ```
 $ cargo test
-test result: ok. 870 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 976 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -818,6 +818,11 @@ test result: ok. 870 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | LSP server | 25 | Diagnostics, completions, symbols |
 | WASM target | 25 | Module builder, LEB128, sections |
 | GPU compute | 22 | Buffers, kernels, pipelines, shaders |
+| Ownership / borrow checker | 21 | Move tracking, scope analysis |
+| Trait dispatch | 20 | VTables, resolution, impl registry |
+| Incremental compilation | 22 | Hash caching, dep graph, topo sort |
+| DAP debugger | 28 | Breakpoints, stack, variables, stepping |
+| REPL | 15 | Interactive eval, commands, history |
 
 <br>
 
@@ -876,7 +881,13 @@ vitalis/
 │   ├── package_manager.rs    # Package manager — SemVer, registry, resolution
 │   ├── lsp.rs                # LSP server — diagnostics, completion, hover, symbols
 │   ├── wasm_target.rs        # WASM target — module builder, LEB128, sections
-│   └── gpu_compute.rs        # GPU compute — buffers, kernels, pipelines, shaders
+│   ├── gpu_compute.rs        # GPU compute — buffers, kernels, pipelines, shaders
+│   │
+│   ├── ownership.rs          # Borrow checker — ownership, move, drop analysis
+│   ├── trait_dispatch.rs     # Trait dispatch — vtables, method resolution
+│   ├── incremental.rs        # Incremental compilation — hash caching, dep graph
+│   ├── dap.rs                # Debug Adapter Protocol — breakpoints, stack, stepping
+│   └── repl.rs               # Interactive REPL — eval, commands, history
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -980,13 +991,21 @@ timeline
         : GPU compute backend (buffers, kernels, pipelines, shaders)
         : 870 tests passing · 47 modules · 35,856 LOC
 
-    v22+ · The Future
-        : Borrow checker + lifetime analysis
-        : Incremental compilation + caching
-        : Full trait impls with dispatch
-        : Debugger protocol (DAP) support
-        : REPL + interactive mode
+    v22 · Borrow Checker, DAP, REPL & Trait Dispatch
+        : Ownership & borrow checker (move tracking, scope analysis)
+        : Incremental compilation (hash caching, dep graph, topo sort)
+        : Full trait dispatch with vtables + method resolution
+        : Debug Adapter Protocol (breakpoints, stack, variables, stepping)
+        : Interactive REPL (eval, commands, history)
+        : 976 tests passing · 52 modules · 37,813 LOC
+
+    v23+ · The Future
+        : Lifetime annotations + region analysis
+        : Effect system + capability types
+        : Incremental codegen + hot-reload
         : Self-hosted compiler bootstrap
+        : Native AOT compilation (non-JIT)
+        : Cross-compilation targets (ARM, RISC-V)
 ```
 
 <br>

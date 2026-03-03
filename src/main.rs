@@ -63,6 +63,8 @@ enum Command {
         #[arg(short, long)]
         expr: String,
     },
+    /// Start the interactive REPL
+    Repl,
 }
 
 fn read_source(path: &PathBuf) -> Result<String> {
@@ -159,6 +161,11 @@ fn main() -> Result<()> {
                 }
                 Err(e) => Err(miette!("{}", e)),
             }
+        }
+
+        Command::Repl => {
+            vitalis::repl::run_interactive();
+            Ok(())
         }
     }
 }
