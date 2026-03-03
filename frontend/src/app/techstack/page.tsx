@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES
@@ -103,53 +103,32 @@ function formatNum(n: number): string {
    STATIC DATA — Rust Module Inventory
    ═══════════════════════════════════════════════════════════ */
 const RUST_MODULES = [
-  { name: "codegen.rs", loc: 3494, purpose: "Cranelift 0.116 JIT + Phase 25 stdlib (98 builtins)", pct: 100 },
-  { name: "hotpath.rs", loc: 1911, purpose: "44 native hotpath ops + layer_norm/dropout/cosine_distance/huber/mse", pct: 55 },
-  { name: "ir.rs", loc: 1853, purpose: "SSA-form IR + match/pipe codegen", pct: 53 },
-  { name: "parser.rs", loc: 1729, purpose: "Recursive-descent + Pratt parser", pct: 49 },
+  { name: "codegen.rs", loc: 3494, purpose: "Cranelift 0.116 JIT + 200+ stdlib builtins", pct: 100 },
+  { name: "parser.rs", loc: 1986, purpose: "Recursive-descent + Pratt parser (traits, type aliases, cast)", pct: 57 },
+  { name: "ir.rs", loc: 1941, purpose: "SSA-form IR + match/pipe/lambda/method registry", pct: 56 },
+  { name: "hotpath.rs", loc: 1911, purpose: "44 native hotpath ops + layer_norm/dropout/cosine_distance", pct: 55 },
   { name: "optimizer.rs", loc: 1148, purpose: "Predictive JIT + Delta Debug", pct: 33 },
-  { name: "tensor_engine.rs", loc: 983, purpose: "Custom tensor algebra engine", pct: 28 },
-  { name: "quantum_math.rs", loc: 911, purpose: "Quantum-gate math primitives", pct: 26 },
-  { name: "ml.rs", loc: 872, purpose: "Machine learning algorithms", pct: 25 },
-  { name: "quantum_algorithms.rs", loc: 861, purpose: "Quantum algorithm implementations", pct: 25 },
+  { name: "quantum_math.rs", loc: 911, purpose: "Quantum math primitives", pct: 26 },
+  { name: "ml.rs", loc: 872, purpose: "Machine learning built-ins", pct: 25 },
   { name: "types.rs", loc: 855, purpose: "Two-pass type checker + scopes", pct: 24 },
-  { name: "advanced_math.rs", loc: 833, purpose: "Advanced mathematical operations", pct: 24 },
+  { name: "advanced_math.rs", loc: 833, purpose: "Extended math operations", pct: 24 },
   { name: "evolution_advanced.rs", loc: 818, purpose: "Advanced evolution strategies", pct: 23 },
-  { name: "deep_learning.rs", loc: 789, purpose: "Neural network layers & training", pct: 23 },
-  { name: "neuromorphic.rs", loc: 781, purpose: "Neuromorphic computing engine", pct: 22 },
-  { name: "bridge.rs", loc: 764, purpose: "C FFI bridge (43 exports)", pct: 22 },
+  { name: "bridge.rs", loc: 764, purpose: "C FFI bridge (64 exports)", pct: 22 },
   { name: "engine.rs", loc: 760, purpose: "VitalisEngine core", pct: 22 },
   { name: "simd_ops.rs", loc: 748, purpose: "SIMD F64x4 vectorization (AVX2)", pct: 21 },
   { name: "meta_evolution.rs", loc: 734, purpose: "Thompson sampling strategies", pct: 21 },
-  { name: "quantum.rs", loc: 721, purpose: "Quantum-inspired optimization", pct: 21 },
-  { name: "graph.rs", loc: 716, purpose: "Graph algorithms & traversal", pct: 20 },
-  { name: "bioinformatics.rs", loc: 702, purpose: "Bioinformatics sequence analysis", pct: 20 },
   { name: "memory.rs", loc: 693, purpose: "Engram storage (5 engram types)", pct: 20 },
   { name: "evolution.rs", loc: 690, purpose: "EvolutionRegistry + quantum UCB", pct: 20 },
-  { name: "combinatorial.rs", loc: 660, purpose: "Combinatorial optimization (TSP, knapsack)", pct: 19 },
-  { name: "numerical.rs", loc: 632, purpose: "Numerical methods & integration", pct: 18 },
-  { name: "geometry.rs", loc: 627, purpose: "Computational geometry primitives", pct: 18 },
-  { name: "ml_training.rs", loc: 625, purpose: "ML training pipeline & optimizers", pct: 18 },
-  { name: "analytics.rs", loc: 609, purpose: "Statistical analytics engine", pct: 17 },
-  { name: "automata.rs", loc: 591, purpose: "Finite & pushdown automata", pct: 17 },
-  { name: "probability.rs", loc: 575, purpose: "Probabilistic distributions & sampling", pct: 16 },
-  { name: "ast.rs", loc: 559, purpose: "27 expression variants + @annotation", pct: 16 },
-  { name: "chemistry_advanced.rs", loc: 542, purpose: "Advanced chemistry simulations", pct: 16 },
-  { name: "gpu_compute.rs", loc: 517, purpose: "GPU compute shader dispatch", pct: 15 },
-  { name: "string_algorithms.rs", loc: 513, purpose: "Levenshtein · Jaro-Winkler · Hamming", pct: 15 },
-  { name: "signal_processing.rs", loc: 503, purpose: "FFT, convolution & DSP", pct: 14 },
-  { name: "lexer.rs", loc: 487, purpose: "Logos-based tokenizer (127 tokens)", pct: 14 },
-  { name: "compression.rs", loc: 479, purpose: "LZ77, Huffman, RLE compression", pct: 14 },
-  { name: "sorting.rs", loc: 465, purpose: "Hybrid sorting algorithms", pct: 13 },
-  { name: "model_inference.rs", loc: 453, purpose: "Model inference & quantization", pct: 13 },
-  { name: "science.rs", loc: 424, purpose: "Scientific computing & physics", pct: 12 },
-  { name: "scoring.rs", loc: 413, purpose: "Scoring & ranking algorithms", pct: 12 },
-  { name: "crypto.rs", loc: 392, purpose: "Cryptographic primitives (SHA-256, AES)", pct: 11 },
-  { name: "security.rs", loc: 367, purpose: "Security hardening & tamper detection", pct: 11 },
-  { name: "bpe_tokenizer.rs", loc: 315, purpose: "BPE tokenization for LLMs", pct: 9 },
-  { name: "stdlib.rs", loc: 257, purpose: "98 built-in functions (Phase 25)", pct: 7 },
-  { name: "main.rs", loc: 149, purpose: "CLI binary (vtc) + clap", pct: 4 },
-  { name: "lib.rs", loc: 112, purpose: "Module declarations (47 modules)", pct: 3 },
+  { name: "ast.rs", loc: 628, purpose: "30+ expression variants + traits + type aliases", pct: 18 },
+  { name: "lexer.rs", loc: 678, purpose: "Logos-based tokenizer (80+ tokens)", pct: 19 },
+  { name: "stdlib.rs", loc: 257, purpose: "200+ built-in functions", pct: 7 },
+  { name: "lib.rs", loc: 138, purpose: "Module declarations (47 modules)", pct: 4 },
+  { name: "async_runtime.rs", loc: 310, purpose: "Async/await executor, channels, futures", pct: 9 },
+  { name: "generics.rs", loc: 420, purpose: "Type params, monomorphization, bounds", pct: 12 },
+  { name: "package_manager.rs", loc: 470, purpose: "SemVer, registry, dependency resolver", pct: 13 },
+  { name: "lsp.rs", loc: 813, purpose: "LSP server — diagnostics, completion, hover", pct: 23 },
+  { name: "wasm_target.rs", loc: 640, purpose: "WebAssembly module builder + LEB128", pct: 18 },
+  { name: "gpu_compute.rs", loc: 520, purpose: "GPU buffers, kernels, pipelines, shaders", pct: 15 },
 ];
 
 const LOC_BAR_COLORS = [
@@ -166,11 +145,123 @@ const LOC_BAR_COLORS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT: Enhanced Particle Field — STRIPPED for performance
+   COMPONENT: Enhanced Particle Field (Mouse-Reactive)
    ═══════════════════════════════════════════════════════════ */
-function ParticleField() { return null; }
-    const TARGET_FPS = 30;
-    const FRAME_TIME = 1000 / TARGET_FPS;
+function ParticleField() {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let raf: number;
+    let mouseX = -1000, mouseY = -1000;
+    const COLORS = [
+      "rgba(0,240,255,",
+      "rgba(255,0,229,",
+      "rgba(57,255,20,",
+      "rgba(176,38,255,",
+      "rgba(255,215,0,",
+      "rgba(255,106,0,",
+    ];
+
+    const particles: {
+      x: number; y: number; r: number;
+      dx: number; dy: number;
+      color: string; alpha: number;
+      pulseSpeed: number; phase: number;
+    }[] = [];
+
+    function resize() {
+      canvas!.width = window.innerWidth;
+      canvas!.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    const onMouse = (e: MouseEvent) => { mouseX = e.clientX; mouseY = e.clientY; };
+    document.addEventListener("mousemove", onMouse);
+
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x: Math.random() * (canvas.width || 1920),
+        y: Math.random() * (canvas.height || 1080),
+        r: Math.random() * 2.5 + 0.3,
+        dx: (Math.random() - 0.5) * 0.4,
+        dy: (Math.random() - 0.5) * 0.4,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        alpha: Math.random() * 0.5 + 0.1,
+        pulseSpeed: Math.random() * 0.02 + 0.008,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      const t = performance.now() * 0.001;
+
+      for (const p of particles) {
+        const mdx = p.x - mouseX;
+        const mdy = p.y - mouseY;
+        const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mDist < 120 && mDist > 0) {
+          const force = (120 - mDist) / 120 * 2;
+          p.x += (mdx / mDist) * force;
+          p.y += (mdy / mDist) * force;
+        }
+
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < -10) p.x = canvas!.width + 10;
+        if (p.x > canvas!.width + 10) p.x = -10;
+        if (p.y < -10) p.y = canvas!.height + 10;
+        if (p.y > canvas!.height + 10) p.y = -10;
+
+        const a = p.alpha * (0.5 + 0.5 * Math.sin(t * p.pulseSpeed * 60 + p.phase));
+
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx!.fillStyle = p.color + a.toFixed(3) + ")";
+        ctx!.fill();
+
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
+        ctx!.fillStyle = p.color + (a * 0.12).toFixed(3) + ")";
+        ctx!.fill();
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            const alpha = (1 - dist / 180) * 0.1;
+            ctx!.beginPath();
+            ctx!.moveTo(particles[i].x, particles[i].y);
+            ctx!.lineTo(particles[j].x, particles[j].y);
+            ctx!.strokeStyle = particles[i].color + alpha.toFixed(3) + ")";
+            ctx!.lineWidth = 0.5;
+            ctx!.stroke();
+          }
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("mousemove", onMouse);
+    };
+  }, []);
+
+  return <canvas ref={ref} className="particle-canvas" />;
+}
+
 /* ═══════════════════════════════════════════════════════════
    COMPONENT: Scroll Progress Bar
    ═══════════════════════════════════════════════════════════ */
@@ -191,16 +282,46 @@ function ScrollProgress() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT: Data Stream Overlay — STRIPPED for performance
+   COMPONENT: Data Stream Overlay (Falling Characters)
    ═══════════════════════════════════════════════════════════ */
-function DataStream() { return null; }
+function DataStream() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
+    const chars = "01\u221E\u03BB\u03A3\u0394\u221A\u03C0\u03A9\u2248\u222B{}[]<>:;=+*&|^~";
+    const colors = [ALIEN.cyan, ALIEN.magenta, ALIEN.green, ALIEN.violet, ALIEN.gold];
+    let active = true;
+
+    function spawn() {
+      if (!active || !container) return;
+      const el = document.createElement("span");
+      el.className = "data-char";
+      el.textContent = chars[Math.floor(Math.random() * chars.length)];
+      el.style.left = Math.random() * 100 + "%";
+      el.style.animationDuration = (Math.random() * 10 + 6) + "s";
+      el.style.fontSize = (Math.random() * 8 + 8) + "px";
+      el.style.color = colors[Math.floor(Math.random() * colors.length)];
+      el.style.opacity = "0";
+      container.appendChild(el);
+      el.addEventListener("animationend", () => el.remove());
+      setTimeout(spawn, Math.random() * 500 + 300);
+    }
+
+    const timer = setTimeout(spawn, 2000);
+    return () => { active = false; clearTimeout(timer); };
+  }, []);
+
+  return <div ref={ref} className="data-stream-overlay" />;
+}
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT: Clean Text (no glitch)
+   COMPONENT: Glitch Text
    ═══════════════════════════════════════════════════════════ */
 function GlitchText({ text, className = "" }: { text: string; className?: string }) {
   return (
-    <span className={className} style={{ display: "inline-block" }}>
+    <span className={`glitch-text ${className}`} data-text={text}>
       {text}
     </span>
   );
@@ -279,11 +400,35 @@ function Card({ children, featured = false, className = "", borderColor }: {
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const rotateX = (y - rect.height / 2) / rect.height * -6;
+    const rotateY = (x - rect.width / 2) / rect.width * 6;
+    const glowX = (x / rect.width) * 100;
+    const glowY = (y / rect.height) * 100;
+    el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.015)`;
+    el.style.boxShadow = `0 0 40px rgba(0,240,255,0.08), inset 0 0 60px rgba(0,240,255,0.02), ${glowX < 50 ? '-' : ''}${Math.abs(glowX - 50) * 0.3}px ${glowY < 50 ? '-' : ''}${Math.abs(glowY - 50) * 0.3}px 60px rgba(0,240,255,0.05)`;
+  }, []);
+
+  const onMouseLeave = useCallback(() => {
+    const el = ref.current;
+    if (el) {
+      el.style.transform = "perspective(800px) rotateX(0) rotateY(0) translateY(0) scale(1)";
+      el.style.boxShadow = "";
+    }
+  }, []);
+
   return (
     <div
       ref={ref}
       className={`alien-card ${featured ? "card-featured" : ""} ${className}`}
       style={borderColor ? { borderColor } : undefined}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
     >
       {children}
     </div>
@@ -293,107 +438,18 @@ function Card({ children, featured = false, className = "", borderColor }: {
 /* ═══════════════════════════════════════════════════════════
    COMPONENT: Progress Bar
    ═══════════════════════════════════════════════════════════ */
-function ProgressBar({ label, value, max, color, icon, accentColor }: {
-  label: string; value: string; max: number; color: string; icon?: string; accentColor?: string;
+function ProgressBar({ label, value, max, color }: {
+  label: string; value: string; max: number; color: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold: 0.3 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
   return (
-    <div ref={ref} className="progress-container-v2">
-      <div className="progress-header-v2">
-        <div className="progress-label-left">
-          {icon && <span className="progress-icon">{icon}</span>}
-          <span className="progress-lang">{label}</span>
-        </div>
-        <div className="progress-label-right">
-          <span className="progress-value-text">{value}</span>
-        </div>
+    <div className="progress-container">
+      <div className="progress-label">
+        <span>{label}</span>
+        <span>{value}</span>
       </div>
-      <div className="progress-track-v2">
-        <div
-          className="progress-fill-v2"
-          style={{
-            width: visible ? `${max}%` : "0%",
-            background: color,
-            boxShadow: `0 0 12px ${accentColor ?? "rgba(0,240,255,0.3)"}, 0 0 24px ${accentColor ?? "rgba(0,240,255,0.15)"}`,
-          }}
-        >
-          <div className="progress-shine" />
-        </div>
-        <div className="progress-glow-dot" style={{
-          left: visible ? `${max}%` : "0%",
-          background: accentColor ?? ALIEN.cyan,
-          boxShadow: `0 0 8px ${accentColor ?? ALIEN.cyan}, 0 0 16px ${accentColor ?? ALIEN.cyan}60`,
-          opacity: visible ? 1 : 0,
-        }} />
+      <div className="progress-track">
+        <div className="progress-fill" style={{ width: `${max}%`, background: color }} />
       </div>
-      <div className="progress-pct-v2" style={{ color: accentColor ?? ALIEN.cyan }}>
-        {max.toFixed(1)}%
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   COMPONENT: LOC Donut Chart (SVG)
-   ═══════════════════════════════════════════════════════════ */
-function LOCDonut({ segments }: { segments: { label: string; pct: number; color: string; loc: number }[] }) {
-  const r = 62;
-  const circumference = 2 * Math.PI * r;
-  let offset = 0;
-
-  return (
-    <div className="loc-donut-wrap">
-      <svg width={180} height={180} viewBox="0 0 180 180">
-        <defs>
-          <filter id="donutGlow">
-            <feGaussianBlur stdDeviation="4" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <circle cx={90} cy={90} r={r} fill="none" stroke="rgba(0,240,255,0.06)" strokeWidth={14} />
-        {segments.map((seg, i) => {
-          const dashLen = (seg.pct / 100) * circumference;
-          const dashGap = circumference - dashLen;
-          const currentOffset = offset;
-          offset += dashLen;
-          return (
-            <circle
-              key={seg.label}
-              cx={90} cy={90} r={r} fill="none"
-              stroke={seg.color}
-              strokeWidth={14}
-              strokeDasharray={`${dashLen} ${dashGap}`}
-              strokeDashoffset={-currentOffset}
-              strokeLinecap="round"
-              transform="rotate(-90 90 90)"
-              filter="url(#donutGlow)"
-              className="donut-segment"
-              style={{ animationDelay: `${i * 0.3}s` }}
-            />
-          );
-        })}
-        <text x={90} y={78} textAnchor="middle" fill="#e0e8f8" fontSize="22" fontWeight="900" fontFamily="var(--font-mono)">
-          {`${Math.round(segments.reduce((s, seg) => s + seg.loc, 0) / 1000)}K`}
-        </text>
-        <text x={90} y={98} textAnchor="middle" fill="rgba(138,154,181,0.7)" fontSize="9" letterSpacing="0.15em">
-          TOTAL LOC
-        </text>
-        <text x={90} y={115} textAnchor="middle" fill="rgba(0,240,255,0.5)" fontSize="8" letterSpacing="0.1em">
-          3 LANGUAGES
-        </text>
-      </svg>
     </div>
   );
 }
@@ -531,7 +587,6 @@ function Reveal({ children, className = "", delay = 0 }: {
    ═══════════════════════════════════════════════════════════ */
 const NAV_SECTIONS = [
   { id: "overview", label: "Overview" },
-  { id: "vitalis-oss", label: "\uD83E\uDDEC Vitalis OSS" },
   { id: "architecture", label: "Architecture" },
   { id: "compiler", label: "Compiler" },
   { id: "simd", label: "SIMD" },
@@ -542,7 +597,6 @@ const NAV_SECTIONS = [
   { id: "frontend-sec", label: "Frontend" },
   { id: "safety", label: "Safety" },
   { id: "consciousness", label: "Consciousness" },
-  { id: "algorithms", label: "Algorithms" },
   { id: "infra", label: "Infrastructure" },
   { id: "inventory", label: "Inventory" },
 ];
@@ -596,7 +650,7 @@ function StickyNav() {
       // Show after scrolling past hero (~320px)
       setVisible(scrollY > 320);
 
-      const scrollPos = scrollY + 160;
+      const scrollPos = scrollY + 140;
       let idx = 0;
       NAV_SECTIONS.forEach((s, i) => {
         const el = document.getElementById(s.id);
@@ -640,15 +694,91 @@ function StickyNav() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT: Circuit Traces — STRIPPED for performance
+   COMPONENT: Circuit Traces (SVG overlay)
    ═══════════════════════════════════════════════════════════ */
-function CircuitTraces() { return null; }
+function CircuitTraces() {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    function draw() {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const w = window.innerWidth;
+      const h = document.documentElement.scrollHeight;
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.style.height = `${h}px`;
+      svg.innerHTML = "";
+
+      const ns = "http://www.w3.org/2000/svg";
+      const colors = ["", "magenta", "green", "", "magenta", "", "green", ""];
+
+      for (let t = 0; t < 8; t++) {
+        const path = document.createElementNS(ns, "path");
+        const startX = Math.random() * w * 0.3 + (t % 2 === 0 ? 20 : w * 0.7);
+        let d = `M ${startX} 0`;
+        let y = 0;
+        let x = startX;
+
+        while (y < h) {
+          const segLen = Math.random() * 200 + 100;
+          const dir = Math.random() > 0.5 ? 1 : -1;
+          if (Math.random() > 0.4) {
+            y += segLen;
+            d += ` L ${x} ${Math.min(y, h)}`;
+          } else {
+            const jog = (Math.random() * 80 + 20) * dir;
+            x = Math.max(20, Math.min(w - 20, x + jog));
+            d += ` L ${x} ${y}`;
+            const node = document.createElementNS(ns, "circle");
+            node.setAttribute("cx", String(x));
+            node.setAttribute("cy", String(y));
+            node.setAttribute("r", "3");
+            node.classList.add("circuit-node");
+            node.style.animationDelay = `${Math.random() * 3}s`;
+            svg.appendChild(node);
+            y += segLen * 0.5;
+            d += ` L ${x} ${Math.min(y, h)}`;
+          }
+        }
+
+        path.setAttribute("d", d);
+        path.classList.add("circuit-line");
+        if (colors[t]) path.classList.add(colors[t]);
+        path.style.animationDelay = `${t * 0.5}s`;
+        svg.appendChild(path);
+      }
+    }
+
+    draw();
+    const onResize = () => setTimeout(draw, 300);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return (
+    <svg
+      ref={svgRef}
+      className="circuit-svg"
+      style={{ position: "absolute", top: 0, left: 0, width: "100%", pointerEvents: "none", zIndex: 0, overflow: "visible" }}
+    />
+  );
+}
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT: Parallax Background Hook — STRIPPED (was causing twitching)
+   COMPONENT: Parallax Background Hook
    ═══════════════════════════════════════════════════════════ */
 function useParallax() {
-  // Intentionally empty — removed to prevent competing transforms on star-field
+  useEffect(() => {
+    function update() {
+      const scrollY = window.pageYOffset;
+      const starField = document.querySelector(".star-field") as HTMLElement | null;
+      const nebula = document.querySelector(".nebula-overlay") as HTMLElement | null;
+      if (starField) starField.style.transform = `translateY(${scrollY * 0.15}px)`;
+      if (nebula) nebula.style.transform = `translateY(${scrollY * 0.08}px) scale(1.1)`;
+    }
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
 }
 
 /* ═══════ CINEMATIC LOADING SCREEN ═══════ */
@@ -692,22 +822,62 @@ function CinematicLoader() {
   );
 }
 
-/* ═══════ CUSTOM ANIMATED CURSOR — STRIPPED for performance ═══════ */
-function CyberCursor() { return null; }
+/* ═══════ CUSTOM ANIMATED CURSOR ═══════ */
+function CyberCursor() {
+  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
 
-/* ═══════ FILM GRAIN OVERLAY — STRIPPED for performance ═══════ */
-function FilmGrain() { return null; }
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
 
-/* ═══════ AURORA FIELD (CSS-only atmospheric ribbons) — KEPT ═══════ */
-function AuroraField() {
-  return <div className="aurora-field" />;
+    const dot = dotRef.current;
+    const ring = ringRef.current;
+    if (!dot || !ring) return;
+
+    let mx = -100, my = -100, rx = -100, ry = -100, hovering = false, alive = true;
+
+    const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY; };
+    const onEnter = () => { hovering = true; };
+    const onLeave = () => { hovering = false; };
+
+    const bind = () => {
+      document.querySelectorAll("a,button,.alien-card,.snav-link,.nav-dot,.arch-box,.tech-tag").forEach(el => {
+        el.addEventListener("mouseenter", onEnter);
+        el.addEventListener("mouseleave", onLeave);
+      });
+    };
+
+    const loop = () => {
+      if (!alive) return;
+      dot.style.transform = `translate(${mx - 4}px,${my - 4}px)`;
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      const s = hovering ? 2 : 1;
+      ring.style.transform = `translate(${rx - 20}px,${ry - 20}px) scale(${s})`;
+      ring.style.opacity = hovering ? "0.7" : "0.4";
+      requestAnimationFrame(loop);
+    };
+
+    document.addEventListener("mousemove", onMove);
+    bind();
+    const iv = setInterval(bind, 4000);
+    requestAnimationFrame(loop);
+    return () => { alive = false; document.removeEventListener("mousemove", onMove); clearInterval(iv); };
+  }, []);
+
+  return (
+    <>
+      <div ref={dotRef} className="cyber-cursor-dot" />
+      <div ref={ringRef} className="cyber-cursor-ring" />
+    </>
+  );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   COMPONENT: Quantum Neural Field — STRIPPED for performance
-   (Was the heaviest component: 30 nodes, vortex, plasma tendrils, rAF canvas)
-   ═══════════════════════════════════════════════════════════ */
-function HolographicWaves() { return null; }
+/* ═══════ FILM GRAIN OVERLAY ═══════ */
+function FilmGrain() {
+  return <div className="film-grain" />;
+}
 
 /* ═══════════════════════════════════════════════════════════
    MAIN PAGE
@@ -758,7 +928,7 @@ export default function TechStackPage() {
             offers: { "@type": "Offer", price: "0", priceCurrency: "GBP" },
             author: {
               "@type": "Person",
-              name: "Bart Chmiel",
+              name: "Ben Chmiel",
               url: "https://www.linkedin.com/in/modern-workplace-tech365/",
             },
             sameAs: [
@@ -778,57 +948,18 @@ export default function TechStackPage() {
         }}
       />
 
-      {/* Cinematic preloader */}
+      {/* Cinematic preloader + custom cursor */}
       <CinematicLoader />
+      <CyberCursor />
 
-      {/* Background layers (stripped heavy canvas/rAF components for smooth scrolling) */}
+      {/* Background layers */}
       <div className="star-field" />
       <div className="nebula-overlay" />
-      <AuroraField />
-      <div className="cyber-grid"><div className="cyber-grid-inner" /></div>
-      <div className="holo-scan" />
+      <ParticleField />
+      <DataStream />
       <ScrollProgress />
-
-      {/* Nebula / Atomic orbital background — holographic cyberpunk */}
-      <div className="nebula-atomic">
-        {/* Energy field haze layers */}
-        <div className="nebula-field nebula-field-1" />
-        <div className="nebula-field nebula-field-2" />
-        {/* Holographic scan disc */}
-        <div className="holo-disc" />
-        {/* Core with multi-layer glow */}
-        <div className="nebula-core">
-          <div className="core-ring core-ring-1" />
-          <div className="core-ring core-ring-2" />
-        </div>
-        {/* 5 orbital rings with electrons + trails */}
-        <div className="orbital orbital-1">
-          <div className="electron"><div className="e-trail" /></div>
-          <div className="electron e2"><div className="e-trail" /></div>
-        </div>
-        <div className="orbital orbital-2">
-          <div className="electron"><div className="e-trail" /></div>
-        </div>
-        <div className="orbital orbital-3">
-          <div className="electron"><div className="e-trail" /></div>
-          <div className="electron e2"><div className="e-trail" /></div>
-        </div>
-        <div className="orbital orbital-4">
-          <div className="electron"><div className="e-trail" /></div>
-        </div>
-        <div className="orbital orbital-5">
-          <div className="electron"><div className="e-trail" /></div>
-          <div className="electron e2"><div className="e-trail" /></div>
-        </div>
-      </div>
-
-      <div className="holo-shapes">
-        <div className="holo-shape" />
-        <div className="holo-shape" />
-        <div className="holo-shape" />
-        <div className="holo-shape" />
-        <div className="holo-shape" />
-      </div>
+      <CircuitTraces />
+      <FilmGrain />
       <FloatingNav />
 
       {/* ═══════════ HERO ═══════════ */}
@@ -836,40 +967,26 @@ export default function TechStackPage() {
         <div className="hero-logo" aria-label="Infinity — Autonomous AI System">
           <svg className="hero-infinity-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              {/* Holographic animated gradient */}
+              {/* Primary emerald gradient */}
               <linearGradient id="igPrimary" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#059669">
-                  <animate attributeName="stop-color" values="#059669;#00f0ff;#ff00e5;#059669" dur="8s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="25%" stopColor="#10b981">
-                  <animate attributeName="stop-color" values="#10b981;#34d399;#b026ff;#10b981" dur="8s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="50%" stopColor="#34d399">
-                  <animate attributeName="stop-color" values="#34d399;#ff00e5;#00f0ff;#34d399" dur="8s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="75%" stopColor="#00f0ff">
-                  <animate attributeName="stop-color" values="#00f0ff;#39ff14;#ffd700;#00f0ff" dur="8s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="100%" stopColor="#059669">
-                  <animate attributeName="stop-color" values="#059669;#00f0ff;#ff00e5;#059669" dur="8s" repeatCount="indefinite" />
-                </stop>
+                <stop offset="0%" stopColor="#059669" />
+                <stop offset="25%" stopColor="#10b981" />
+                <stop offset="50%" stopColor="#34d399" />
+                <stop offset="75%" stopColor="#00f0ff" />
+                <stop offset="100%" stopColor="#059669" />
               </linearGradient>
-              {/* Chromatic aberration red channel */}
-              <linearGradient id="igChromaR" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ff003c" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#ff003c" stopOpacity="0.05" />
+              {/* Secondary darker accent */}
+              <linearGradient id="igSecondary" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#047857" />
+                <stop offset="50%" stopColor="#0d9488" />
+                <stop offset="100%" stopColor="#047857" />
               </linearGradient>
-              {/* Chromatic aberration blue channel */}
-              <linearGradient id="igChromaB" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#0066ff" stopOpacity="0.05" />
-                <stop offset="100%" stopColor="#0066ff" stopOpacity="0.15" />
-              </linearGradient>
-              {/* Metallic top-light with sweep */}
+              {/* Metallic top-light */}
               <linearGradient id="igSheen" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
-                <stop offset="30%" stopColor="rgba(255,255,255,0.08)" />
+                <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
+                <stop offset="40%" stopColor="rgba(255,255,255,0.05)" />
                 <stop offset="60%" stopColor="rgba(255,255,255,0)" />
-                <stop offset="100%" stopColor="rgba(255,255,255,0.12)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0.1)" />
               </linearGradient>
               {/* Multi-layer glow */}
               <filter id="igGlow" x="-40%" y="-40%" width="180%" height="180%">
@@ -887,13 +1004,6 @@ export default function TechStackPage() {
               <filter id="igHaze" x="-60%" y="-60%" width="220%" height="220%">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="22" />
               </filter>
-              {/* Center energy glow */}
-              <radialGradient id="igCenterPulse" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.4">
-                  <animate attributeName="stop-color" values="#00f0ff;#ff00e5;#39ff14;#00f0ff" dur="6s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="100%" stopColor="#00f0ff" stopOpacity="0" />
-              </radialGradient>
               {/* Reflection fade */}
               <linearGradient id="igReflFade" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="white" stopOpacity="0.2" />
@@ -904,30 +1014,15 @@ export default function TechStackPage() {
               </mask>
             </defs>
 
-            {/* Ambient nebula */}
+            {/* Ambient nebula behind the symbol */}
             <ellipse cx="200" cy="100" rx="140" ry="60" fill="rgba(16,185,129,0.06)" className="hero-ambient" />
-
-            {/* Chromatic aberration - red offset (left) */}
-            <path
-              d="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
-              fill="none" stroke="url(#igChromaR)" strokeWidth="8"
-              strokeLinecap="round" strokeLinejoin="round"
-              transform="translate(-2.5, 0)" filter="url(#igGlow)" className="hero-chroma-r"
-            />
-            {/* Chromatic aberration - blue offset (right) */}
-            <path
-              d="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
-              fill="none" stroke="url(#igChromaB)" strokeWidth="8"
-              strokeLinecap="round" strokeLinejoin="round"
-              transform="translate(2.5, 0)" filter="url(#igGlow)" className="hero-chroma-b"
-            />
 
             {/* Layer 1: Wide soft haze */}
             <path
               d="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
               fill="none" stroke="url(#igPrimary)" strokeWidth="18"
               strokeLinecap="round" strokeLinejoin="round"
-              filter="url(#igHaze)" opacity="0.4" className="hero-inf-haze"
+              filter="url(#igHaze)" opacity="0.35" className="hero-inf-haze"
             />
 
             {/* Layer 2: Primary glow stroke */}
@@ -949,7 +1044,7 @@ export default function TechStackPage() {
             {/* Layer 4: White-hot inner edge */}
             <path
               d="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
-              fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"
+              fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"
               strokeLinecap="round" strokeLinejoin="round"
             />
 
@@ -961,28 +1056,7 @@ export default function TechStackPage() {
               opacity="0.5"
             />
 
-            {/* Rotating orbital ring */}
-            <ellipse cx="200" cy="100" rx="120" ry="25" fill="none"
-              stroke="url(#igPrimary)" strokeWidth="0.6" opacity="0.2"
-              strokeDasharray="6 8" className="hero-orbital">
-              <animateTransform attributeName="transform" type="rotate"
-                values="0 200 100;360 200 100" dur="12s" repeatCount="indefinite" />
-            </ellipse>
-            {/* Second orbital ring - counter-rotate */}
-            <ellipse cx="200" cy="100" rx="135" ry="18" fill="none"
-              stroke="url(#igPrimary)" strokeWidth="0.4" opacity="0.12"
-              strokeDasharray="4 10" className="hero-orbital-2">
-              <animateTransform attributeName="transform" type="rotate"
-                values="360 200 100;0 200 100" dur="18s" repeatCount="indefinite" />
-            </ellipse>
-
-            {/* Center crossover energy pulse */}
-            <circle cx="200" cy="100" r="12" fill="url(#igCenterPulse)" className="hero-center-pulse">
-              <animate attributeName="r" values="8;15;8" dur="3s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.6;0.3;0.6" dur="3s" repeatCount="indefinite" />
-            </circle>
-
-            {/* Energy particle 1 - bright white */}
+            {/* Energy particle 1 — bright white */}
             <circle r="3.5" fill="white" className="hero-particle">
               <animate attributeName="opacity" values="0.9;0.4;0.9" dur="4s" repeatCount="indefinite" />
               <animateMotion
@@ -998,27 +1072,11 @@ export default function TechStackPage() {
               />
             </circle>
 
-            {/* Energy particle 2 - cyan accent, offset */}
+            {/* Energy particle 2 — cyan accent, offset */}
             <circle r="2" fill="#00f0ff" className="hero-particle">
               <animate attributeName="opacity" values="0.7;0.2;0.7" dur="5s" repeatCount="indefinite" />
               <animateMotion
                 dur="5s" repeatCount="indefinite" begin="-2.5s"
-                path="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
-              />
-            </circle>
-
-            {/* Energy particle 3 - magenta, slower */}
-            <circle r="2.5" fill="#ff00e5" className="hero-particle">
-              <animate attributeName="opacity" values="0.6;0.15;0.6" dur="6s" repeatCount="indefinite" />
-              <animateMotion
-                dur="7s" repeatCount="indefinite" begin="-1s"
-                path="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
-              />
-            </circle>
-            {/* Magenta particle trail */}
-            <circle r="6" fill="#ff00e5" opacity="0.15">
-              <animateMotion
-                dur="7s" repeatCount="indefinite" begin="-1s"
                 path="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
               />
             </circle>
@@ -1028,15 +1086,13 @@ export default function TechStackPage() {
               <path
                 d="M200 100 C200 58, 118 32, 85 60 C48 92, 48 118, 85 145 C118 168, 200 142, 200 100 C200 58, 282 32, 315 60 C352 92, 352 118, 315 145 C282 168, 200 142, 200 100 Z"
                 fill="none" stroke="url(#igPrimary)" strokeWidth="5"
-                strokeLinecap="round" strokeLinejoin="round" opacity="0.3"
+                strokeLinecap="round" strokeLinejoin="round" opacity="0.25"
                 filter="url(#igGlow)"
               />
             </g>
 
-            {/* Ground glow line - enhanced */}
-            <line x1="50" y1="185" x2="350" y2="185" stroke="url(#igPrimary)" strokeWidth="0.8" opacity="0.2">
-              <animate attributeName="opacity" values="0.15;0.25;0.15" dur="4s" repeatCount="indefinite" />
-            </line>
+            {/* Ground glow line */}
+            <line x1="60" y1="185" x2="340" y2="185" stroke="url(#igPrimary)" strokeWidth="0.5" opacity="0.15" />
           </svg>
         </div>
         <h1 className="hero-h1">
@@ -1101,17 +1157,19 @@ export default function TechStackPage() {
                       <div className="card-title">Rust &mdash; Vitalis Compiler</div>
                       <div className="card-subtitle">
                         {stats?.tech_stack?.rust
-                          ? `${formatNum(stats.tech_stack.rust.loc)} LOC \u00B7 ${stats.tech_stack.rust.files} Files \u00B7 ${stats.tech_stack.rust.tests ?? 748} Tests`
-                          : "35,632 LOC \u00B7 47 Modules \u00B7 748 Tests"}
+                          ? `${formatNum(stats.tech_stack.rust.loc)} LOC \u00B7 ${stats.tech_stack.rust.files} Files \u00B7 ${stats.tech_stack.rust.tests ?? 870} Tests`
+                          : "35,856 LOC \u00B7 47 Modules \u00B7 870 Tests"}
                       </div>
                     </div>
                   </div>
                   <div className="card-body">
                     Custom compiled language with <strong>Cranelift JIT</strong>, SIMD vectorization,
                     predictive optimizer, quantum-inspired evolution (annealing, UCB, Pareto, CMA-ES),
+                    async/await runtime, generics with monomorphization, WebAssembly target,
+                    LSP server for IDE support, GPU compute backend, package manager,
                     consciousness substrate, kernel sentinel, 98 stdlib builtins, and 44 native hotpath ops
                     including softmax, cross-entropy, batch sigmoid/ReLU, cosine similarity, entropy, and EMA.
-                    Compiles <code>.sl</code> &rarr; native x86-64 via SSA IR.
+                    Compiles <code>.sl</code> &rarr; native x86-64 or WASM via SSA IR.
                   </div>
                   <div className="tags-row">
                     <Tag variant="rust">Rust 2024</Tag>
@@ -1131,13 +1189,13 @@ export default function TechStackPage() {
                       <div className="card-title">Python &mdash; AI Backend</div>
                       <div className="card-subtitle">
                         {stats?.tech_stack?.python
-                          ? `${formatNum(stats.tech_stack.python.loc)} LOC \u00B7 ${stats.tech_stack.python.files} Files \u00B7 ${stats.tech_stack.python.modules ?? 94} Modules`
-                          : "99,349 LOC \u00B7 352 Files \u00B7 94 Modules"}
+                          ? `${formatNum(stats.tech_stack.python.loc)} LOC \u00B7 ${stats.tech_stack.python.files} Files \u00B7 ${stats.tech_stack.python.modules ?? 72} Modules`
+                          : "95,337 LOC \u00B7 344 Files \u00B7 72 Modules"}
                       </div>
                     </div>
                   </div>
                   <div className="card-body">
-                    <strong>FastAPI</strong> server on port 8002 with {stats?.modules_loaded ?? 94} cortex modules covering
+                    <strong>FastAPI</strong> server on port 8002 with {stats?.modules_loaded ?? 72} cortex modules covering
                     inference, memory, reasoning, code analysis, swarm consensus, evolution
                     orchestration, voice processing, and <strong>ChromaDB</strong> vector store.
                   </div>
@@ -1158,8 +1216,8 @@ export default function TechStackPage() {
                       <div className="card-title">TypeScript &mdash; Cyberpunk Frontend</div>
                       <div className="card-subtitle">
                         {stats?.tech_stack?.typescript
-                          ? `${formatNum(stats.tech_stack.typescript.loc)} LOC \u00B7 ${stats.tech_stack.typescript.files} Files \u00B7 ${stats.tech_stack.typescript.routes ?? 26} Routes`
-                          : "18,894 LOC \u00B7 54 Files \u00B7 26 Routes"}
+                          ? `${formatNum(stats.tech_stack.typescript.loc)} LOC \u00B7 ${stats.tech_stack.typescript.files} Files \u00B7 ${stats.tech_stack.typescript.routes ?? 25} Routes`
+                          : "14,308 LOC \u00B7 51 Files \u00B7 25 Routes"}
                       </div>
                     </div>
                   </div>
@@ -1178,147 +1236,23 @@ export default function TechStackPage() {
               </Reveal>
             </div>
 
-            {/* LOC Distribution — Premium Breakdown */}
-            <div className="loc-distribution-v2">
-              <LOCDonut segments={[
-                { label: "Python", pct: 64.6, color: ALIEN.green, loc: stats?.tech_stack?.python?.loc ?? 99349 },
-                { label: "Rust", pct: 23.2, color: ALIEN.orange, loc: stats?.tech_stack?.rust?.loc ?? 35632 },
-                { label: "TypeScript", pct: 12.3, color: ALIEN.cyan, loc: stats?.tech_stack?.typescript?.loc ?? 18894 },
-              ]} />
-              <div className="loc-bars-v2">
-                <ProgressBar
-                  label="Python" icon="🐍"
-                  value={`${formatNum(stats?.tech_stack?.python?.loc ?? 99349)} LOC`}
-                  max={64.6}
-                  color={`linear-gradient(90deg, ${ALIEN.green}, rgba(57,255,20,0.4))`}
-                  accentColor={ALIEN.green}
-                />
-                <ProgressBar
-                  label="Rust" icon="🦀"
-                  value={`${formatNum(stats?.tech_stack?.rust?.loc ?? 35632)} LOC`}
-                  max={23.2}
-                  color={`linear-gradient(90deg, ${ALIEN.orange}, rgba(255,106,0,0.4))`}
-                  accentColor={ALIEN.orange}
-                />
-                <ProgressBar
-                  label="TypeScript" icon="⚛️"
-                  value={`${formatNum(stats?.tech_stack?.typescript?.loc ?? 18894)} LOC`}
-                  max={12.3}
-                  color={`linear-gradient(90deg, ${ALIEN.cyan}, rgba(0,240,255,0.4))`}
-                  accentColor={ALIEN.cyan}
-                />
-              </div>
-            </div>
-          </section>
-        </Reveal>
-      </div>
-
-      {/* ═══════════ VITALIS FLAGSHIP PANEL ═══════════ */}
-      <EnergyConnector />
-      <div className="container" id="vitalis-oss">
-        <Reveal>
-          <section className="vitalis-flagship">
-            <div className="vitalis-flagship-glow" />
-            <div className="vitalis-flagship-grid">
-              {/* LEFT — Hero Info */}
-              <div className="vitalis-flagship-hero">
-                <div className="vitalis-flagship-badge">🧬 OPEN SOURCE FLAGSHIP</div>
-                <h2 className="vitalis-flagship-title">
-                  Vitalis<span className="vitalis-flagship-version">v20</span>
-                </h2>
-                <p className="vitalis-flagship-tagline">
-                  A self-evolving, JIT-compiled programming language built from scratch in Rust.
-                  Powering Infinity&rsquo;s autonomous AI with native-speed hotpath operations,
-                  quantum-inspired evolution strategies, and real-time code mutation.
-                </p>
-                <div className="vitalis-flagship-stats-row">
-                  <div className="vitalis-flagship-stat">
-                    <span className="vitalis-flagship-stat-value">35,632</span>
-                    <span className="vitalis-flagship-stat-label">Lines of Rust</span>
-                  </div>
-                  <div className="vitalis-flagship-stat">
-                    <span className="vitalis-flagship-stat-value">47</span>
-                    <span className="vitalis-flagship-stat-label">Modules</span>
-                  </div>
-                  <div className="vitalis-flagship-stat">
-                    <span className="vitalis-flagship-stat-value">652</span>
-                    <span className="vitalis-flagship-stat-label">FFI Exports</span>
-                  </div>
-                  <div className="vitalis-flagship-stat">
-                    <span className="vitalis-flagship-stat-value">748</span>
-                    <span className="vitalis-flagship-stat-label">Tests</span>
-                  </div>
-                </div>
-                <div className="vitalis-flagship-buttons">
-                  <a
-                    href="https://github.com/ModernOps888/vitalis"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="vitalis-flagship-btn-primary"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" style={{marginRight:'0.45rem'}}>
-                      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-                    </svg>
-                    View on GitHub
-                  </a>
-                  <a href="#compiler" className="vitalis-flagship-btn-secondary">
-                    Compiler Deep Dive &darr;
-                  </a>
-                </div>
-              </div>
-
-              {/* RIGHT — Feature Cards */}
-              <div className="vitalis-flagship-features">
-                <div className="vitalis-feature-card">
-                  <div className="vitalis-feature-icon">⚡</div>
-                  <div className="vitalis-feature-title">Cranelift JIT</div>
-                  <div className="vitalis-feature-desc">Compiles .sl → native x86-64 via SSA IR in milliseconds</div>
-                </div>
-                <div className="vitalis-feature-card">
-                  <div className="vitalis-feature-icon">🧬</div>
-                  <div className="vitalis-feature-title">Self-Evolution</div>
-                  <div className="vitalis-feature-desc">Quantum UCB, CMA-ES, Pareto, Thompson sampling strategies</div>
-                </div>
-                <div className="vitalis-feature-card">
-                  <div className="vitalis-feature-icon">🔐</div>
-                  <div className="vitalis-feature-title">Kernel Sentinel</div>
-                  <div className="vitalis-feature-desc">Tamper-proof integrity protection with SHA-256 hashing</div>
-                </div>
-                <div className="vitalis-feature-card">
-                  <div className="vitalis-feature-icon">🚀</div>
-                  <div className="vitalis-feature-title">44 Hotpath Ops</div>
-                  <div className="vitalis-feature-desc">Native Rust: softmax, cross-entropy, cosine similarity, EMA &amp; more</div>
-                </div>
-                <div className="vitalis-feature-card">
-                  <div className="vitalis-feature-icon">🧠</div>
-                  <div className="vitalis-feature-title">Consciousness</div>
-                  <div className="vitalis-feature-desc">Self-awareness substrate with reflection &amp; introspection</div>
-                </div>
-                <div className="vitalis-feature-card">
-                  <div className="vitalis-feature-icon">📡</div>
-                  <div className="vitalis-feature-title">652 FFI Exports</div>
-                  <div className="vitalis-feature-desc">C ABI bridge → Python ctypes → seamless Infinity integration</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom bar — compiler pipeline mini-viz */}
-            <div className="vitalis-flagship-pipeline">
-              <span className="pipeline-step">.sl Source</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step">Lexer</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step">Parser</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step">AST</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step">Type Check</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step">IR (SSA)</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step vitalis-pipeline-jit">Cranelift JIT</span>
-              <span className="pipeline-arrow">→</span>
-              <span className="pipeline-step vitalis-pipeline-native">Native x86-64</span>
+            {/* LOC Distribution */}
+            <div style={{ marginTop: "2rem" }}>
+              <ProgressBar
+                label="Python" value={`${formatNum(stats?.tech_stack?.python?.loc ?? 95337)} LOC (67.1%)`}
+                max={67.1}
+                color={`linear-gradient(90deg, ${ALIEN.green}, rgba(57,255,20,0.5))`}
+              />
+              <ProgressBar
+                label="Rust" value={`${formatNum(stats?.tech_stack?.rust?.loc ?? 32349)} LOC (22.8%)`}
+                max={22.8}
+                color={`linear-gradient(90deg, ${ALIEN.orange}, rgba(255,106,0,0.5))`}
+              />
+              <ProgressBar
+                label="TypeScript / TSX" value={`${formatNum(stats?.tech_stack?.typescript?.loc ?? 14308)} LOC (10.1%)`}
+                max={10.1}
+                color={`linear-gradient(90deg, ${ALIEN.cyan}, rgba(0,240,255,0.5))`}
+              />
             </div>
           </section>
         </Reveal>
@@ -1353,7 +1287,7 @@ export default function TechStackPage() {
                       <span className="arch-chip arch-chip--cyan">CyberpunkHUD</span>
                       <span className="arch-chip arch-chip--cyan">HoloUI</span>
                       <span className="arch-chip arch-chip--cyan">Neural FX</span>
-                      <span className="arch-chip arch-chip--dim">26 Routes</span>
+                      <span className="arch-chip arch-chip--dim">25 Routes</span>
                       <span className="arch-chip arch-chip--dim">Tailwind CSS</span>
                       <span className="arch-chip arch-chip--dim">TypeScript Strict</span>
                     </div>
@@ -1473,12 +1407,11 @@ export default function TechStackPage() {
                       <span className="arch-chip arch-chip--orange">Optimizer</span>
                       <span className="arch-chip arch-chip--orange">Evolution</span>
                       <span className="arch-chip arch-chip--dim">98 stdlib</span>
-                      <span className="arch-chip arch-chip--dim">44 hotpath</span>
-                      <span className="arch-chip arch-chip--dim">14 algo libs</span>
+                      <span className="arch-chip arch-chip--dim">34 hotpath</span>
                     </div>
                     <div className="arch-box-stat">
                       <span className="arch-stat-dot arch-stat-dot--orange"></span>
-                      748 Tests
+                      285 Tests
                     </div>
                   </div>
                 </div>
@@ -1612,12 +1545,12 @@ export default function TechStackPage() {
                       <span className="card-icon">{"\uD83D\uDD17"}</span>
                       <div>
                         <div className="card-title">FFI Bridge + Python</div>
-                        <div className="card-subtitle">bridge.rs (764 LOC) &middot; 652 FFI exports &middot; vitalis.py (3,036 LOC)</div>
+                        <div className="card-subtitle">bridge.rs (983 LOC) &middot; 64 FFI exports &middot; vitalis.py</div>
                       </div>
                     </div>
                     <div className="card-body">
-                      <strong>652 extern &quot;C&quot;</strong> FFI exports across 47 source files with <code>#[unsafe(no_mangle)]</code>.
-                      318 Python APIs via <code>vitalis.py</code> (3,036 LOC). Strings via <code>CString::into_raw()</code>, freed via <code>slang_free_string()</code>.
+                      <strong>64 extern &quot;C&quot;</strong> FFI exports with <code>#[unsafe(no_mangle)]</code>.
+                      Strings via <code>CString::into_raw()</code>, freed via <code>slang_free_string()</code>.
                     </div>
                     <div className="tags-row">
                       <Tag variant="rust">extern &quot;C&quot;</Tag>
@@ -1825,7 +1758,7 @@ export default function TechStackPage() {
       <div className="container" id="evolution">
         <Reveal>
           <section className="section">
-            <SectionHeader icon={"\uD83E\uDDEC"} title="Self-Evolution Engine" badge={"\u25CF 3-MIN CYCLES"} badgeType="active" />
+            <SectionHeader icon={"\uD83E\uDDEC"} title="Self-Evolution Engine" badge={"\u25CF EVOLVING"} badgeType="active" />
             <div className="grid grid-2">
               <Card featured>
                 <div className="card-header-row">
@@ -1836,7 +1769,7 @@ export default function TechStackPage() {
                   </div>
                 </div>
                 <div className="card-body">
-                  <StatRow label="Vitalis Functions Tracked" value="27+" />
+                  <StatRow label="Vitalis Functions Tracked" value="8" />
                   <StatRow label="Evolution Attempts" value={String(stats?.evolution.total_attempts ?? 8)} color={ALIEN.gold} />
                   <StatRow label="Successful Evolutions" value={String(stats?.evolution.successes ?? 3)} color={ALIEN.green} />
                   <StatRow label="Guardian Blocks" value={String(stats?.guardian?.checks_blocked ?? 4)} color={ALIEN.red} />
@@ -1902,47 +1835,6 @@ export default function TechStackPage() {
                 </div>
               </Card></Reveal>
             </div>
-
-            <div className="grid grid-2" style={{ marginTop: "1.2rem" }}>
-              <Reveal delay={0}><Card featured borderColor="rgba(176,38,255,0.3)">
-                <div className="card-header-row">
-                  <span className="card-icon">{"\uD83E\uDDE0"}</span>
-                  <div>
-                    <div className="card-title">Self-Evolution Orchestrator</div>
-                    <div className="card-subtitle">kernel/self_evolution_orchestrator.py &middot; 27+ Vitalis Hotpath Ops</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  Autonomous optimization engine using <strong>27+ Vitalis native functions</strong>:
-                  quantum annealing, Bayesian UCB, CMA-ES, L&eacute;vy flights,
-                  Pareto-optimal selection, Shannon diversity, spectral analysis,
-                  and 12-domain algorithm coverage. Drives recursive self-improvement
-                  at native Rust speed.
-                </div>
-                <div className="tags-row">
-                  <Tag variant="rust">Quantum Annealing</Tag>
-                  <Tag variant="rust">CMA-ES</Tag>
-                  <Tag variant="rust">Pareto Front</Tag>
-                  <Tag variant="ai">Bayesian UCB</Tag>
-                </div>
-              </Card></Reveal>
-              <Reveal delay={0.1}><Card borderColor="rgba(57,255,20,0.2)">
-                <div className="card-header-row">
-                  <span className="card-icon">{"\u26A1"}</span>
-                  <div>
-                    <div className="card-title">Vitalis-Powered Cortex</div>
-                    <div className="card-subtitle">Native Ops Across All Modules</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="swarm.py" value="5 Vitalis ops (tally, diversity, Pareto, Boltzmann)" color={ALIEN.green} />
-                  <StatRow label="faiss_index.py" value="4 Vitalis ops (cosine, L2, argmax, softmax)" color={ALIEN.cyan} />
-                  <StatRow label="inference core" value="4 Vitalis ops (p95, EMA, weighted, bucket)" color={ALIEN.magenta} />
-                  <StatRow label="code_analyzer.py" value="6+ Vitalis scoring functions" color={ALIEN.gold} />
-                  <StatRow label="rate_limiter.py" value="Token bucket + sliding window (native)" color={ALIEN.orange} />
-                </div>
-              </Card></Reveal>
-            </div>
           </section>
         </Reveal>
       </div>
@@ -1965,13 +1857,11 @@ export default function TechStackPage() {
                 <div className="card-body">
                   <strong>{stats?.swarm?.active_agents ?? 4} persistent agent swarms</strong> running in parallel.
                   Votes tallied via <code>hotpath_tally_string_votes()</code> (Rust native).
-                  Shannon diversity, Pareto-optimal selection, Boltzmann sampling, weighted consensus &mdash; all via Vitalis native ops.
                 </div>
                 <div className="tags-row">
                   <Tag variant="ai">{stats?.swarm?.active_agents ?? 4}&times; Agents</Tag>
-                  <Tag variant="ai">Pareto Selection</Tag>
+                  <Tag variant="ai">Consensus</Tag>
                   <Tag variant="rust">Native Tally</Tag>
-                  <Tag variant="rust">Shannon Diversity</Tag>
                 </div>
               </Card>
 
@@ -2007,218 +1897,6 @@ export default function TechStackPage() {
                   <StatRow label="AI Modules" value={String(stats?.modules_loaded ?? 72)} color={ALIEN.gold} />
                 </div>
               </Card>
-            </div>
-          </section>
-        </Reveal>
-      </div>
-
-      {/* ═══════════ NOVA LLM ENGINE ═══════════ */}
-      <EnergyConnector />
-      <div className="container" id="nova-llm">
-        <Reveal>
-          <section className="section">
-            <SectionHeader icon="\uD83E\uDDE0" title="Nova LLM Engine \u2014 From-Scratch Rust" badge="\u25CF TRAINING" badgeType="active" />
-            <p className="section-intro" style={{ color: ALIEN.dim, marginBottom: 24, fontSize: 15, lineHeight: 1.7 }}>
-              A full large language model built entirely from scratch in Rust \u2014 no PyTorch, no HuggingFace, no shortcuts.
-              Custom tensor library, transformer architecture, BPE tokenizer, training loop, and real-time monitoring studio.
-              Currently training on consumer hardware (RTX 5060, Blackwell).
-            </p>
-
-            {/* Nova Architecture Overview */}
-            <div className="nova-arch-banner">
-              <div className="nova-arch-flow">
-                <div className="nova-arch-node" style={{ borderColor: ALIEN.cyan }}>
-                  <span className="nova-arch-icon">📝</span>
-                  <span>Raw Text</span>
-                </div>
-                <span className="nova-arch-arrow">\u2192</span>
-                <div className="nova-arch-node" style={{ borderColor: ALIEN.green }}>
-                  <span className="nova-arch-icon">🧩</span>
-                  <span>BPE Tokenizer</span>
-                </div>
-                <span className="nova-arch-arrow">\u2192</span>
-                <div className="nova-arch-node" style={{ borderColor: ALIEN.magenta }}>
-                  <span className="nova-arch-icon">🧠</span>
-                  <span>Transformer</span>
-                </div>
-                <span className="nova-arch-arrow">\u2192</span>
-                <div className="nova-arch-node" style={{ borderColor: ALIEN.violet }}>
-                  <span className="nova-arch-icon">📊</span>
-                  <span>Nova Studio</span>
-                </div>
-                <span className="nova-arch-arrow">\u2192</span>
-                <div className="nova-arch-node" style={{ borderColor: ALIEN.gold }}>
-                  <span className="nova-arch-icon">🧬</span>
-                  <span>Self-Evolution</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-3" style={{ marginTop: 20 }}>
-              {/* Tensor Engine */}
-              <Card featured borderColor={ALIEN.cyan}>
-                <div className="card-header-row">
-                  <span className="card-icon">🧮</span>
-                  <div>
-                    <div className="card-title">Custom Tensor Engine</div>
-                    <div className="card-subtitle">tensor/ \u2022 1,761 LOC</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="Storage" value="CPU + CUDA backends" color={ALIEN.cyan} />
-                  <StatRow label="Dtypes" value="f32 / f16 / bf16" />
-                  <StatRow label="Autograd" value="Computation graph + backward" color={ALIEN.green} />
-                  <StatRow label="Matmul" value="cuBLAS SGEMM + Rayon fallback" color={ALIEN.gold} />
-                  <StatRow label="Ops" value="33 (matmul, softmax, CE, norm\u2026)" />
-                </div>
-                <div className="tags-row">
-                  <Tag variant="rust">Zero-Copy</Tag>
-                  <Tag variant="cyan">Rayon</Tag>
-                  <Tag variant="magenta">Autograd</Tag>
-                </div>
-              </Card>
-
-              {/* Transformer */}
-              <Card featured borderColor={ALIEN.magenta}>
-                <div className="card-header-row">
-                  <span className="card-icon">⚡</span>
-                  <div>
-                    <div className="card-title">Decoder-Only Transformer</div>
-                    <div className="card-subtitle">nn/ \u2022 7 modules \u2022 1,119 LOC</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="Attention" value="Multi-Head + GQA" color={ALIEN.magenta} />
-                  <StatRow label="Positional" value="RoPE (Rotary Embeddings)" />
-                  <StatRow label="Normalization" value="RMSNorm (pre-norm)" />
-                  <StatRow label="Activation" value="SwiGLU FFN" color={ALIEN.green} />
-                  <StatRow label="Architecture" value="GPT/LLaMA-style causal" />
-                </div>
-                <div className="tags-row">
-                  <Tag variant="magenta">RoPE</Tag>
-                  <Tag variant="rust">RMSNorm</Tag>
-                  <Tag variant="green">SwiGLU</Tag>
-                </div>
-              </Card>
-
-              {/* CUDA GPU */}
-              <Card featured borderColor={ALIEN.green}>
-                <div className="card-header-row">
-                  <span className="card-icon">🎮</span>
-                  <div>
-                    <div className="card-title">CUDA GPU Acceleration</div>
-                    <div className="card-subtitle">gpu/ \u2022 cuBLAS SGEMM \u2022 724 LOC</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="Target" value="RTX 5060 (Blackwell, CC 12.0)" color={ALIEN.green} />
-                  <StatRow label="Dispatch" value="cuBLAS SGEMM for all matmul" />
-                  <StatRow label="Precision" value="FP32 (cudarc 0.19.3)" color={ALIEN.gold} />
-                  <StatRow label="Library" value="cudarc 0.19 (safe Rust)" />
-                  <StatRow label="VRAM" value="8 GB (dynamic allocation)" />
-                </div>
-                <div className="tags-row">
-                  <Tag variant="green">CUDA 13.1</Tag>
-                  <Tag variant="rust">cudarc</Tag>
-                  <Tag variant="gold">Blackwell</Tag>
-                </div>
-              </Card>
-
-              {/* Training Pipeline */}
-              <Card borderColor={`${ALIEN.orange}40`}>
-                <div className="card-header-row">
-                  <span className="card-icon">🏋</span>
-                  <div>
-                    <div className="card-title">Training Pipeline</div>
-                    <div className="card-subtitle">training/ \u2022 7 modules</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="Optimizer" value="AdamW (\u03B21=0.9, \u03B22=0.95)" color={ALIEN.orange} />
-                  <StatRow label="Scheduler" value="Cosine with Linear Warmup" />
-                  <StatRow label="Grad Clip" value="Max norm = 1.0" />
-                  <StatRow label="Checkpoints" value="Auto-save every 500 steps" color={ALIEN.green} />
-                  <StatRow label="Data" value="14.3 MB corpus (Project Gutenberg)" />
-                </div>
-                <div className="tags-row">
-                  <Tag variant="orange">AdamW</Tag>
-                  <Tag variant="cyan">Cosine LR</Tag>
-                  <Tag variant="magenta">Grad Accum</Tag>
-                </div>
-              </Card>
-
-              {/* BPE Tokenizer */}
-              <Card borderColor={`${ALIEN.violet}40`}>
-                <div className="card-header-row">
-                  <span className="card-icon">💬</span>
-                  <div>
-                    <div className="card-title">BPE Tokenizer</div>
-                    <div className="card-subtitle">tokenizer/ \u2022 From-scratch</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="Type" value="Byte-level BPE" color={ALIEN.violet} />
-                  <StatRow label="Vocab" value="8,000 tokens (trainable)" />
-                  <StatRow label="Special" value="<pad>, <unk>, <bos>, <eos>" />
-                  <StatRow label="Training" value="2,000 merges on 500K chars" />
-                  <StatRow label="Speed" value="\u223C2M tokens/sec" color={ALIEN.green} />
-                </div>
-                <div className="tags-row">
-                  <Tag variant="violet">BPE</Tag>
-                  <Tag variant="cyan">Unicode</Tag>
-                </div>
-              </Card>
-
-              {/* Nova Studio */}
-              <Card borderColor={`${ALIEN.gold}40`}>
-                <div className="card-header-row">
-                  <span className="card-icon">💻</span>
-                  <div>
-                    <div className="card-title">Nova Studio (GUI)</div>
-                    <div className="card-subtitle">studio/ \u2022 eframe/egui</div>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <StatRow label="Framework" value="eframe + egui (GPU-rendered)" color={ALIEN.gold} />
-                  <StatRow label="Panels" value="Dashboard, GPU, Training, Gen" />
-                  <StatRow label="Charts" value="Loss, LR, Throughput, Grad Norm" />
-                  <StatRow label="Monitoring" value="nvidia-smi polling (live)" color={ALIEN.green} />
-                  <StatRow label="IPC" value="JSON metrics (nova-cli \u2194 studio)" />
-                </div>
-                <div className="tags-row">
-                  <Tag variant="gold">egui</Tag>
-                  <Tag variant="green">Real-time</Tag>
-                  <Tag variant="magenta">GPU Monitor</Tag>
-                </div>
-              </Card>
-            </div>
-
-            {/* Nova Stats Banner */}
-            <div className="nova-stats-bar">
-              <div className="nova-stat">
-                <span className="nova-stat-value" style={{ color: ALIEN.cyan }}>11,457</span>
-                <span className="nova-stat-label">Lines of Rust</span>
-              </div>
-              <div className="nova-stat">
-                <span className="nova-stat-value" style={{ color: ALIEN.magenta }}>1.8M</span>
-                <span className="nova-stat-label">Parameters</span>
-              </div>
-              <div className="nova-stat">
-                <span className="nova-stat-value" style={{ color: ALIEN.green }}>cuBLAS</span>
-                <span className="nova-stat-label">GPU Matmul</span>
-              </div>
-              <div className="nova-stat">
-                <span className="nova-stat-value" style={{ color: ALIEN.gold }}>33</span>
-                <span className="nova-stat-label">Tensor Ops</span>
-              </div>
-              <div className="nova-stat">
-                <span className="nova-stat-value" style={{ color: ALIEN.violet }}>7</span>
-                <span className="nova-stat-label">NN Modules</span>
-              </div>
-              <div className="nova-stat">
-                <span className="nova-stat-value" style={{ color: ALIEN.orange }}>0</span>
-                <span className="nova-stat-label">Dependencies on PyTorch</span>
-              </div>
             </div>
           </section>
         </Reveal>
@@ -2318,7 +1996,6 @@ export default function TechStackPage() {
                   <StatRow label="config.py" value="Pydantic Settings config" />
                   <StatRow label="loader.py" value="Dynamic module loader" />
                   <StatRow label="service_registry.py" value="Service discovery" />
-                  <StatRow label="self_evolution_orchestrator.py" value="27+ Vitalis hotpath self-evolution" color={ALIEN.violet} />
                 </div>
               </Card>
 
@@ -2396,7 +2073,7 @@ export default function TechStackPage() {
       <div className="container" id="frontend-sec">
         <Reveal>
           <section className="section">
-            <SectionHeader icon={"\uD83D\uDDA5\uFE0F"} title="Cyberpunk Frontend \u2014 26 Routes" badge="PORT 3002" badgeType="native" />
+            <SectionHeader icon={"\uD83D\uDDA5\uFE0F"} title="Cyberpunk Frontend \u2014 24 Routes" badge="PORT 3002" badgeType="native" />
             <div className="grid grid-2">
               <Card>
                 <div className="card-header-row">
@@ -2424,7 +2101,7 @@ export default function TechStackPage() {
                 <div className="card-header-row">
                   <span className="card-icon">{"\uD83D\uDCC4"}</span>
                   <div>
-                    <div className="card-title">Dashboard Pages ({stats?.tech_stack?.typescript?.routes ?? 26})</div>
+                    <div className="card-title">Dashboard Pages ({stats?.tech_stack?.typescript?.routes ?? 25})</div>
                     <div className="card-subtitle">Full System Control Interface</div>
                   </div>
                 </div>
@@ -2529,75 +2206,6 @@ export default function TechStackPage() {
         </Reveal>
       </div>
 
-      {/* ═══════════ ALGORITHM LIBRARIES ═══════════ */}
-      <EnergyConnector />
-      <div className="container" id="algorithms">
-        <Reveal>
-          <section className="section">
-            <SectionHeader icon={"\uD83E\uDDEE"} title="Vitalis v20.0 — 27 Native Algorithm Libraries" badge="652 FFI EXPORTS" badgeType="jit" />
-            <p className="section-desc">
-              Compiled Rust algorithm libraries exposed via <strong>652 FFI exports</strong> to Python.
-              Each library is benchmarked at <strong>7.5x avg</strong> (29.1x peak) vs pure Python equivalents.
-            </p>
-            <div className="grid grid-3">
-              <Reveal delay={0}><Card>
-                <div className="card-header-row">
-                  <span className="card-icon">{"\uD83D\uDD24"}</span>
-                  <div><div className="card-title">String Algorithms</div><div className="card-subtitle">Levenshtein &middot; Jaro-Winkler &middot; Hamming</div></div>
-                </div>
-                <div className="card-body">Edit distance, fuzzy matching, and phonetic similarity — all native Rust with zero-copy.</div>
-                <div className="tags-row"><Tag variant="rust">Levenshtein</Tag><Tag variant="rust">Jaro-Winkler</Tag><Tag variant="rust">Hamming</Tag></div>
-              </Card></Reveal>
-
-              <Reveal delay={0.06}><Card>
-                <div className="card-header-row">
-                  <span className="card-icon">{"\uD83D\uDD78\uFE0F"}</span>
-                  <div><div className="card-title">Graph Algorithms</div><div className="card-subtitle">PageRank &middot; Toposort &middot; Cycle Detection</div></div>
-                </div>
-                <div className="card-body">Sparse matrix PageRank, Kahn&apos;s topological sort, and DFS cycle detection for dependency analysis.</div>
-                <div className="tags-row"><Tag variant="rust">PageRank</Tag><Tag variant="rust">Toposort</Tag><Tag variant="rust">DFS</Tag></div>
-              </Card></Reveal>
-
-              <Reveal delay={0.12}><Card>
-                <div className="card-header-row">
-                  <span className="card-icon">{"\uD83D\uDD10"}</span>
-                  <div><div className="card-title">Crypto &amp; Security</div><div className="card-subtitle">SHA-256 &middot; HMAC &middot; SQLi/XSS Detection</div></div>
-                </div>
-                <div className="card-body">Native hash functions, HMAC signing, SQL injection / XSS pattern detection, and password strength scoring.</div>
-                <div className="tags-row"><Tag variant="rust">SHA-256</Tag><Tag variant="rust">HMAC</Tag><Tag variant="rust">SQLi</Tag><Tag variant="rust">XSS</Tag></div>
-              </Card></Reveal>
-
-              <Reveal delay={0.18}><Card>
-                <div className="card-header-row">
-                  <span className="card-icon">{"\uD83D\uDCC9"}</span>
-                  <div><div className="card-title">Signal Processing</div><div className="card-subtitle">FFT &middot; SMA &middot; EMA</div></div>
-                </div>
-                <div className="card-body">Fast Fourier Transform, Simple &amp; Exponential Moving Averages for time-series analysis — SIMD-accelerated.</div>
-                <div className="tags-row"><Tag variant="rust">FFT</Tag><Tag variant="rust">SMA</Tag><Tag variant="rust">EMA</Tag><Tag variant="hw">SIMD</Tag></div>
-              </Card></Reveal>
-
-              <Reveal delay={0.24}><Card>
-                <div className="card-header-row">
-                  <span className="card-icon">{"\uD83D\uDCCA"}</span>
-                  <div><div className="card-title">Analytics &amp; Scoring</div><div className="card-subtitle">Elo Rating &middot; Z-Score &middot; Code Quality</div></div>
-                </div>
-                <div className="card-body">Elo rating system, z-score anomaly detection, code quality scoring, maintainability index, and cognitive complexity.</div>
-                <div className="tags-row"><Tag variant="rust">Elo</Tag><Tag variant="rust">Z-Score</Tag><Tag variant="rust">Quality</Tag></div>
-              </Card></Reveal>
-
-              <Reveal delay={0.30}><Card>
-                <div className="card-header-row">
-                  <span className="card-icon">{"\u269B\uFE0F"}</span>
-                  <div><div className="card-title">Quantum &amp; Advanced Math</div><div className="card-subtitle">Quantum Optimization &middot; Numerical Methods</div></div>
-                </div>
-                <div className="card-body">Quantum-inspired annealing, compression algorithms, numerical integration, and advanced mathematical operations.</div>
-                <div className="tags-row"><Tag variant="rust">Quantum</Tag><Tag variant="rust">Numerical</Tag><Tag variant="rust">Compression</Tag></div>
-              </Card></Reveal>
-            </div>
-          </section>
-        </Reveal>
-      </div>
-
       {/* ═══════════ INFRASTRUCTURE ═══════════ */}
       <EnergyConnector />
       <div className="container" id="infra">
@@ -2645,7 +2253,7 @@ export default function TechStackPage() {
                   <StatRow label="Frontend" value="Node 20-alpine" />
                   <StatRow label="ChromaDB" value={`${formatNum(stats?.memory_count ?? 0)} embeddings`} color={ALIEN.magenta} />
                   <StatRow label="FAISS" value="Vector similarity" />
-                  <StatRow label="Rust Tests" value="748 \u2713" color={ALIEN.green} />
+                  <StatRow label="Rust Tests" value="870 \u2713" color={ALIEN.green} />
                   <StatRow label="Frontend Build" value="25 pages \u2713" color={ALIEN.green} />
                 </div>
                 <div className="tags-row">
@@ -2726,14 +2334,14 @@ export default function TechStackPage() {
       <div className="container" id="inventory">
         <Reveal>
           <section className="section">
-            <SectionHeader icon={"\uD83D\uDCCB"} title="Full Source Inventory" badge="482 FILES" badgeType="native" />
+            <SectionHeader icon={"\uD83D\uDCCB"} title="Full Source Inventory" badge="456 FILES" badgeType="native" />
 
             <Card>
               <div className="card-header-row">
                 <span className="card-icon">{"\uD83E\uDD80"}</span>
                 <div>
                   <div className="card-title">Rust &mdash; Vitalis Compiler Modules</div>
-                  <div className="card-subtitle">47 files &middot; 35,632 LOC &middot; slang/src/</div>
+                  <div className="card-subtitle">47 files &middot; 35,856 LOC &middot; vitalis/src/</div>
                 </div>
               </div>
               <div className="file-table-wrap">
@@ -2829,41 +2437,56 @@ export default function TechStackPage() {
         </Reveal>
       </div>
 
-      {/* ═══════════ CONSULTING CTA BANNER ═══════════ */}
+      {/* ═══════════ PROJECT DEEP DIVES ═══════════ */}
       <div className="container">
-        <div className="consulting-cta-banner">
-          <div className="consulting-cta-glow" />
-          <div className="consulting-cta-content">
-            <div className="consulting-cta-badge">⚡ AVAILABLE FOR CONSULTING</div>
-            <h3 className="consulting-cta-title">
-              Need Help Securing or Scaling Your AI?
-            </h3>
-            <p className="consulting-cta-desc">
-              Enterprise AI security audits &middot; Architecture advisory &middot; Custom Rust toolchains &middot; Microsoft Purview implementation
-            </p>
-            <div className="consulting-cta-buttons">
-              <a href="/consulting" className="consulting-cta-btn-primary">
-                Book a Consulting Session &rarr;
+        <Reveal>
+          <section style={{ marginTop: 48 }}>
+            <SectionHeader icon="🔬" title="Deep Dives" badge="Projects" badgeType="native" />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 20 }}>
+              <a href="/nova" style={{ textDecoration: "none", color: "inherit" }}>
+                <Card borderColor={ALIEN.orange}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                    <span style={{ fontSize: 28 }}>⚡</span>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: ALIEN.orange }}>NOVA</div>
+                      <div style={{ fontSize: 11, color: ALIEN.dim }}>Self-Evolving Native LLM Engine</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#b0b0cc", lineHeight: 1.6, margin: "0 0 12px" }}>
+                    From-scratch LLM training in pure Rust + CUDA. Custom tensor library, autograd, BPE tokenizer,
+                    transformer architecture — 12,119 LOC, 57 source files, RTX 5060 GPU.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Rust", "CUDA", "~5M params", "Custom Tensors"].map(t => (
+                      <span key={t} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 12, border: `1px solid ${ALIEN.orange}30`, color: ALIEN.orange, background: `${ALIEN.orange}08` }}>{t}</span>
+                    ))}
+                  </div>
+                </Card>
               </a>
-              <a href="/consulting#blueprint" className="consulting-cta-btn-secondary">
-                Get the AI Security Playbook &mdash; &pound;97
+              <a href="/vitalis" style={{ textDecoration: "none", color: "inherit" }}>
+                <Card borderColor={ALIEN.green}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                    <span style={{ fontSize: 28 }}>🧪</span>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: ALIEN.green }}>VITALIS</div>
+                      <div style={{ fontSize: 11, color: ALIEN.dim }}>AI-Native Programming Language v21</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#b0b0cc", lineHeight: 1.6, margin: "0 0 12px" }}>
+                    Custom language with Cranelift JIT, SIMD, generics, async/await, WASM target, LSP server,
+                    GPU compute — 47 modules, 870 tests, 35,856 LOC. 88× faster than Python.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Cranelift JIT", "870 Tests", "SIMD/AVX2", "47 Modules"].map(t => (
+                      <span key={t} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 12, border: `1px solid ${ALIEN.green}30`, color: ALIEN.green, background: `${ALIEN.green}08` }}>{t}</span>
+                    ))}
+                  </div>
+                </Card>
               </a>
             </div>
-            <div className="consulting-cta-stats">
-              <span>🔒 AI Security Audits from £350</span>
-              <span>🏗️ Architecture Advisory £400/hr</span>
-              <span>⚡ Custom Toolchain Builds</span>
-            </div>
-          </div>
-        </div>
+          </section>
+        </Reveal>
       </div>
-
-      {/* ═══════ FLOATING CONSULTING BUTTON ═══════ */}
-      <a href="/consulting" className="consulting-float-btn" title="Book Consulting">
-        <span className="consulting-float-pulse" />
-        <span className="consulting-float-icon">⚡</span>
-        <span className="consulting-float-text">Consult</span>
-      </a>
 
       {/* ═══════════ FOOTER ═══════════ */}
       <div className="container">
@@ -2871,22 +2494,12 @@ export default function TechStackPage() {
           <span className="footer-symbol">{"\u221E"}</span>
           <p>INFINITY &mdash; Autonomous Self-Evolving AI System</p>
           <p className="footer-stats">
-            {formatNum(stats?.total_loc ?? 153875)} LOC &middot; 482 Files &middot; 3 Languages &middot; {stats?.modules_loaded ?? 94} Modules &middot; 748 Tests &middot; {formatNum(stats?.memory_count ?? 0)} Memories
+            {formatNum(stats?.total_loc ?? 126000)} LOC &middot; 456 Files &middot; 3 Languages &middot; {stats?.modules_loaded ?? 72} Modules &middot; 285 Tests &middot; {formatNum(stats?.memory_count ?? 0)} Memories
           </p>
           <p className="footer-tech">
             Rust 2024 &middot; Python 3.12 &middot; Next.js 15 &middot; Cranelift 0.116 &middot; ChromaDB &middot; Claude Sonnet 4.6
           </p>
-          <div style={{ marginTop: '0.6rem', display: 'flex', gap: '1.2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a
-              href="https://github.com/ModernOps888/vitalis"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#39ff14', opacity: 0.85, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 700, transition: 'opacity 0.2s', borderBottom: '1px solid rgba(57,255,20,0.4)' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
-            >
-              🧬 Vitalis on GitHub
-            </a>
+          <p style={{ marginTop: '0.6rem' }}>
             <a
               href="https://www.linkedin.com/in/modern-workplace-tech365/"
               target="_blank"
@@ -2897,15 +2510,7 @@ export default function TechStackPage() {
             >
               🔗 LinkedIn
             </a>
-            <a
-              href="/consulting"
-              style={{ color: 'var(--accent, #0ea5e9)', opacity: 0.8, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600, transition: 'opacity 0.2s', borderBottom: '1px solid var(--accent, #0ea5e9)' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '0.8')}
-            >
-              ⚡ Book a Consulting Session
-            </a>
-          </div>
+          </p>
           <p className="footer-copy">
             INFINITY v{stats?.version ?? "0.2.0"} &middot; Auto-refreshes every 8s
             {lastUpdate && ` \u00B7 Last: ${lastUpdate.toLocaleTimeString()}`}
@@ -2947,61 +2552,36 @@ export default function TechStackPage() {
         /* ═══════ STAR FIELD (CSS radial-gradients) ═══════ */
         .star-field {
           position: fixed; inset: 0; z-index: 0; pointer-events: none;
-          contain: strict;
           background:
-            radial-gradient(2px 2px at 10% 20%, rgba(0,240,255,0.85) 50%, transparent 100%),
-            radial-gradient(1.2px 1.2px at 3% 8%, rgba(255,255,255,0.55) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 20% 50%, rgba(255,0,229,0.7) 50%, transparent 100%),
-            radial-gradient(1px 1px at 7% 38%, rgba(255,255,255,0.4) 50%, transparent 100%),
-            radial-gradient(2px 2px at 30% 80%, rgba(57,255,20,0.6) 50%, transparent 100%),
-            radial-gradient(0.8px 0.8px at 12% 72%, rgba(255,255,255,0.35) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 40% 10%, rgba(176,38,255,0.7) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 50% 60%, rgba(0,240,255,0.6) 50%, transparent 100%),
-            radial-gradient(1px 1px at 35% 45%, rgba(255,255,255,0.5) 50%, transparent 100%),
-            radial-gradient(1.2px 1.2px at 60% 30%, rgba(255,215,0,0.6) 50%, transparent 100%),
-            radial-gradient(0.8px 0.8px at 55% 22%, rgba(255,255,255,0.35) 50%, transparent 100%),
-            radial-gradient(2px 2px at 70% 70%, rgba(255,0,229,0.6) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 80% 40%, rgba(57,255,20,0.7) 50%, transparent 100%),
-            radial-gradient(1px 1px at 78% 88%, rgba(255,255,255,0.4) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 90% 90%, rgba(0,240,255,0.7) 50%, transparent 100%),
-            radial-gradient(0.8px 0.8px at 85% 15%, rgba(255,255,255,0.35) 50%, transparent 100%),
-            radial-gradient(1.2px 1.2px at 15% 65%, rgba(176,38,255,0.6) 50%, transparent 100%),
-            radial-gradient(2px 2px at 25% 35%, rgba(255,215,0,0.6) 50%, transparent 100%),
-            radial-gradient(1px 1px at 42% 92%, rgba(255,255,255,0.45) 50%, transparent 100%),
-            radial-gradient(1.2px 1.2px at 45% 85%, rgba(255,106,0,0.6) 50%, transparent 100%),
-            radial-gradient(0.8px 0.8px at 62% 5%, rgba(255,255,255,0.35) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 55% 15%, rgba(0,240,255,0.8) 50%, transparent 100%),
-            radial-gradient(1.2px 1.2px at 75% 55%, rgba(255,0,229,0.6) 50%, transparent 100%),
-            radial-gradient(1px 1px at 92% 58%, rgba(255,255,255,0.4) 50%, transparent 100%),
-            radial-gradient(2px 2px at 95% 25%, rgba(57,255,20,0.7) 50%, transparent 100%),
-            radial-gradient(0.8px 0.8px at 18% 95%, rgba(255,255,255,0.35) 50%, transparent 100%),
-            radial-gradient(1px 1px at 48% 32%, rgba(0,240,255,0.55) 50%, transparent 100%),
-            radial-gradient(0.6px 0.6px at 68% 48%, rgba(255,255,255,0.35) 50%, transparent 100%),
-            radial-gradient(1.2px 1.2px at 88% 72%, rgba(176,38,255,0.55) 50%, transparent 100%),
-            radial-gradient(1px 1px at 22% 12%, rgba(255,215,0,0.5) 50%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 5% 55%, rgba(0,240,255,0.65) 50%, transparent 100%),
-            radial-gradient(1px 1px at 33% 18%, rgba(255,80,180,0.5) 50%, transparent 100%),
-            radial-gradient(1.8px 1.8px at 65% 90%, rgba(80,180,255,0.55) 50%, transparent 100%),
-            radial-gradient(0.7px 0.7px at 82% 10%, rgba(255,255,255,0.4) 50%, transparent 100%),
-            radial-gradient(1.3px 1.3px at 52% 42%, rgba(176,38,255,0.5) 50%, transparent 100%),
-            radial-gradient(0.9px 0.9px at 97% 75%, rgba(255,215,0,0.45) 50%, transparent 100%);
-          animation: starTwinkle 8s ease-in-out infinite alternate;
+            radial-gradient(1.5px 1.5px at 10% 20%, rgba(0,240,255,0.5) 50%, transparent 100%),
+            radial-gradient(1px 1px at 20% 50%, rgba(255,0,229,0.4) 50%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 30% 80%, rgba(57,255,20,0.3) 50%, transparent 100%),
+            radial-gradient(1px 1px at 40% 10%, rgba(176,38,255,0.4) 50%, transparent 100%),
+            radial-gradient(1.2px 1.2px at 50% 60%, rgba(0,240,255,0.3) 50%, transparent 100%),
+            radial-gradient(1px 1px at 60% 30%, rgba(255,215,0,0.3) 50%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 70% 70%, rgba(255,0,229,0.3) 50%, transparent 100%),
+            radial-gradient(1px 1px at 80% 40%, rgba(57,255,20,0.4) 50%, transparent 100%),
+            radial-gradient(1.2px 1.2px at 90% 90%, rgba(0,240,255,0.4) 50%, transparent 100%),
+            radial-gradient(1px 1px at 15% 65%, rgba(176,38,255,0.3) 50%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 25% 35%, rgba(255,215,0,0.3) 50%, transparent 100%),
+            radial-gradient(1px 1px at 45% 85%, rgba(255,106,0,0.3) 50%, transparent 100%),
+            radial-gradient(1.2px 1.2px at 55% 15%, rgba(0,240,255,0.5) 50%, transparent 100%),
+            radial-gradient(1px 1px at 75% 55%, rgba(255,0,229,0.3) 50%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 95% 25%, rgba(57,255,20,0.4) 50%, transparent 100%);
+          animation: starDrift 120s linear infinite;
         }
-        @keyframes starTwinkle { 0%{opacity:0.7} 100%{opacity:0.9} }
+        @keyframes starDrift { 0%{transform:translateY(0)} 100%{transform:translateY(-200px)} }
 
         /* ═══════ NEBULA OVERLAY ═══════ */
         .nebula-overlay {
           position: fixed; inset: -10%; z-index: 0; pointer-events: none;
-          contain: layout;
           background:
-            radial-gradient(ellipse 900px 600px at 15% 40%, rgba(0,240,255,0.15) 0%, transparent 70%),
-            radial-gradient(ellipse 800px 700px at 85% 25%, rgba(255,0,229,0.12) 0%, transparent 70%),
-            radial-gradient(ellipse 700px 800px at 50% 80%, rgba(176,38,255,0.12) 0%, transparent 70%),
-            radial-gradient(ellipse 600px 500px at 70% 60%, rgba(57,255,20,0.08) 0%, transparent 70%),
-            radial-gradient(ellipse 500px 600px at 30% 90%, rgba(255,215,0,0.06) 0%, transparent 70%);
+            radial-gradient(ellipse 600px 400px at 20% 50%, rgba(0,240,255,0.04) 0%, transparent 70%),
+            radial-gradient(ellipse 500px 500px at 80% 30%, rgba(255,0,229,0.03) 0%, transparent 70%),
+            radial-gradient(ellipse 400px 600px at 50% 80%, rgba(176,38,255,0.03) 0%, transparent 70%);
           animation: nebulaPulse 12s ease-in-out infinite alternate;
         }
-        @keyframes nebulaPulse { 0%{opacity:0.7} 100%{opacity:0.95} }
+        @keyframes nebulaPulse { 0%{opacity:0.6;transform:scale(1)} 100%{opacity:1;transform:scale(1.05)} }
 
         /* ═══════ SCROLL PROGRESS BAR ═══════ */
         .scroll-progress {
@@ -3014,384 +2594,7 @@ export default function TechStackPage() {
         }
         @keyframes progressGradient { 0%{background-position:0% 0%} 100%{background-position:300% 0%} }
 
-        .particle-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; will-change: transform; }
-
-        /* ═══════ AMBIENT GRADIENT SWEEPS ═══════ */
-        .alien-page::before {
-          content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-          background:
-            radial-gradient(ellipse 60% 30% at 0% 0%, rgba(0,240,255,0.08) 0%, transparent 100%),
-            radial-gradient(ellipse 50% 40% at 100% 100%, rgba(255,0,229,0.07) 0%, transparent 100%),
-            radial-gradient(ellipse 40% 50% at 50% 50%, rgba(176,38,255,0.05) 0%, transparent 100%);
-          animation: ambientSweep 16s ease-in-out infinite alternate;
-        }
-        @keyframes ambientSweep {
-          0% { opacity: 0.6; }
-          50% { opacity: 1; }
-          100% { opacity: 0.7; }
-        }
-
-        /* film-grain, grainShift — STRIPPED (component returns null) */
-
-        /* ═══════ CYBERPUNK GRID — SIMPLIFIED ═══════ */
-        .cyber-grid {
-          position: fixed; inset: 0; z-index: 0; pointer-events: none;
-        }
-        .cyber-grid-inner {
-          position: absolute; width: 100%; height: 100%;
-          background-image:
-            linear-gradient(rgba(0,240,255,0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,240,255,0.05) 1px, transparent 1px);
-          background-size: 80px 80px;
-          mask-image: radial-gradient(ellipse 60% 45% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 100%);
-          -webkit-mask-image: radial-gradient(ellipse 60% 45% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 100%);
-          animation: cyberGridScroll 40s linear infinite;
-        }
-        @keyframes cyberGridScroll { 0%{background-position:0 0} 100%{background-position:80px 80px} }
-
-        /* ═══════ HOLOGRAPHIC SCAN LINE ═══════ */
-        .holo-scan {
-          position: fixed; left: 0; right: 0; height: 2px; z-index: 1; pointer-events: none;
-          background: linear-gradient(90deg,
-            transparent 0%, rgba(0,240,255,0.12) 15%, rgba(0,240,255,0.5) 50%, rgba(0,240,255,0.12) 85%, transparent 100%
-          );
-          box-shadow: 0 0 16px rgba(0,240,255,0.2), 0 0 45px rgba(0,240,255,0.08),
-                      0 -25px 60px rgba(0,240,255,0.025), 0 25px 60px rgba(0,240,255,0.025);
-          animation: holoScanSweep 7s ease-in-out infinite;
-        }
-        .holo-scan::after {
-          content: ''; position: absolute; left: 0; right: 0; top: -50px; height: 100px;
-          background: linear-gradient(180deg, transparent, rgba(0,240,255,0.025), transparent);
-          pointer-events: none;
-        }
-        @keyframes holoScanSweep {
-          0%,100% { top: -2px; opacity: 0; }
-          5% { opacity: 1; }
-          95% { opacity: 0.4; }
-          98% { top: 100vh; opacity: 0; }
-        }
-
-        /* ═══════ HOLOGRAPHIC WAVE CANVAS ═══════ */
-        .holo-wave-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; will-change: transform; }
-
-        /* ═══════ AURORA FIELD ═══════ */
-        .aurora-field {
-          position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-          contain: layout style;
-        }
-        .aurora-field::before,
-        .aurora-field::after {
-          content: ''; position: absolute; width: 130%; height: 100%;
-          filter: blur(50px);
-          will-change: opacity;
-        }
-        .aurora-field::before {
-          top: -30%; left: -30%;
-          background: linear-gradient(
-            135deg,
-            transparent 25%,
-            rgba(0,240,255,0.07) 38%,
-            rgba(176,38,255,0.05) 48%,
-            rgba(255,0,229,0.04) 58%,
-            transparent 72%
-          );
-          animation: auroraA 18s ease-in-out infinite alternate;
-        }
-        .aurora-field::after {
-          top: -20%; right: -30%;
-          background: linear-gradient(
-            -135deg,
-            transparent 30%,
-            rgba(255,0,229,0.06) 42%,
-            rgba(57,255,20,0.04) 52%,
-            rgba(0,240,255,0.05) 62%,
-            transparent 75%
-          );
-          animation: auroraB 22s ease-in-out infinite alternate;
-        }
-        @keyframes auroraA {
-          0%   { opacity: 0.4; }
-          50%  { opacity: 0.8; }
-          100% { opacity: 0.5; }
-        }
-        @keyframes auroraB {
-          0%   { opacity: 0.35; }
-          50%  { opacity: 0.7; }
-          100% { opacity: 0.45; }
-        }
-
-        /* ═══════ NEBULA / ATOMIC ORBITAL BACKGROUND — HOLOGRAPHIC CYBERPUNK ═══════ */
-        .nebula-atomic {
-          position: fixed;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: 900px; height: 900px;
-          z-index: 0; pointer-events: none;
-          contain: strict;
-          perspective: 1000px;
-          transform-style: preserve-3d;
-        }
-
-        /* Energy field haze — soft radial glow layers */
-        .nebula-field {
-          position: absolute; top: 50%; left: 50%;
-          border-radius: 50%;
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-        }
-        .nebula-field-1 {
-          width: 600px; height: 600px;
-          background: radial-gradient(circle, rgba(0,240,255,0.04) 0%, rgba(176,38,255,0.02) 40%, transparent 70%);
-          animation: fieldBreath1 8s ease-in-out infinite alternate;
-        }
-        .nebula-field-2 {
-          width: 480px; height: 480px;
-          background: radial-gradient(circle, rgba(255,0,229,0.03) 0%, rgba(0,240,255,0.015) 45%, transparent 70%);
-          animation: fieldBreath2 10s ease-in-out infinite alternate;
-        }
-        @keyframes fieldBreath1 {
-          0%   { opacity: 0.3; transform: translate(-50%,-50%) scale(1); }
-          100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1.08); }
-        }
-        @keyframes fieldBreath2 {
-          0%   { opacity: 0.25; transform: translate(-50%,-50%) scale(1.05); }
-          100% { opacity: 0.5;  transform: translate(-50%,-50%) scale(0.95); }
-        }
-
-        /* Holographic scan disc — flat rotating ring with gradient */
-        .holo-disc {
-          position: absolute; top: 50%; left: 50%;
-          width: 500px; height: 500px;
-          margin-top: -250px; margin-left: -250px;
-          border-radius: 50%;
-          border: 1px solid transparent;
-          background: conic-gradient(from 0deg, transparent 0%, rgba(0,240,255,0.06) 15%, transparent 30%, rgba(255,0,229,0.04) 50%, transparent 65%, rgba(176,38,255,0.05) 80%, transparent 100%);
-          -webkit-mask: radial-gradient(circle, transparent 48%, black 49%, black 51%, transparent 52%);
-          mask: radial-gradient(circle, transparent 48%, black 49%, black 51%, transparent 52%);
-          transform: rotateX(72deg);
-          animation: discSpin 40s linear infinite;
-          opacity: 0.7;
-        }
-        @keyframes discSpin {
-          0%   { transform: rotateX(72deg) rotateZ(0deg); }
-          100% { transform: rotateX(72deg) rotateZ(360deg); }
-        }
-
-        /* Core — multi-layer pulsing nucleus */
-        .nebula-core {
-          position: absolute; top: 50%; left: 50%;
-          width: 14px; height: 14px;
-          transform: translate(-50%, -50%);
-          border-radius: 50%;
-          background: radial-gradient(circle,
-            rgba(0,240,255,0.8) 0%,
-            rgba(255,0,229,0.3) 40%,
-            rgba(176,38,255,0.1) 60%,
-            transparent 80%
-          );
-          box-shadow:
-            0 0 40px 12px rgba(0,240,255,0.12),
-            0 0 80px 30px rgba(255,0,229,0.06),
-            0 0 120px 50px rgba(176,38,255,0.03);
-          animation: corePulse 5s ease-in-out infinite alternate;
-        }
-        .core-ring {
-          position: absolute; top: 50%; left: 50%;
-          border-radius: 50%;
-          border: 1px solid;
-          transform: translate(-50%, -50%);
-          animation: coreRingPulse 4s ease-in-out infinite alternate;
-        }
-        .core-ring-1 {
-          width: 30px; height: 30px;
-          border-color: rgba(0,240,255,0.15);
-          box-shadow: 0 0 10px rgba(0,240,255,0.05);
-        }
-        .core-ring-2 {
-          width: 50px; height: 50px;
-          border-color: rgba(255,0,229,0.08);
-          box-shadow: 0 0 12px rgba(255,0,229,0.03);
-          animation-delay: -2s;
-        }
-        @keyframes corePulse {
-          0%   { opacity: 0.5; box-shadow: 0 0 40px 12px rgba(0,240,255,0.08), 0 0 80px 30px rgba(255,0,229,0.04), 0 0 120px 50px rgba(176,38,255,0.02); }
-          100% { opacity: 1;   box-shadow: 0 0 60px 20px rgba(0,240,255,0.15), 0 0 100px 40px rgba(255,0,229,0.08), 0 0 160px 70px rgba(176,38,255,0.04); }
-        }
-        @keyframes coreRingPulse {
-          0%   { opacity: 0.4; transform: translate(-50%,-50%) scale(1); }
-          100% { opacity: 0.8; transform: translate(-50%,-50%) scale(1.2); }
-        }
-
-        /* Orbital rings — holographic borders with gradient */
-        .orbital {
-          position: absolute; top: 50%; left: 50%;
-          border-radius: 50%;
-          transform-origin: center center;
-          transform-style: preserve-3d;
-        }
-        .orbital-1 {
-          width: 200px; height: 200px;
-          margin-top: -100px; margin-left: -100px;
-          border: 1px solid rgba(0,240,255,0.1);
-          box-shadow: 0 0 15px rgba(0,240,255,0.03), inset 0 0 15px rgba(0,240,255,0.02);
-          transform: rotateX(68deg) rotateZ(0deg);
-          animation: orbit1 24s linear infinite;
-        }
-        .orbital-2 {
-          width: 320px; height: 320px;
-          margin-top: -160px; margin-left: -160px;
-          border: 1px solid rgba(255,0,229,0.08);
-          box-shadow: 0 0 18px rgba(255,0,229,0.025), inset 0 0 18px rgba(255,0,229,0.015);
-          transform: rotateX(62deg) rotateZ(45deg);
-          animation: orbit2 34s linear infinite;
-        }
-        .orbital-3 {
-          width: 440px; height: 440px;
-          margin-top: -220px; margin-left: -220px;
-          border: 1px solid rgba(176,38,255,0.06);
-          box-shadow: 0 0 20px rgba(176,38,255,0.02), inset 0 0 20px rgba(176,38,255,0.01);
-          transform: rotateX(72deg) rotateZ(90deg);
-          animation: orbit3 46s linear infinite;
-        }
-        .orbital-4 {
-          width: 560px; height: 560px;
-          margin-top: -280px; margin-left: -280px;
-          border: 1px solid rgba(0,240,255,0.04);
-          box-shadow: 0 0 22px rgba(0,240,255,0.015), inset 0 0 22px rgba(0,240,255,0.008);
-          transform: rotateX(55deg) rotateZ(135deg);
-          animation: orbit4 58s linear infinite;
-        }
-        .orbital-5 {
-          width: 700px; height: 700px;
-          margin-top: -350px; margin-left: -350px;
-          border: 1px solid rgba(255,0,229,0.03);
-          box-shadow: 0 0 25px rgba(255,0,229,0.01), inset 0 0 25px rgba(255,0,229,0.005);
-          transform: rotateX(66deg) rotateZ(170deg);
-          animation: orbit5 72s linear infinite;
-        }
-
-        @keyframes orbit1 { 0% { transform: rotateX(68deg) rotateZ(0deg); }   100% { transform: rotateX(68deg) rotateZ(360deg); } }
-        @keyframes orbit2 { 0% { transform: rotateX(62deg) rotateZ(45deg); }  100% { transform: rotateX(62deg) rotateZ(405deg); } }
-        @keyframes orbit3 { 0% { transform: rotateX(72deg) rotateZ(90deg); }  100% { transform: rotateX(72deg) rotateZ(450deg); } }
-        @keyframes orbit4 { 0% { transform: rotateX(55deg) rotateZ(135deg); } 100% { transform: rotateX(55deg) rotateZ(495deg); } }
-        @keyframes orbit5 { 0% { transform: rotateX(66deg) rotateZ(170deg); } 100% { transform: rotateX(66deg) rotateZ(530deg); } }
-
-        /* Electrons — glowing particles with holographic trail */
-        .electron {
-          position: absolute; top: -4px; left: 50%;
-          width: 8px; height: 8px;
-          margin-left: -4px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(0,240,255,0.9) 0%, rgba(0,240,255,0.4) 50%, transparent 70%);
-          box-shadow: 0 0 14px 5px rgba(0,240,255,0.35), 0 0 40px 10px rgba(0,240,255,0.12);
-        }
-        .electron .e-trail {
-          position: absolute; top: 50%; left: 50%;
-          width: 40px; height: 2px;
-          margin-top: -1px; margin-left: -38px;
-          background: linear-gradient(90deg, transparent, rgba(0,240,255,0.25));
-          border-radius: 2px;
-          filter: blur(1px);
-        }
-        /* Second electron offset to bottom of ring */
-        .electron.e2 {
-          top: auto; bottom: -4px;
-          opacity: 0.7;
-        }
-        .electron.e2 .e-trail {
-          margin-left: 2px;
-          background: linear-gradient(270deg, transparent, rgba(0,240,255,0.2));
-        }
-
-        /* Orbital 2 electrons — magenta */
-        .orbital-2 .electron {
-          background: radial-gradient(circle, rgba(255,0,229,0.85) 0%, rgba(255,0,229,0.35) 50%, transparent 70%);
-          box-shadow: 0 0 14px 5px rgba(255,0,229,0.3), 0 0 40px 10px rgba(255,0,229,0.1);
-        }
-        .orbital-2 .e-trail {
-          background: linear-gradient(90deg, transparent, rgba(255,0,229,0.2));
-        }
-
-        /* Orbital 3 electrons — violet */
-        .orbital-3 .electron {
-          background: radial-gradient(circle, rgba(176,38,255,0.8) 0%, rgba(176,38,255,0.3) 50%, transparent 70%);
-          box-shadow: 0 0 14px 5px rgba(176,38,255,0.25), 0 0 40px 10px rgba(176,38,255,0.08);
-        }
-        .orbital-3 .e-trail {
-          background: linear-gradient(90deg, transparent, rgba(176,38,255,0.2));
-        }
-
-        /* Orbital 4 electrons — cyan variant */
-        .orbital-4 .electron {
-          background: radial-gradient(circle, rgba(0,200,255,0.7) 0%, rgba(0,200,255,0.25) 50%, transparent 70%);
-          box-shadow: 0 0 12px 4px rgba(0,200,255,0.2), 0 0 35px 8px rgba(0,200,255,0.06);
-          width: 6px; height: 6px; margin-left: -3px; top: -3px;
-          opacity: 0.6;
-        }
-        .orbital-4 .e-trail {
-          background: linear-gradient(90deg, transparent, rgba(0,200,255,0.15));
-          width: 30px;
-        }
-
-        /* Orbital 5 electrons — magenta dim */
-        .orbital-5 .electron {
-          background: radial-gradient(circle, rgba(255,0,229,0.6) 0%, rgba(255,0,229,0.2) 50%, transparent 70%);
-          box-shadow: 0 0 10px 3px rgba(255,0,229,0.15), 0 0 30px 6px rgba(255,0,229,0.05);
-          width: 5px; height: 5px; margin-left: -2.5px; top: -2.5px;
-          opacity: 0.5;
-        }
-        .orbital-5 .e-trail {
-          background: linear-gradient(90deg, transparent, rgba(255,0,229,0.12));
-          width: 25px;
-        }
-        .orbital-5 .electron.e2 { top: auto; bottom: -2.5px; }
-
-        /* ═══════ FLOATING HOLOGRAPHIC SHAPES ═══════ */
-        .holo-shapes {
-          position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-        }
-        .holo-shape {
-          position: absolute; border: 1px solid;
-          animation: holoFloat 20s ease-in-out infinite;
-        }
-        .holo-shape:nth-child(1) {
-          width: 140px; height: 140px; top: 12%; left: 6%; border-radius: 50%;
-          border-color: rgba(0,240,255,0.12);
-          box-shadow: inset 0 0 40px rgba(0,240,255,0.03), 0 0 30px rgba(0,240,255,0.04);
-          animation-duration: 25s;
-        }
-        .holo-shape:nth-child(2) {
-          width: 100px; height: 100px; top: 55%; right: 10%; border-radius: 50%;
-          border-color: rgba(255,0,229,0.12);
-          box-shadow: inset 0 0 25px rgba(255,0,229,0.03), 0 0 20px rgba(255,0,229,0.04);
-          animation-duration: 18s; animation-delay: -5s;
-        }
-        .holo-shape:nth-child(3) {
-          width: 200px; height: 200px; top: 32%; right: 4%;
-          border-color: rgba(176,38,255,0.10);
-          box-shadow: inset 0 0 50px rgba(176,38,255,0.02), 0 0 35px rgba(176,38,255,0.03);
-          animation-duration: 30s; animation-delay: -10s;
-          border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-        }
-        .holo-shape:nth-child(4) {
-          width: 80px; height: 80px; bottom: 18%; left: 15%; border-radius: 50%;
-          border-color: rgba(57,255,20,0.12);
-          box-shadow: inset 0 0 20px rgba(57,255,20,0.03), 0 0 15px rgba(57,255,20,0.04);
-          animation-duration: 22s; animation-delay: -8s;
-        }
-        .holo-shape:nth-child(5) {
-          width: 160px; height: 160px; top: 68%; left: 3%;
-          border-color: rgba(255,215,0,0.10);
-          box-shadow: inset 0 0 40px rgba(255,215,0,0.015), 0 0 25px rgba(255,215,0,0.02);
-          animation-duration: 28s; animation-delay: -15s;
-          border-radius: 50% 50% 50% 50% / 60% 40% 60% 40%;
-        }
-        @keyframes holoFloat {
-          0%,100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.6; }
-          25% { transform: translateY(-35px) rotate(90deg) scale(1.08); opacity: 1; }
-          50% { transform: translateY(-18px) rotate(180deg) scale(0.95); opacity: 0.75; }
-          75% { transform: translateY(-45px) rotate(270deg) scale(1.04); opacity: 0.65; }
-        }
+        .particle-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
         /* ═══════ DATA STREAM ═══════ */
         .data-stream-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
@@ -3400,11 +2603,11 @@ export default function TechStackPage() {
           opacity: 0; animation: dataFall linear infinite; pointer-events: none;
         }
         @keyframes dataFall {
-          0%{opacity:0;transform:translateY(-20px)} 10%{opacity:0.35} 90%{opacity:0.18} 100%{opacity:0;transform:translateY(100vh)}
+          0%{opacity:0;transform:translateY(-20px)} 10%{opacity:0.25} 90%{opacity:0.12} 100%{opacity:0;transform:translateY(100vh)}
         }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
-        .container[id] { scroll-margin-top: 68px; }
+        .container[id] { scroll-margin-top: 56px; }
 
         /* ═══════ HERO ═══════ */
         .hero { text-align: center; padding: 100px 24px 60px; position: relative; z-index: 2; }
@@ -3447,21 +2650,6 @@ export default function TechStackPage() {
           0%,100% { opacity: 0.04; }
           50% { opacity: 0.09; }
         }
-        /* Chromatic aberration layers */
-        .hero-chroma-r {
-          animation: chromaShiftR 4s ease-in-out infinite;
-        }
-        .hero-chroma-b {
-          animation: chromaShiftB 4s ease-in-out infinite;
-        }
-        @keyframes chromaShiftR {
-          0%,100% { transform: translate(-2px, 0); opacity: 0.15; }
-          50% { transform: translate(-4px, 1px); opacity: 0.25; }
-        }
-        @keyframes chromaShiftB {
-          0%,100% { transform: translate(2px, 0); opacity: 0.15; }
-          50% { transform: translate(4px, -1px); opacity: 0.25; }
-        }
         @keyframes symbolFloat {
           0%,100%{transform:translateY(0) rotate(0deg)} 25%{transform:translateY(-10px) rotate(1deg)}
           50%{transform:translateY(-5px) rotate(0deg)} 75%{transform:translateY(-12px) rotate(-1deg)}
@@ -3484,6 +2672,29 @@ export default function TechStackPage() {
         .status-dot.dead { background: var(--alien-red); box-shadow: 0 0 8px var(--alien-red); }
         .status-label { font-size: 12px; letter-spacing: 0.2em; font-family: var(--font-mono); color: var(--text-dim); }
         .last-update { font-size: 10px; color: rgba(90,106,138,0.6); }
+
+        /* ═══════ GLITCH TEXT ═══════ */
+        .glitch-text { position: relative; display: inline-block; }
+        .glitch-text::before, .glitch-text::after {
+          content: attr(data-text); position: absolute; top: 0; left: 0;
+          width: 100%; height: 100%; pointer-events: none;
+        }
+        .glitch-text::before {
+          color: var(--alien-cyan); animation: glitchShift 3s infinite;
+          clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+        .glitch-text::after {
+          color: var(--alien-magenta); animation: glitchShift2 2.5s infinite;
+          clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+        @keyframes glitchShift {
+          0%,90%,100%{transform:translate(0)} 92%{transform:translate(-3px,1px)}
+          94%{transform:translate(2px,-1px)} 96%{transform:translate(-1px,2px)} 98%{transform:translate(3px,0)}
+        }
+        @keyframes glitchShift2 {
+          0%,88%,100%{transform:translate(0)} 90%{transform:translate(3px,-2px)}
+          93%{transform:translate(-2px,1px)} 95%{transform:translate(1px,-1px)} 97%{transform:translate(-3px,2px)}
+        }
 
         /* ═══════ METRICS BAR ═══════ */
         .metrics-bar {
@@ -3512,18 +2723,17 @@ export default function TechStackPage() {
         .metric-label { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-top: 0.3rem; }
 
         /* ═══════ ENERGY CONNECTOR ═══════ */
-        .energy-connector { position: relative; height: 80px; display: flex; justify-content: center; overflow: hidden; z-index: 2; }
+        .energy-connector { position: relative; height: 60px; display: flex; justify-content: center; overflow: hidden; z-index: 2; }
         .energy-connector::before {
           content: ''; position: absolute; width: 2px; height: 100%;
           background: linear-gradient(to bottom,transparent,var(--alien-cyan),transparent);
           animation: energyPulse 2s ease-in-out infinite;
-          box-shadow: 0 0 8px var(--alien-cyan), 0 0 16px rgba(0,240,255,0.2);
         }
         .energy-connector::after {
-          content: ''; position: absolute; width: 10px; height: 10px; border-radius: 50%;
+          content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;
           background: var(--alien-cyan);
-          box-shadow: 0 0 15px var(--alien-cyan), 0 0 40px rgba(0,240,255,0.4);
-          animation: energyBall 2s ease-in-out infinite; top: -5px;
+          box-shadow: 0 0 15px var(--alien-cyan), 0 0 30px rgba(0,240,255,0.3);
+          animation: energyBall 2s ease-in-out infinite; top: -4px;
         }
         @keyframes energyPulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
         @keyframes energyBall { 0%{top:-4px;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:calc(100% - 4px);opacity:0} }
@@ -3573,7 +2783,7 @@ export default function TechStackPage() {
         .alien-card {
           background: var(--bg-panel); border: 1px solid var(--border-glow); border-radius: 12px;
           padding: 1.2rem; position: relative; overflow: hidden;
-          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.16,1,0.3,1); transform-style: preserve-3d; perspective: 1000px;
         }
         .alien-card::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
@@ -3581,7 +2791,12 @@ export default function TechStackPage() {
           pointer-events: none; border-radius: 0 0 12px 12px;
         }
         .alien-card:hover { border-color: var(--alien-cyan); box-shadow: 0 0 30px rgba(0,240,255,0.1), inset 0 0 30px rgba(0,240,255,0.03); }
-        .card-featured { border-color: rgba(0,240,255,0.25); }
+        @supports (backdrop-filter: blur(1px)) {
+          .alien-card { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+          .metrics-bar { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        }
+        .card-featured { animation: borderPulse 4s ease-in-out infinite; }
+        @keyframes borderPulse { 0%,100%{border-color:rgba(0,240,255,0.15)} 50%{border-color:rgba(0,240,255,0.35)} }
         .card-header-row { display: flex; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.8rem; }
         .card-icon { font-size: 1.5rem; flex-shrink: 0; }
         .card-title { font-size: 1rem; font-weight: 700; color: #e4e4f0; }
@@ -3619,183 +2834,11 @@ export default function TechStackPage() {
         .cap-dot.on { background: var(--alien-green); box-shadow: 0 0 8px rgba(57,255,20,0.5); }
         .cap-dot.off { background: rgba(255,0,60,0.4); }
 
-        /* ═══════ PROGRESS BAR (LEGACY) ═══════ */
+        /* ═══════ PROGRESS BAR ═══════ */
         .progress-container { margin-bottom: 0.6rem; }
         .progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; font-family: var(--font-mono); margin-bottom: 0.3rem; color: #8a9ab5; }
         .progress-track { height: 6px; background: rgba(0,240,255,0.06); border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; border-radius: 3px; transition: width 1.5s cubic-bezier(0.16,1,0.3,1); box-shadow: 0 0 8px rgba(0,240,255,0.2); }
-
-        /* ═══════ LOC DISTRIBUTION V2 ═══════ */
-        .loc-distribution-v2 {
-          display: flex;
-          align-items: center;
-          gap: 2.5rem;
-          margin-top: 2rem;
-          padding: 2rem;
-          background: linear-gradient(135deg, rgba(0,240,255,0.03) 0%, rgba(10,15,30,0.8) 50%, rgba(255,0,229,0.02) 100%);
-          border: 1px solid rgba(0,240,255,0.1);
-          border-radius: 16px;
-          position: relative;
-          overflow: hidden;
-        }
-        .loc-distribution-v2::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, var(--alien-cyan), var(--alien-magenta), transparent);
-          opacity: 0.6;
-        }
-        .loc-distribution-v2::after {
-          content: 'CODE DISTRIBUTION';
-          position: absolute;
-          top: 12px; right: 16px;
-          font-size: 0.55rem;
-          letter-spacing: 0.2em;
-          color: rgba(0,240,255,0.25);
-          font-family: var(--font-mono);
-        }
-        .loc-donut-wrap {
-          flex-shrink: 0;
-          position: relative;
-        }
-        .donut-segment {
-          transition: stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1);
-        }
-        .loc-bars-v2 { flex: 1; min-width: 0; }
-
-        /* ═══════ PROGRESS BAR V2 ═══════ */
-        .progress-container-v2 {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 0.4rem 1rem;
-          align-items: center;
-          margin-bottom: 1.2rem;
-          padding: 0.6rem 0;
-          border-bottom: 1px solid rgba(0,240,255,0.04);
-        }
-        .progress-container-v2:last-child { border-bottom: none; }
-        .progress-header-v2 {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          grid-column: 1 / -1;
-        }
-        .progress-label-left {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        .progress-icon { font-size: 1.1rem; }
-        .progress-lang {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: #e0e8f8;
-          letter-spacing: 0.02em;
-        }
-        .progress-label-right { text-align: right; }
-        .progress-value-text {
-          font-size: 0.85rem;
-          font-family: var(--font-mono);
-          font-weight: 600;
-          color: #8a9ab5;
-        }
-        .progress-track-v2 {
-          grid-column: 1;
-          height: 10px;
-          background: rgba(0,240,255,0.04);
-          border-radius: 5px;
-          overflow: visible;
-          position: relative;
-        }
-        .progress-fill-v2 {
-          height: 100%;
-          border-radius: 5px;
-          transition: width 2s cubic-bezier(0.16,1,0.3,1);
-          position: relative;
-          overflow: hidden;
-        }
-        .progress-shine {
-          position: absolute;
-          top: 0; left: -100%;
-          width: 200%; height: 100%;
-          background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.15) 50%, transparent 75%);
-          animation: barShine 3s ease-in-out infinite;
-        }
-        @keyframes barShine {
-          0% { transform: translateX(-50%); }
-          100% { transform: translateX(50%); }
-        }
-        .progress-glow-dot {
-          position: absolute;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          transition: left 2s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease;
-          z-index: 2;
-        }
-        .progress-pct-v2 {
-          grid-column: 2;
-          font-size: 0.95rem;
-          font-weight: 900;
-          font-family: var(--font-mono);
-          min-width: 48px;
-          text-align: right;
-        }
-
-        /* ═══════ CARD ICON GLOW ═══════ */
-        .card-icon {
-          filter: drop-shadow(0 0 8px rgba(0,240,255,0.4));
-          transition: filter 0.3s ease;
-        }
-        .alien-card:hover .card-icon {
-          filter: drop-shadow(0 0 14px rgba(0,240,255,0.7)) drop-shadow(0 0 24px rgba(0,240,255,0.3));
-        }
-
-        /* ═══════ METRIC VALUE PULSE ═══════ */
-        .metric-value {
-          position: relative;
-          transition: transform 0.3s ease;
-        }
-        .metric:hover .metric-value {
-          transform: scale(1.08);
-        }
-
-        /* ═══════ SECTION HEADER ACCENT LINE ═══════ */
-        .section-header {
-          position: relative;
-        }
-        .section-header::after {
-          content: '';
-          position: absolute;
-          bottom: -8px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 60px;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, var(--alien-cyan), transparent);
-          border-radius: 1px;
-        }
-
-        /* ═══════ TAG HOVER ═══════ */
-        .tech-tag {
-          transition: transform 0.15s ease, box-shadow 0.3s ease;
-        }
-        .tech-tag:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0,240,255,0.15);
-        }
-
-        @media (max-width: 768px) {
-          .loc-distribution-v2 {
-            flex-direction: column;
-            gap: 1.5rem;
-            padding: 1.5rem 1rem;
-          }
-          .loc-distribution-v2::after { display: none; }
-        }
 
         /* ═══════ GAUGE ROW ═══════ */
         .gauge-row { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
@@ -4039,389 +3082,16 @@ export default function TechStackPage() {
         .footer-tech { margin-top: 0.3rem; opacity: 0.35; }
         .footer-copy { margin-top: 1rem; opacity: 0.25; font-size: 0.65rem; }
 
-        /* ═══════ VITALIS FLAGSHIP PANEL ═══════ */
-        .vitalis-flagship {
-          position: relative;
-          margin: 2rem 0;
-          padding: 3rem 2.5rem;
-          border-radius: 24px;
-          background: linear-gradient(145deg, rgba(57,255,20,0.06) 0%, rgba(0,240,255,0.04) 50%, rgba(176,38,255,0.04) 100%);
-          border: 2px solid rgba(57,255,20,0.25);
-          overflow: hidden;
-        }
-        .vitalis-flagship-glow {
-          position: absolute;
-          top: -60%;
-          left: 20%;
-          width: 60%;
-          height: 200%;
-          background: radial-gradient(ellipse, rgba(57,255,20,0.08) 0%, transparent 65%);
-          pointer-events: none;
-          animation: vitalisGlowPulse 6s ease-in-out infinite;
-        }
-        @keyframes vitalisGlowPulse {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.15); }
-        }
-        .vitalis-flagship-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 3rem;
-          position: relative;
-          z-index: 1;
-        }
-        @media (max-width: 900px) {
-          .vitalis-flagship-grid { grid-template-columns: 1fr; gap: 2rem; }
-          .vitalis-flagship { padding: 2rem 1.5rem; }
-        }
-        .vitalis-flagship-hero {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
-        .vitalis-flagship-badge {
-          display: inline-block;
-          padding: 0.35rem 1rem;
-          font-size: 0.7rem;
-          font-weight: 800;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: #39ff14;
-          background: rgba(57,255,20,0.12);
-          border: 1px solid rgba(57,255,20,0.3);
-          border-radius: 20px;
-          margin-bottom: 1rem;
-          width: fit-content;
-          animation: badgePulse 3s ease-in-out infinite;
-        }
-        @keyframes badgePulse {
-          0%, 100% { box-shadow: 0 0 8px rgba(57,255,20,0.15); }
-          50% { box-shadow: 0 0 20px rgba(57,255,20,0.35); }
-        }
-        .vitalis-flagship-title {
-          font-size: 3.2rem;
-          font-weight: 900;
-          letter-spacing: -0.02em;
-          background: linear-gradient(135deg, #39ff14 0%, #00f0ff 50%, #b026ff 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin: 0 0 0.4rem;
-          line-height: 1.1;
-        }
-        .vitalis-flagship-version {
-          font-size: 1.2rem;
-          font-weight: 600;
-          vertical-align: super;
-          margin-left: 0.3rem;
-          opacity: 0.7;
-        }
-        .vitalis-flagship-tagline {
-          color: #8a9ab5;
-          font-size: 0.95rem;
-          line-height: 1.7;
-          margin: 0.8rem 0 1.5rem;
-        }
-        .vitalis-flagship-stats-row {
-          display: flex;
-          gap: 1.5rem;
-          margin-bottom: 1.8rem;
-          flex-wrap: wrap;
-        }
-        .vitalis-flagship-stat {
-          display: flex;
-          flex-direction: column;
-          text-align: center;
-        }
-        .vitalis-flagship-stat-value {
-          font-size: 1.8rem;
-          font-weight: 900;
-          color: #39ff14;
-          text-shadow: 0 0 15px rgba(57,255,20,0.3);
-          line-height: 1.1;
-        }
-        .vitalis-flagship-stat-label {
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: #5a6a8a;
-          margin-top: 0.15rem;
-        }
-        .vitalis-flagship-buttons {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-        .vitalis-flagship-btn-primary {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.9rem 2rem;
-          background: linear-gradient(135deg, #39ff14, #00f0ff);
-          color: #000;
-          border-radius: 12px;
-          font-weight: 800;
-          font-size: 0.9rem;
-          text-decoration: none;
-          transition: transform 0.15s, box-shadow 0.3s;
-          letter-spacing: 0.02em;
-        }
-        .vitalis-flagship-btn-primary:hover {
-          transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 8px 40px rgba(57,255,20,0.4), 0 4px 20px rgba(0,240,255,0.2);
-        }
-        .vitalis-flagship-btn-secondary {
-          padding: 0.9rem 2rem;
-          border: 1px solid rgba(57,255,20,0.35);
-          color: #39ff14;
-          border-radius: 12px;
-          font-weight: 700;
-          font-size: 0.9rem;
-          text-decoration: none;
-          transition: border-color 0.3s, background 0.3s;
-        }
-        .vitalis-flagship-btn-secondary:hover {
-          border-color: #39ff14;
-          background: rgba(57,255,20,0.08);
-        }
-
-        /* Feature cards grid */
-        .vitalis-flagship-features {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.8rem;
-        }
-        @media (max-width: 600px) {
-          .vitalis-flagship-features { grid-template-columns: 1fr; }
-        }
-        .vitalis-feature-card {
-          padding: 1rem 1.2rem;
-          border-radius: 12px;
-          background: rgba(57,255,20,0.04);
-          border: 1px solid rgba(57,255,20,0.12);
-          transition: border-color 0.3s, background 0.3s, transform 0.2s;
-        }
-        .vitalis-feature-card:hover {
-          border-color: rgba(57,255,20,0.4);
-          background: rgba(57,255,20,0.08);
-          transform: translateY(-2px);
-        }
-        .vitalis-feature-icon {
-          font-size: 1.5rem;
-          margin-bottom: 0.3rem;
-        }
-        .vitalis-feature-title {
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: #e0e8f0;
-          margin-bottom: 0.2rem;
-        }
-        .vitalis-feature-desc {
-          font-size: 0.72rem;
-          color: #5a6a8a;
-          line-height: 1.4;
-        }
-
-        /* Pipeline mini-viz */
-        .vitalis-flagship-pipeline {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-          margin-top: 2rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid rgba(57,255,20,0.1);
-          flex-wrap: wrap;
-          position: relative;
-          z-index: 1;
-        }
-        .pipeline-step {
-          padding: 0.35rem 0.7rem;
-          font-size: 0.65rem;
-          font-weight: 600;
-          color: #8a9ab5;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 6px;
-          white-space: nowrap;
-        }
-        .pipeline-arrow {
-          color: #39ff14;
-          font-size: 0.8rem;
-          opacity: 0.6;
-        }
-        .vitalis-pipeline-jit {
-          color: #39ff14;
-          border-color: rgba(57,255,20,0.3);
-          background: rgba(57,255,20,0.08);
-          font-weight: 800;
-        }
-        .vitalis-pipeline-native {
-          color: #00f0ff;
-          border-color: rgba(0,240,255,0.3);
-          background: rgba(0,240,255,0.08);
-          font-weight: 800;
-        }
-
-        /* ═══════ CONSULTING CTA BANNER ═══════ */
-        .consulting-cta-banner {
-          position: relative;
-          margin: 3rem auto 0;
-          padding: 3rem 2rem;
-          border-radius: 20px;
-          border: 1px solid rgba(0,240,255,0.2);
-          background: linear-gradient(135deg, rgba(0,240,255,0.04) 0%, rgba(57,255,20,0.04) 50%, rgba(0,240,255,0.04) 100%);
-          overflow: hidden;
-          text-align: center;
-          max-width: 900px;
-        }
-        .consulting-cta-glow {
-          position: absolute;
-          top: -50%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 500px;
-          height: 500px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(0,240,255,0.12), transparent 70%);
-          filter: blur(60px);
-          pointer-events: none;
-          animation: cta-pulse 4s ease-in-out infinite;
-        }
-        @keyframes cta-pulse {
-          0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-          50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
-        }
-        .consulting-cta-content {
-          position: relative;
-          z-index: 1;
-        }
-        .consulting-cta-badge {
-          display: inline-block;
-          padding: 0.35rem 1.2rem;
-          font-size: 0.65rem;
-          font-weight: 800;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #000;
-          background: linear-gradient(135deg, #00f0ff, #39ff14);
-          border-radius: 100px;
-          margin-bottom: 1.2rem;
-          animation: badge-glow 2s ease-in-out infinite;
-        }
-        @keyframes badge-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(0,240,255,0.3); }
-          50% { box-shadow: 0 0 40px rgba(0,240,255,0.6), 0 0 80px rgba(57,255,20,0.2); }
-        }
-        .consulting-cta-title {
-          font-size: clamp(1.4rem, 3vw, 2.2rem);
-          font-weight: 900;
-          line-height: 1.2;
-          margin: 0 0 0.8rem;
-          background: linear-gradient(135deg, #00f0ff, #39ff14);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .consulting-cta-desc {
-          color: #8a9ab5;
-          font-size: 0.9rem;
-          line-height: 1.6;
-          margin: 0 0 1.8rem;
-          max-width: 600px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        .consulting-cta-buttons {
-          display: flex;
-          gap: 1rem;
-          justify-content: center;
-          flex-wrap: wrap;
-          margin-bottom: 1.5rem;
-        }
-        .consulting-cta-btn-primary {
-          padding: 0.9rem 2.2rem;
-          background: linear-gradient(135deg, #00f0ff, #39ff14);
-          color: #000;
-          border-radius: 10px;
-          font-weight: 800;
-          font-size: 0.9rem;
-          text-decoration: none;
-          transition: transform 0.15s, box-shadow 0.3s;
-          letter-spacing: 0.02em;
-        }
-        .consulting-cta-btn-primary:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 40px rgba(0,240,255,0.4), 0 4px 20px rgba(57,255,20,0.2);
-        }
-        .consulting-cta-btn-secondary {
-          padding: 0.9rem 2.2rem;
-          border: 1px solid rgba(0,240,255,0.35);
-          color: #00f0ff;
-          border-radius: 10px;
-          font-weight: 700;
-          font-size: 0.9rem;
-          text-decoration: none;
-          transition: border-color 0.3s, background 0.3s;
-        }
-        .consulting-cta-btn-secondary:hover {
-          border-color: #00f0ff;
-          background: rgba(0,240,255,0.08);
-        }
-        .consulting-cta-stats {
-          display: flex;
-          gap: 2rem;
-          justify-content: center;
-          flex-wrap: wrap;
-          font-size: 0.75rem;
-          color: #5a6a8a;
-        }
-
-        /* ═══════ FLOATING CONSULTING BUTTON ═══════ */
-        .consulting-float-btn {
-          position: fixed;
-          bottom: 2rem;
-          right: 2rem;
-          z-index: 9999;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.7rem 1.4rem;
-          background: linear-gradient(135deg, #00f0ff, #39ff14);
-          color: #000;
-          border-radius: 100px;
-          font-weight: 800;
-          font-size: 0.8rem;
-          text-decoration: none;
-          box-shadow: 0 4px 30px rgba(0,240,255,0.35);
-          transition: transform 0.15s, box-shadow 0.3s;
-          overflow: hidden;
-        }
-        .consulting-float-btn:hover {
-          transform: translateY(-3px) scale(1.05);
-          box-shadow: 0 8px 50px rgba(0,240,255,0.5), 0 4px 20px rgba(57,255,20,0.3);
-        }
-        .consulting-float-pulse {
-          position: absolute;
-          inset: -4px;
-          border-radius: inherit;
-          border: 2px solid rgba(0,240,255,0.6);
-          animation: float-ping 2s ease-out infinite;
-          pointer-events: none;
-        }
-        @keyframes float-ping {
-          0% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; transform: scale(1.5); }
-        }
-        .consulting-float-icon { font-size: 1rem; position: relative; z-index: 1; }
-        .consulting-float-text { position: relative; z-index: 1; letter-spacing: 0.05em; }
-
-        /* ═══════ SCROLL REVEAL (smooth, no blur — prevents box twitching) ═══════ */
+        /* ═══════ SCROLL REVEAL (enhanced with blur) ═══════ */
         .scroll-reveal {
-          opacity: 0; transform: translateY(24px);
-          transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
-                      transform 0.7s cubic-bezier(0.16,1,0.3,1);
+          opacity: 0; transform: translateY(40px) scale(0.97);
+          filter: blur(8px);
+          transition: opacity 1s cubic-bezier(0.16,1,0.3,1),
+                      transform 1s cubic-bezier(0.16,1,0.3,1),
+                      filter 1.2s cubic-bezier(0.16,1,0.3,1);
+          will-change: opacity, transform, filter;
         }
-        .scroll-reveal.revealed { opacity: 1; transform: translateY(0); }
+        .scroll-reveal.revealed { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
 
         /* ═══════ SCROLLBAR ═══════ */
         ::-webkit-scrollbar { width: 6px; }
@@ -4463,48 +3133,57 @@ export default function TechStackPage() {
 
         /* ═══════ CIRCUIT TRACES ═══════ */
         .circuit-line {
-          stroke: var(--alien-cyan); stroke-width: 1.2; fill: none;
-          opacity: 0.25; stroke-dasharray: 12 6;
-          animation: circuitFlow 3s linear infinite;
-          filter: drop-shadow(0 0 3px currentColor);
+          stroke: var(--alien-cyan); stroke-width: 1; fill: none;
+          opacity: 0.15; stroke-dasharray: 8 4;
+          animation: circuitFlow 4s linear infinite;
         }
         .circuit-line.magenta { stroke: var(--alien-magenta); }
         .circuit-line.green { stroke: var(--alien-green); }
-        @keyframes circuitFlow { 0%{stroke-dashoffset:0} 100%{stroke-dashoffset:-36} }
+        @keyframes circuitFlow { 0%{stroke-dashoffset:0} 100%{stroke-dashoffset:-24} }
         .circuit-node {
           fill: var(--alien-cyan); opacity: 0;
           animation: circuitNodePulse 3s ease-in-out infinite;
-          filter: drop-shadow(0 0 4px currentColor);
         }
-        @keyframes circuitNodePulse { 0%,100%{opacity:0;r:2} 50%{opacity:0.7;r:5} }
+        @keyframes circuitNodePulse { 0%,100%{opacity:0;r:2} 50%{opacity:0.6;r:4} }
+
+        /* ═══════ HOLO SHIMMER ═══════ */
+        .alien-card::before {
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(105deg,transparent 20%,rgba(0,240,255,0.03) 30%,rgba(255,0,229,0.06) 40%,rgba(176,38,255,0.06) 50%,rgba(0,240,255,0.03) 60%,transparent 80%);
+          animation: holoSweep 3s ease-in-out infinite;
+          z-index: 2; border-radius: 12px; pointer-events: none;
+          opacity: 0; transition: opacity 0.3s;
+        }
+        .alien-card:hover::before { opacity: 1; }
+        @keyframes holoSweep { 0%{transform:translateX(-100%)} 50%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
 
         /* ═══════ STICKY SECTION NAV BAR ═══════ */
         .sticky-nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 999;
           transform: translateY(-100%);
           transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
-          background: rgba(6,6,20,0.88);
+          background: rgba(6,6,20,0.85);
           border-bottom: 1px solid var(--border-glow);
-          backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         .sticky-nav-visible { transform: translateY(0); }
         .snav-inner {
           display: flex; gap: 0; overflow-x: auto; overflow-y: hidden;
-          max-width: 1200px; margin: 0 auto; padding: 0 1.2rem;
+          max-width: 1100px; margin: 0 auto; padding: 0 1rem;
           scrollbar-width: none; -ms-overflow-style: none;
         }
         .snav-inner::-webkit-scrollbar { display: none; }
         .snav-link {
-          flex-shrink: 0; padding: 1rem 1.1rem; font-size: 0.72rem;
-          font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.07em;
+          flex-shrink: 0; padding: 0.65rem 0.9rem; font-size: 0.68rem;
+          font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.06em;
           text-transform: uppercase; color: var(--text-dim);
           text-decoration: none; white-space: nowrap; position: relative;
           transition: color 0.25s;
         }
         .snav-link::after {
-          content: ''; position: absolute; bottom: 0; left: 1.1rem; right: 1.1rem; height: 2.5px;
+          content: ''; position: absolute; bottom: 0; left: 0.9rem; right: 0.9rem; height: 2px;
           background: var(--alien-cyan); transform: scaleX(0); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
-          box-shadow: 0 0 10px var(--alien-cyan);
+          box-shadow: 0 0 8px var(--alien-cyan);
         }
         .snav-link:hover { color: #c8d6e5; }
         .snav-link.snav-active { color: var(--alien-cyan); }
@@ -4576,8 +3255,12 @@ export default function TechStackPage() {
         }
         @keyframes gridDrift { 0%{background-position:0 0} 100%{background-position:80px 80px} }
 
-        /* ═══════ CUSTOM CURSOR — DISABLED (CyberCursor stripped) ═══════ */
-        /* cursor:none removed — no custom cursor component active */
+        /* ═══════ CUSTOM ANIMATED CURSOR ═══════ */
+        @media (pointer: fine) {
+          .alien-page { cursor: none; }
+          .alien-page a, .alien-page button, .alien-page .snav-link,
+          .alien-page .nav-dot, .alien-page .alien-card { cursor: none; }
+        }
         .cyber-cursor-dot {
           position: fixed; top: 0; left: 0; z-index: 99998;
           width: 8px; height: 8px; border-radius: 50%;
@@ -4598,95 +3281,22 @@ export default function TechStackPage() {
           .cyber-cursor-dot, .cyber-cursor-ring { display: none !important; }
         }
 
-        /* ═══════ FILM GRAIN OVERLAY (moved to inline CSS) ═══════ */
-
-        /* ═══════ NOVA LLM ENGINE SECTION ═══════ */
-        .section-intro {
-          max-width: 800px;
+        /* ═══════ FILM GRAIN OVERLAY ═══════ */
+        .film-grain {
+          position: fixed; inset: -50%; z-index: 3; pointer-events: none;
+          opacity: 0.03;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          background-repeat: repeat;
+          background-size: 256px 256px;
+          animation: grainShift 0.4s steps(5) infinite;
         }
-
-        .nova-arch-banner {
-          background: linear-gradient(135deg, rgba(0,240,255,0.04), rgba(255,0,229,0.04), rgba(57,255,20,0.04));
-          border: 1px solid rgba(0,240,255,0.12);
-          border-radius: 16px;
-          padding: 24px 32px;
-          margin: 8px 0;
-          overflow-x: auto;
-        }
-
-        .nova-arch-flow {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          flex-wrap: nowrap;
-          min-width: max-content;
-        }
-
-        .nova-arch-node {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 6px;
-          padding: 14px 20px;
-          border: 1.5px solid rgba(0,240,255,0.3);
-          border-radius: 12px;
-          background: rgba(0,0,0,0.4);
-          font-size: 0.8rem;
-          color: rgba(255,255,255,0.85);
-          letter-spacing: 0.02em;
-          transition: all 0.3s ease;
-          min-width: 90px;
-          text-align: center;
-        }
-        .nova-arch-node:hover {
-          background: rgba(0,240,255,0.08);
-          transform: translateY(-2px);
-          box-shadow: 0 0 20px rgba(0,240,255,0.15);
-        }
-
-        .nova-arch-icon {
-          font-size: 1.5rem;
-        }
-
-        .nova-arch-arrow {
-          font-size: 1.4rem;
-          color: rgba(0,240,255,0.5);
-          flex-shrink: 0;
-        }
-
-        .nova-stats-bar {
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          gap: 16px;
-          margin-top: 28px;
-          padding: 20px 24px;
-          background: linear-gradient(135deg, rgba(0,240,255,0.03), rgba(255,0,229,0.03));
-          border: 1px solid rgba(0,240,255,0.1);
-          border-radius: 14px;
-          flex-wrap: wrap;
-        }
-
-        .nova-stat {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .nova-stat-value {
-          font-size: 1.6rem;
-          font-weight: 700;
-          font-family: 'JetBrains Mono', monospace;
-          letter-spacing: -0.02em;
-        }
-
-        .nova-stat-label {
-          font-size: 0.7rem;
-          color: rgba(255,255,255,0.45);
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
+        @keyframes grainShift {
+          0%   { transform: translate(0,0); }
+          20%  { transform: translate(-3%,-3%); }
+          40%  { transform: translate(3%,1%); }
+          60%  { transform: translate(-1%,3%); }
+          80%  { transform: translate(2%,-2%); }
+          100% { transform: translate(0,0); }
         }
 
         /* ═══════ RESPONSIVE ═══════ */
@@ -4710,12 +3320,6 @@ export default function TechStackPage() {
           .arch-box-laws { flex-direction: column; gap: 0.3rem; }
           .gauge-row { gap: 0.5rem; }
           .nav-float { display: none; }
-          .nova-arch-flow { gap: 6px; }
-          .nova-arch-node { padding: 10px 12px; min-width: 70px; font-size: 0.7rem; }
-          .nova-arch-icon { font-size: 1.2rem; }
-          .nova-arch-arrow { font-size: 1rem; }
-          .nova-stats-bar { gap: 12px; padding: 16px; }
-          .nova-stat-value { font-size: 1.2rem; }
         }
 
         /* ═══════ ACCESSIBILITY — REDUCED MOTION ═══════ */
@@ -4725,16 +3329,16 @@ export default function TechStackPage() {
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
           }
-          .star-field, .nebula-overlay, .data-stream-overlay, .film-grain,
-          .holo-shapes, .holo-scan, .cyber-grid, .holo-wave-canvas, .nebula-atomic { display: none; }
+          .star-field, .nebula-overlay, .data-stream-overlay, .film-grain { display: none; }
           .cine-loader { display: none; }
           .cyber-cursor-dot, .cyber-cursor-ring { display: none; }
           .scroll-progress { animation: none; background-size: 100% 100%; }
-          .scroll-reveal { opacity: 1; transform: none; }
+          .scroll-reveal { opacity: 1; transform: none; filter: none; }
           .hero-logo { animation: none; }
           .hero-infinity-svg { animation: none; }
           .hero-inf-path, .hero-inf-core, .hero-inf-haze, .hero-ambient, .hero-particle { animation: none; }
           .alien-card { transition: none; }
+          .alien-card:hover { transform: none; }
           .sticky-nav { transition: none; }
         }
       `}</style>
