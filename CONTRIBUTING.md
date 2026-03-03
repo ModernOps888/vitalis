@@ -68,7 +68,7 @@ cargo run -- run examples/hello.sl
 Source (.sl) → Lexer → Parser → AST → TypeChecker → IR → Optimizer → Cranelift JIT/AOT → Native
 ```
 
-**59 modules**, ~42,500 LOC, 1,087 tests. Key modules:
+**59 modules**, ~43,095 LOC, 1,087 tests. Key modules:
 
 | Module | Purpose |
 |--------|---------|

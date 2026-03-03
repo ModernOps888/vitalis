@@ -32,7 +32,7 @@ When working in ANY repo, NEVER:
 
 | Stat | Value |
 |------|-------|
-| LOC | ~42,500 |
+| LOC | ~43,095 |
 | Source files | 59 `.rs` modules in `src/` |
 | Tests | 1,087 (all inline `#[cfg(test)]`) |
 | Stdlib builtins | ~196 functions |

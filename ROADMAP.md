@@ -91,50 +91,76 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ NLL regions as sets of CFG points (not lexical scopes)
 - ✅ Borrow conflict detection via overlapping live ranges
 - ✅ Modify-while-borrowed checks
-- ✅ 1,087 tests · 59 modules · 42,500+ LOC
+- ✅ 1,087 tests · 59 modules · 43,095 LOC
 
 ---
 
 ## 📋 Planned
 
 ### v24.0 — Effect Handlers & Pattern Exhaustiveness
-- 📋 Effect handlers with resumptions (algebraic effect handler blocks)
-- 📋 Pattern matching exhaustiveness checking
-- 📋 `handle` blocks for capturing and resuming effects
-- 📋 Exhaustiveness warnings for non-total match expressions
-- 📋 Wildcard patterns and or-patterns support
+- 📋 Effect handler blocks (`handle { ... } with { ... }`) for capturing and resuming algebraic effects
+- 📋 First-class continuations within effect handlers (resume/abort)
+- 📋 Pattern matching exhaustiveness checker — warn on non-total match expressions
+- 📋 Wildcard patterns (`_`), or-patterns (`A | B`), guard clauses in match arms
+- 📋 Nested pattern matching with destructuring (struct/enum/tuple)
+- 📋 Dead code detection for unreachable match arms
 
-### v25.0 — WASM AOT & Code Formatter
-- 📋 WASM AOT target (compile `.sl` → standalone `.wasm` files)
+### v25.0 — Code Formatter & Linter
 - 📋 Code formatter for `.sl` files (`vtc fmt`)
-- 📋 WASM-WASI support for file I/O in WebAssembly
-- 📋 Formatter configuration (indent style, line width)
+- 📋 Configurable formatting rules (indent style, line width, trailing commas)
+- 📋 Built-in linter (`vtc lint`) with configurable rule severity
+- 📋 Auto-fix suggestions for common lint issues
+- 📋 CI-friendly `--check` mode that exits non-zero on unformatted code
 
-### v26.0 — Distributed Compilation
-- 📋 Distributed compilation across nodes
-- 📋 Build server protocol for remote compilation
-- 📋 Parallel translation units
-- 📋 Shared compilation cache across machines
+### v26.0 — WASM AOT & WASI
+- 📋 WASM AOT target — compile `.sl` → standalone `.wasm` files
+- 📋 WASM-WASI support for file I/O and environment access in WebAssembly
+- 📋 WASM component model integration for interop
+- 📋 Browser runtime shim for running `.wasm` output in web environments
+- 📋 Size optimization passes for WASM output (dead code elimination, tree shaking)
 
 ### v27.0 — Package Registry & Ecosystem
-- 📋 Package registry server (`vitalis install`)
-- 📋 Online package search and publishing
-- 📋 Dependency vulnerability scanning
-- 📋 Documentation generator for `.sl` files (`vtc doc`)
+- 📋 Package registry server (`vitalis install <package>`)
+- 📋 Online package search, publishing, and version management
+- 📋 Dependency vulnerability scanning and advisory database
+- 📋 Documentation generator for `.sl` files (`vtc doc`) with Markdown output
+- 📋 Lockfile pinning with reproducible builds
 
-### v28.0 — Hardware Validation & Optimization
-- 📋 ARM/RISC-V hardware validation on real devices
-- 📋 Profile-guided optimization (PGO) for JIT
-- 📋 Auto-vectorization via SIMD intrinsics
-- 📋 Memory pool allocator for reduced GC pressure
+### v28.0 — Distributed Compilation & Build System
+- 📋 Distributed compilation across networked nodes
+- 📋 Build server protocol for remote compilation offloading
+- 📋 Parallel translation unit compilation within a single machine
+- 📋 Shared compilation cache across machines (content-addressed)
+- 📋 Build graph visualization and profiling (`vtc build --profile`)
 
-### v29.0+ — Research Frontier
-- 📋 Gradual typing with refinement types
-- 📋 Dependent type support (lightweight)
+### v29.0 — Hardware Validation & Profile-Guided Optimization
+- 📋 ARM64 / RISC-V hardware validation on real devices (Raspberry Pi, RISC-V boards)
+- 📋 Profile-guided optimization (PGO) for JIT — record hot paths, specialize codegen
+- 📋 Auto-vectorization via SIMD intrinsics detection
+- 📋 Memory pool allocator for reduced allocation pressure
+- 📋 Codegen benchmark suite with regression tracking
+
+### v30.0 — Advanced Type System
+- 📋 Gradual typing with refinement types (`x: i64 where x > 0`)
+- 📋 Lightweight dependent types for array bounds and numeric constraints
+- 📋 Higher-kinded types (type constructors as parameters)
+- 📋 GADTs (Generalized Algebraic Data Types)
+- 📋 Type-level computation for compile-time guarantees
+
+### v31.0 — Multi-Language FFI & Interop
+- 📋 C FFI with automatic header generation (`vtc bindgen`)
+- 📋 C++ interop via extern blocks with name mangling support
+- 📋 JavaScript/TypeScript FFI for WASM targets
+- 📋 Go-style interface interop for cross-language trait dispatch
+- 📋 Auto-generated bindings for popular C libraries
+
+### v32.0+ — Research Frontier
 - 📋 Verified compilation passes (proof-carrying code)
-- 📋 Multi-language FFI (C, C++, Python, JS)
 - 📋 GPU shader language subset (compute shaders from `.sl`)
 - 📋 Self-evolving optimizer passes via evolution engine
+- 📋 Formal verification integration for safety-critical code
+- 📋 Language server protocol v4 features (inlay hints, semantic tokens, call hierarchy)
+- 📋 Debugger integration with IDE-native stepping and watch expressions
 
 ---
 
@@ -151,4 +177,4 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v20.0.0 | 2025-06-20 | 41 | 741 | ~32,500 | Traits, type aliases, enums |
 | v21.0.0 | 2025-07-05 | 47 | 870 | ~35,856 | Async, generics, WASM, GPU |
 | v22.0.0 | 2025-07-19 | 58 | 1,043 | ~41,772 | Borrow checker, DAP, AOT |
-| v23.0.0 | 2025-07-26 | 59 | 1,087 | ~42,500 | Non-Lexical Lifetimes |
+| v23.0.0 | 2025-07-26 | 59 | 1,087 | ~43,095 | Non-Lexical Lifetimes |

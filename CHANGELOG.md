@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | Metric | v22.0.0 | v23.0.0 | Delta |
 |--------|---------|---------|-------|
 | Rust source files | 58 | 59 | +1 |
-| Rust LOC (total) | ~41,772 | ~42,500+ | +750+ |
+| Rust LOC (total) | ~41,772 | ~43,095 | +1,323 |
 | Test cases | 1,043 | 1,087 | +44 |
 
 ---
