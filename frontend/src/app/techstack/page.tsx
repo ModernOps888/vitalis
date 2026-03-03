@@ -599,6 +599,7 @@ const NAV_SECTIONS = [
   { id: "consciousness", label: "Consciousness" },
   { id: "infra", label: "Infrastructure" },
   { id: "inventory", label: "Inventory" },
+  { id: "deep-dives", label: "Deep Dives" },
 ];
 
 function FloatingNav() {
@@ -2438,7 +2439,7 @@ export default function TechStackPage() {
       </div>
 
       {/* ═══════════ PROJECT DEEP DIVES ═══════════ */}
-      <div className="container">
+      <div id="deep-dives" className="container">
         <Reveal>
           <section style={{ marginTop: 48 }}>
             <SectionHeader icon="🔬" title="Deep Dives" badge="Projects" badgeType="native" />
