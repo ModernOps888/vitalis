@@ -1,6 +1,6 @@
 [package]
 name = "vitalis"
-version = "19.0.0"
+version = "20.0.0"
 edition = "2024"
 description = "Vitalis v15.0 — a JIT-compiled language with working closures, 46 new stdlib functions (strings, file I/O, maps, error handling, JSON, system), 24 algorithm libraries, self-evolving @evolvable functions — native Cranelift JIT performance"
 license = "MIT OR Apache-2.0"

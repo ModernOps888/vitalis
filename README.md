@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-708_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-35%2C774-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-741_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-32%2C349-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v19.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v20.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT, with first-class support for<br>
@@ -46,13 +46,13 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 </td>
 <td width="25%" align="center">
 
-**35,774**<br>
+**32,349**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**708**<br>
+**741**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -232,7 +232,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 708 tests
+# Run all 741 tests
 cargo test
 
 # Compile and run a .sl file
@@ -795,19 +795,19 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-708 tests across every compiler stage:
+741 tests across every compiler stage:
 
 ```
 $ cargo test
-test result: ok. 708 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 741 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
 |----------|-------|----------|
-| Lexer | 45+ | All 80 token variants |
-| Parser | 80+ | Every AST node type |
+| Lexer | 50+ | All 80 token variants |
+| Parser | 100+ | Every AST node type |
 | Type checker | 60+ | Inference, generics, errors |
-| IR builder | 100+ | SSA, control flow, closures |
+| IR builder | 110+ | SSA, control flow, closures, traits |
 | Codegen (JIT) | 200+ | End-to-end compilation |
 | Runtime stdlib | 120+ | All 200+ functions |
 | Evolution | 20+ | Register, evolve, rollback |
@@ -949,9 +949,18 @@ timeline
         : HTTP networking + async stubs
         : Iterator protocol + comprehensions
 
-    v20+ · The Future
+    v20 · Trait System & Type Power
+        : Trait definitions + trait methods
+        : Type aliases (type Name = Type)
+        : Cast expressions (expr as Type)
+        : Enum definitions with variant indexing
+        : Method registry for impl dispatch
+        : Bare self parameter sugar
+        : 741 tests passing
+
+    v21+ · The Future
         : Full async/await runtime
-        : Trait system + generics
+        : Generics + type parameters
         : Package manager + registry
         : LSP server + IDE support
         : WebAssembly target
