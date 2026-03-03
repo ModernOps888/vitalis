@@ -2577,12 +2577,12 @@ export default function TechStackPage() {
         .nebula-overlay {
           position: fixed; inset: -10%; z-index: 0; pointer-events: none;
           background:
-            radial-gradient(ellipse 600px 400px at 20% 50%, rgba(0,240,255,0.04) 0%, transparent 70%),
-            radial-gradient(ellipse 500px 500px at 80% 30%, rgba(255,0,229,0.03) 0%, transparent 70%),
-            radial-gradient(ellipse 400px 600px at 50% 80%, rgba(176,38,255,0.03) 0%, transparent 70%);
+            radial-gradient(ellipse 600px 400px at 20% 50%, rgba(0,240,255,0.10) 0%, transparent 70%),
+            radial-gradient(ellipse 500px 500px at 80% 30%, rgba(255,0,229,0.08) 0%, transparent 70%),
+            radial-gradient(ellipse 400px 600px at 50% 80%, rgba(176,38,255,0.08) 0%, transparent 70%);
           animation: nebulaPulse 12s ease-in-out infinite alternate;
         }
-        @keyframes nebulaPulse { 0%{opacity:0.6;transform:scale(1)} 100%{opacity:1;transform:scale(1.05)} }
+        @keyframes nebulaPulse { 0%{opacity:0.7} 100%{opacity:1} }
 
         /* ═══════ SCROLL PROGRESS BAR ═══════ */
         .scroll-progress {
