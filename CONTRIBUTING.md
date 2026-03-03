@@ -65,32 +65,45 @@ cargo run -- run examples/hello.sl
 ## Architecture Overview
 
 ```
-Source (.sl) → Lexer → Parser → AST → TypeChecker → IR → Cranelift JIT → Native
+Source (.sl) → Lexer → Parser → AST → TypeChecker → IR → Optimizer → Cranelift JIT/AOT → Native
 ```
+
+**59 modules**, ~42,500 LOC, 1,087 tests. Key modules:
 
 | Module | Purpose |
 |--------|---------|
-| `lexer.rs` | Logos-based zero-copy tokenizer |
-| `parser.rs` | Recursive-descent + Pratt parser |
-| `ast.rs` | 27 expression variants with origin tracking |
-| `types.rs` | Two-pass type checker with scope chains |
+| `lexer.rs` | Logos-based zero-copy tokenizer (~70 token variants) |
+| `parser.rs` | Recursive-descent + Pratt parser → AST |
+| `ast.rs` | 30+ expression variants with origin tracking |
+| `types.rs` | Structural type checker with capability annotations |
+| `generics.rs` | Generic functions/structs, monomorphization |
+| `ownership.rs` | Borrow checker (Owned/Moved/Borrowed/Dropped) |
+| `lifetimes.rs` | Region analysis, lifetime constraints |
+| `nll.rs` | Non-lexical lifetimes — CFG, liveness, NLL borrow regions |
+| `effects.rs` | Effect system (IO/Net/FS/Async/GPU capabilities) |
 | `ir.rs` | SSA-form intermediate representation |
-| `codegen.rs` | Cranelift 0.116 JIT backend |
-| `stdlib.rs` | Built-in functions (98 functions) |
+| `optimizer.rs` | Constant folding, DCE, CSE, loop tiling, inlining |
+| `codegen.rs` | Cranelift 0.116 JIT backend (~3,853 lines) |
+| `aot.rs` | AOT compilation → native binaries |
+| `cross_compile.rs` | x86-64 / AArch64 / RISC-V targets |
+| `stdlib.rs` | ~196 built-in functions |
 | `evolution.rs` | `@evolvable` function registry + rollback |
 | `engine.rs` | Autonomous evolution cycle runner |
 | `hotpath.rs` | Native Rust fast-path operations (44 ops) |
 | `bridge.rs` | C FFI exports for Python/C interop |
+| `lsp.rs` | Language Server Protocol (diagnostics, hover, completion) |
+
+See the full module map in [`README.md`](README.md).
 
 ## Areas Where Help Is Welcome
 
 - **Standard library expansion** — new built-in functions
-- **Language features** — closures, traits, generics
+- **Language features** — effect handlers, pattern exhaustiveness
 - **Platform support** — Linux/macOS builds and CI
 - **Documentation** — tutorials, language guide, API docs
 - **Benchmarks** — comparative benchmarks with other JIT languages
 - **Editor support** — VS Code extension, syntax highlighting
-- **Package manager** — dependency management for `.sl` packages
+- **Package manager** — registry and dependency resolution
 
 ## License
 

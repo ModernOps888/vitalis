@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C043_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-41%2C772-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C087_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-42%2C500+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v22.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v23.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**58**<br>
+**59**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**41,772**<br>
+**42,500+**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,043**<br>
+**1,087**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -186,10 +186,11 @@ block-beta
 
     block:SAFETY:2
         columns 1
-        SA["🛡️ SAFETY & TOOLING · 3,900 LOC"]
+        SA["🛡️ SAFETY & TOOLING · 4,600+ LOC"]
         SB["lifetimes.rs\nRegion analysis"]
         SC["effects.rs\nCapability types"]
         SD["hot_reload.rs\nLive reload"]
+        SE["nll.rs\nNon-lexical lifetimes"]
     end
 
     block:NATIVE:2
@@ -939,7 +940,8 @@ vitalis/
 │   ├── hot_reload.rs         # Hot reload — file watching, incremental recompilation
 │   ├── bootstrap.rs          # Self-hosted bootstrap — Stage 0/1/2 pipeline
 │   ├── aot.rs                # AOT compilation — native ahead-of-time code generation
-│   └── cross_compile.rs      # Cross-compilation — x86-64, AArch64, RISC-V targets
+│   ├── cross_compile.rs      # Cross-compilation — x86-64, AArch64, RISC-V targets
+│   └── nll.rs                # Non-lexical lifetimes — CFG, liveness, NLL borrow regions
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1057,13 +1059,22 @@ timeline
         : Cross-compilation targets (x86-64, AArch64, RISC-V)
         : 1,043 tests passing · 58 modules · 41,772 LOC
 
-    v23+ · The Future
-        : Borrow checker with full NLL (non-lexical lifetimes)
+    v23 · Non-Lexical Lifetimes (NLL)
+        : CFG builder from AST (entry, exit, branch, join, loop nodes)
+        : Backward dataflow liveness analysis (live_in / live_out)
+        : NLL regions as sets of CFG points (not lexical scopes)
+        : Borrow conflict detection via overlapping live ranges
+        : Modify-while-borrowed checks
+        : 1,087 tests passing · 59 modules · 42,500+ LOC
+
+    v24+ · The Future
         : Effect handlers with resumptions
-        : Distributed compilation across nodes
+        : Pattern matching exhaustiveness checking
         : WASM AOT target (compile .sl to .wasm files)
-        : ARM/RISC-V hardware validation
+        : Code formatter (vtc fmt)
+        : Distributed compilation across nodes
         : Package registry server + vitalis install
+        : ARM/RISC-V hardware validation
 ```
 
 <br>

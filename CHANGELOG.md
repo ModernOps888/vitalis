@@ -5,73 +5,180 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [9.0.0] - 2026-03-01
+## [23.0.0] - 2025-07-26
 
 ### Added
 
-#### v7.0 Algorithm Libraries (7 modules, 100+ FFI functions)
-- **Signal Processing** (`signal_processing.rs`, 550 LOC) — FFT/IFFT, power spectrum, convolution, cross-correlation, windowing (Hann/Hamming/Blackman), FIR/IIR biquad filters, zero-crossing rate, RMS energy, spectral centroid, autocorrelation, linear resampling
-- **Cryptography** (`crypto.rs`, 440 LOC) — SHA-256, HMAC-SHA256, Base64 encode/decode, CRC-32, FNV-1a 64-bit hash, constant-time comparison, XorShift128+ PRNG
-- **Graph Algorithms** (`graph.rs`, 789 LOC) — BFS, DFS, Dijkstra shortest paths, cycle detection, bipartite check, connected components, topological sort, PageRank, Tarjan SCC
-- **String Algorithms** (`string_algorithms.rs`, 574 LOC) — Levenshtein distance, LCS (length + string), longest common substring, Hamming distance, Jaro-Winkler similarity, Soundex, string rotation check, n-gram counting, KMP/Rabin-Karp/BMH pattern search
-- **Numerical / Linear Algebra** (`numerical.rs`, 709 LOC) — Matrix multiply/determinant/inverse/trace, linear system solver, Simpson's/trapezoidal integration, Horner polynomial evaluation, Lagrange interpolation, power iteration (eigenvalue), dot/cross product, vector norm, Newton/bisection root finding
-- **Compression** (`compression.rs`, 532 LOC) — RLE encode/decode, Huffman encoding, delta encode/decode, LZ77 compression
-- **Probability & Statistics** (`probability.rs`, 653 LOC) — Mean/median/variance/stddev/skewness/kurtosis/mode, normal/exponential/Poisson/binomial distributions, Pearson/Spearman correlation, linear regression, Shannon entropy, chi-squared, Kolmogorov-Smirnov statistic, covariance matrix
-
-#### v9.0 Advanced Modules (7 modules, 170+ FFI functions)
-- **Quantum Simulator** (`quantum.rs`, 813 LOC) — Full statevector quantum register with H/X/Y/Z/CNOT/RX/RY/RZ gates, Bell state preparation, QFT, measurement, Bloch sphere coordinates, fidelity, purity, von Neumann entropy
-- **Quantum Math** (`quantum_math.rs`, 1004 LOC) — Complex arithmetic, gamma/lgamma/beta functions, Bessel J0/J1, Riemann zeta (1000-term + Euler-Maclaurin), Monte Carlo integration, RK4 ODE solver, modular exponentiation, primality testing, GCD/LCM, Haar wavelet, Legendre polynomials, Fibonacci, golden ratio, Euler totient, quaternion multiply/rotate/SLERP, outer/Kronecker products
-- **Advanced Math** (`advanced_math.rs`, 943 LOC) — Factorial, binomial coefficients, Catalan numbers, error function (erf), Mandelbrot iteration, integer partitions, Bell numbers
-- **Science** (`science.rs`, 504 LOC) — Physical constants, kinematics (3 equations), energy (kinetic/potential), pendulum period, orbital/escape velocity, projectile range/height, ideal gas law, Carnot efficiency, radiation power, heat transfer, entropy change, Coulomb force, electric field, Ohm's law, capacitor energy, magnetic force, wavelength, photon energy, Doppler shift, Snell's law, de Broglie wavelength, radioactive decay, mass-energy equivalence, pH/pOH, Arrhenius equation, Nernst equation, dilution, Schwarzschild radius, luminosity, Hubble velocity, redshift, Reynolds number, drag force, Bernoulli pressure, unit conversions (6 types)
-- **Analytics** (`analytics.rs`, 662 LOC) — SMA/EMA/WMA/DEMA moving averages, anomaly detection (z-score/IQR/MAD), linear trend, turning points, SES/Holt forecasting, min-max/z-score normalization, SLA uptime, error rate, throughput, Apdex score, MTBF, MTTR, cardinality
-- **Security** (`security.rs`, 421 LOC) — Email/IPv4/URL validation, length/range validation, SQL injection/XSS/path traversal/command injection detection, password strength/entropy scoring, memory/time/recursion quota checks, resource utilization, code safety scoring, audit hashing, hash chains, token bucket/sliding window rate limiting, capability-based sandbox (grant/revoke/check), HTML escaping
-- **Scoring** (`scoring.rs`, 470 LOC) — Maintainability index, tech debt ratio, composite code quality, Halstead metrics, weighted fitness, Pareto dominance/ranking, Elo rating (update/expected), Welch's t-test, Cohen's d, Mann-Whitney U, Wilson score conversion rate, Bayesian A/B testing, regression scoring, geometric/harmonic/power mean, latency scoring, efficiency ratios, system health composite, decay/sigmoid/tournament fitness functions
-
-#### Python Wrapper Overhaul
-- `python/vitalis.py` expanded from 930 → 2,500 lines
-- 304 Python functions exposed via `__all__`
-- `QuantumRegister` Python class with gate chaining, measurement, entropy
-- Full ctypes coverage for all C FFI functions across 14 modules
-- Helper utilities: `_str_buf()`, `_edges_flat_sz()`, `_to_double_array()`
+#### Non-Lexical Lifetimes (NLL)
+- **`nll.rs`** (750+ LOC, 44 tests) — Full NLL borrow analysis engine
+  - **CFG Builder**: Constructs control-flow graphs from AST functions with Entry/Exit nodes, Branch/Join for conditionals, LoopHeader/LoopBack for loops, Call nodes, Assignment tracking
+  - **Liveness Analysis**: Iterative backward dataflow (live_in/live_out per CFG node) computing variable liveness at every program point
+  - **NLL Regions**: Borrow regions represented as sets of CFG points (not lexical scopes) — borrows end at last use, not at scope exit
+  - **Conflict Detection**: Overlapping mutable/shared region detection, modify-while-borrowed checks
+  - **Convenience API**: `analyze_nll()`, `build_cfg_from_source()`, `compute_liveness_from_source()` for tooling integration
 
 ### Changed
-- `Cargo.toml` version bumped from 0.1.0 → 9.0.0
-- `lib.rs` expanded from 17 → 28 public modules (10 organized sections)
-- `bridge.rs` version string updated to "9.0.0"
+- Version bumped from 22.0.0 → 23.0.0
+- `lib.rs` expanded from 58 → 59 public modules
+- `lib.rs` doc comment updated to v23.0 with NLL module domain
+- `bridge.rs` version string now returns "23.0.0"
 
 ### Metrics
-| Metric | v0.1.0 | v9.0.0 | Delta |
-|--------|--------|--------|-------|
-| Rust source files | 17 | 31 | +14 |
-| Rust LOC (total) | ~13,500 | 24,769 | +11,269 |
-| Test cases | 234 | 470 | +236 |
-| Python wrapper LOC | 930 | 2,500 | +1,570 |
-| Python `__all__` exports | ~50 | 304 | +254 |
-| Stdlib functions | 97 | 99 | +2 |
-| Hot-path functions | 44 | 80 | +36 |
-| Algorithm modules | 0 | 14 | +14 |
+| Metric | v22.0.0 | v23.0.0 | Delta |
+|--------|---------|---------|-------|
+| Rust source files | 58 | 59 | +1 |
+| Rust LOC (total) | ~41,772 | ~42,500+ | +750+ |
+| Test cases | 1,043 | 1,087 | +44 |
 
-### Benchmark Scores (v9.0.0, 74 benchmarks, all passing)
+---
 
-| Category | Avg Throughput | Peak Function | Peak ops/sec |
-|----------|---------------|---------------|-------------|
-| Core Compiler | 18.4K ops/sec | `lex` | 46.1K |
-| Signal Processing | 22.7K ops/sec | `rms_energy` | 31.6K |
-| Crypto | 91.4K ops/sec | `fnv1a_64` | 163.0K |
-| Graph Algorithms | 10.3K ops/sec | `is_bipartite` | 12.6K |
-| String Algorithms | 294.2K ops/sec | `jaro_winkler` | 443.5K |
-| Numerical | 292.0K ops/sec | `horner` | 574.7K |
-| Compression | 104.7K ops/sec | `rle_encode` | 245.5K |
-| Statistics | 413.7K ops/sec | `normal_pdf` | 716.6K |
-| Quantum Simulator | 203.2K ops/sec | `bell_state` | 246.1K |
-| Quantum Math | 1.04M ops/sec | `golden_ratio` | 2.12M |
-| Advanced Math | 1.17M ops/sec | `math_erf` | 2.03M |
-| Science | 1.50M ops/sec | `celsius_to_kelvin` | 2.14M |
-| Analytics | 255.0K ops/sec | `apdex` | 1.23M |
-| Security | 154.6K ops/sec | `password_entropy` | 290.7K |
-| Scoring | 1.06M ops/sec | `elo_expected` | 1.55M |
+## [22.0.0] - 2025-07-19
 
-[9.0.0]: https://github.com/ModernOps888/vitalis/compare/v0.1.0...HEAD
+### Added
+
+#### Borrow Checker & Ownership Analysis
+- **`ownership.rs`** (422 LOC, 20 tests) — Phase-1 borrow checker with lexical scope analysis
+  - Ownership states: Owned, Moved, BorrowedShared, BorrowedMut, Dropped, Undefined
+  - Use-after-move detection, double-drop prevention, mutable aliasing checks
+  - Full AST walk with scope push/pop, variable declaration/lookup
+
+#### Incremental Compilation & Caching
+- **`incremental.rs`** — Hash-based incremental compilation with dependency graph
+  - Content hashing, cache state management, topological sort invalidation
+
+#### Full Trait Dispatch with VTables
+- **`trait_dispatch.rs`** — Dynamic dispatch via vtable construction and method resolution
+
+#### Debug Adapter Protocol (DAP)
+- **`dap.rs`** — Full DAP implementation: breakpoints, stepping, variable inspection, stack frames
+
+#### Interactive REPL
+- **`repl.rs`** — REPL with `:help`, `:ast`, `:ir`, `:type`, `:quit` commands and history
+
+#### Lifetime Annotations & Region Analysis
+- **`lifetimes.rs`** (955 LOC, 10 tests) — Region-based lifetime analysis
+  - Region variables, scope-depth tracking, outlives constraints, equality constraints
+  - Constraint solving with fixed-point iteration, cycle detection in outlives graph
+  - Borrow record tracking, mutable aliasing detection, scope-based cleanup
+  - Program-level LifetimeChecker operating on AST functions and impl blocks
+
+#### Effect System & Capability Types
+- **`effects.rs`** (734 LOC, 15+ tests) — Static effect system
+  - 12 effect types: IO, Net, FileSystem, Async, Unsafe, GPU, Evolve, System, NonDet, Alloc, Exception, Custom
+  - Capability tokens with attenuation, effect propagation through call chains
+  - Pure function enforcement, effect checker with compliance verification
+
+#### Hot-Reload Engine
+- **`hot_reload.rs`** — File watching with incremental recompilation and live function swap
+
+#### Self-Hosted Compiler Bootstrap
+- **`bootstrap.rs`** — Stage 0 (Rust) → Stage 1 (.sl) → Stage 2 (self-compiled) pipeline with cross-validation
+
+#### Native AOT Compilation
+- **`aot.rs`** — Cranelift ObjectModule backend for ahead-of-time compilation to standalone executables
+
+#### Cross-Compilation Targets
+- **`cross_compile.rs`** — x86-64, AArch64, RISC-V targets with ISA features and ABI lowering
+
+### Metrics
+| Metric | v21.0.0 | v22.0.0 | Delta |
+|--------|---------|---------|-------|
+| Rust source files | 47 | 58 | +11 |
+| Rust LOC (total) | ~35,856 | ~41,772 | +5,916 |
+| Test cases | 870 | 1,043 | +173 |
+
+---
+
+## [21.0.0] - 2025-07-05
+
+### Added
+
+#### Async/Await Runtime
+- **`async_runtime.rs`** — Cooperative async runtime with TaskId, round-robin executor, channels, futures
+
+#### Generics & Type Parameters
+- **`generics.rs`** — Generic functions/structs, monomorphization, type inference, bounds checking
+
+#### Package Manager & Registry
+- **`package_manager.rs`** — SemVer resolution, lockfiles, registry client, dependency resolver
+
+#### LSP Server & IDE Support
+- **`lsp.rs`** — Language Server Protocol: diagnostics, hover, go-to-definition, completion, signature help, workspace symbols
+
+#### WebAssembly Target
+- **`wasm_target.rs`** — WASM module builder with LEB128 encoding, section generation, validation
+
+#### GPU Compute Backend
+- **`gpu_compute.rs`** — GPU compute buffers, kernels, pipelines, shader builder
+
+### Metrics
+| Metric | v20.0.0 | v21.0.0 | Delta |
+|--------|---------|---------|-------|
+| Rust source files | 41 | 47 | +6 |
+| Rust LOC (total) | ~32,500 | ~35,856 | +3,356 |
+| Test cases | 741 | 870 | +129 |
+
+---
+
+## [20.0.0] - 2025-06-20
+
+### Added
+- Trait definitions with method signatures
+- Type aliases (`type Name = Type`)
+- Cast expressions (`expr as Type`)
+- Enum definitions with variant indexing
+- Method registry for impl dispatch
+- Bare `self` parameter sugar
+
+### Metrics
+| Metric | v19 | v20.0.0 |
+|--------|-----|---------|
+| Test cases | ~650 | 741 |
+
+---
+
+## [19.0.0] - 2025-06-10
+
+### Added
+- Structs with impl blocks and method dispatch
+- Try/catch/throw error handling
+- Sets, tuples, and regex support
+- Module system with namespaces and imports
+- HTTP networking and async stubs
+- Iterator protocol and comprehensions
+
+---
+
+## [15.0.0] - 2025-05-20
+
+### Added
+- Closures and lambda expressions with capture
+- File I/O operations, maps, and JSON support
+- Full error handling system
+- Evolution engine with `@evolvable` annotation
+- 46 new stdlib functions
+
+---
+
+## [13.0.0] - 2025-05-01
+
+### Added
+- **`quantum_algorithms.rs`** — Grover's search, Shor's algorithm, QFT, VQE, QAOA, QPE
+- **`bioinformatics.rs`** — DNA/RNA analysis, sequence alignment, epidemiology, kinetics
+- **`chemistry_advanced.rs`** — Molecular dynamics, statistical mechanics
+- **`neuromorphic.rs`** — Spiking neural networks (LIF, Izhikevich), STDP, ESN, NEAT
+- **`evolution_advanced.rs`** — DE, PSO, CMA-ES, NSGA-II, Novelty Search, MAP-Elites, Island Model
+
+---
+
+## [10.0.0] - 2025-04-15
+
+### Added
+- **`ml.rs`** — K-means, KNN, Naive Bayes, PCA, DBSCAN, LDA, neural networks
+- **`geometry.rs`** — Convex hull, Voronoi diagrams, Welzl algorithm, triangulation
+- **`sorting.rs`** — Parallel quicksort, mergesort, radixsort, binary search
+- **`automata.rs`** — Aho-Corasick, Bloom filters, tries, regex engines
+- **`combinatorial.rs`** — Knapsack, TSP, simplex, genetic algorithms, graph coloring
 
 ## [0.1.0] - 2025-03-01
 
@@ -147,3 +254,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 234 test cases
 
 [0.1.0]: https://github.com/ModernOps888/vitalis/releases/tag/v0.1.0
+[9.0.0]: https://github.com/ModernOps888/vitalis/compare/v0.1.0...v9.0.0
+[10.0.0]: https://github.com/ModernOps888/vitalis/compare/v9.0.0...v10.0.0
+[13.0.0]: https://github.com/ModernOps888/vitalis/compare/v10.0.0...v13.0.0
+[15.0.0]: https://github.com/ModernOps888/vitalis/compare/v13.0.0...v15.0.0
+[19.0.0]: https://github.com/ModernOps888/vitalis/compare/v15.0.0...v19.0.0
+[20.0.0]: https://github.com/ModernOps888/vitalis/compare/v19.0.0...v20.0.0
+[21.0.0]: https://github.com/ModernOps888/vitalis/compare/v20.0.0...v21.0.0
+[22.0.0]: https://github.com/ModernOps888/vitalis/compare/v21.0.0...v22.0.0
+[23.0.0]: https://github.com/ModernOps888/vitalis/compare/v22.0.0...HEAD

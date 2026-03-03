@@ -1,16 +1,16 @@
-//! Vitalis v22.0 — A JIT/AOT-compiled language with async/await, generics, WASM target,
-//! LSP IDE support, GPU compute, package management, impl blocks, try/catch, closures
-//! with capture, stdlib functions, built-in code evolution, multi-domain algorithm
-//! libraries, lifetime annotations, region analysis, effect system, capability types,
-//! incremental codegen, hot-reload, self-hosted compiler bootstrap, native AOT
-//! compilation, cross-compilation (x86_64, AArch64, RISC-V), and native Cranelift
-//! JIT performance.
+//! Vitalis v23.0 — A JIT/AOT-compiled language with non-lexical lifetimes (NLL),
+//! async/await, generics, WASM target, LSP IDE support, GPU compute, package management,
+//! impl blocks, try/catch, closures with capture, stdlib functions, built-in code
+//! evolution, multi-domain algorithm libraries, lifetime annotations, region analysis,
+//! effect system, capability types, incremental codegen, hot-reload, self-hosted compiler
+//! bootstrap, native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
+//! and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 58 modules spanning async runtimes, type-system
-//! generics, WebAssembly compilation, GPU compute shaders, language server protocol,
-//! package management, quantum computing, bioinformatics, neuromorphic computation,
-//! advanced evolutionary algorithms, physical sciences, lifetime/region analysis,
-//! effect systems, AOT compilation, and cross-compilation targets.
+//! Enterprise-grade release with 59 modules spanning NLL borrow analysis, async runtimes,
+//! type-system generics, WebAssembly compilation, GPU compute shaders, language server
+//! protocol, package management, quantum computing, bioinformatics, neuromorphic
+//! computation, advanced evolutionary algorithms, physical sciences, lifetime/region
+//! analysis, effect systems, AOT compilation, and cross-compilation targets.
 //! This library provides the compiler pipeline (lex → parse → type-check → IR → JIT)
 //! and a C FFI bridge so Python code (via ctypes) and other languages can compile
 //! and execute `.sl` code natively.
@@ -27,7 +27,7 @@
 //!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v22.0 — 58 modules)
+//! # Module Domains (v23.0 — 59 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
 //! - **Generics**: generics (type params, monomorphization, type inference, bounds)
@@ -65,6 +65,7 @@
 //! - **Self-Hosted Bootstrap**: bootstrap (Stage 0/1/2 pipeline, cross-validation)
 //! - **Native AOT Compilation**: aot (ObjectModule backend, static linking, standalone executables)
 //! - **Cross-Compilation**: cross_compile (x86_64, AArch64, RISC-V targets, ABI configs)
+//! - **Non-Lexical Lifetimes**: nll (CFG builder, liveness analysis, NLL regions, conflict detection)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -189,3 +190,6 @@ pub mod aot;
 
 // ── v22: Cross-Compilation Targets (ARM, RISC-V) ────────────────────
 pub mod cross_compile;
+
+// ── v23: Non-Lexical Lifetimes (NLL) ────────────────────────────────
+pub mod nll;
