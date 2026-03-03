@@ -84,7 +84,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ Cross-compilation targets (x86-64, AArch64, RISC-V)
 - ✅ 1,043 tests · 58 modules · 41,772 LOC
 
-### v23.0 — Non-Lexical Lifetimes (Current Release)
+### v23.0 — Non-Lexical Lifetimes
 - ✅ NLL borrow analysis with CFG-based liveness
 - ✅ Control-flow graph builder from AST
 - ✅ Backward dataflow liveness analysis (live_in/live_out)
@@ -93,17 +93,22 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ Modify-while-borrowed checks
 - ✅ 1,087 tests · 59 modules · 43,095 LOC
 
+### v24.0 — Effect Handlers & Pattern Exhaustiveness (Current Release)
+- ✅ Algebraic effect handler system with `handle { } with { }` blocks
+- ✅ First-class continuations (resume/abort) within effect handlers
+- ✅ Handler stack with LIFO dispatch and nested handler frames
+- ✅ Handler composition — combine/layer multiple handlers
+- ✅ Effect dispatcher resolving `perform` through handler chain
+- ✅ Handler validation (duplicate effects, unhandled effects, arity checks)
+- ✅ Pattern matching exhaustiveness checker (Maranget usefulness algorithm)
+- ✅ Or-patterns (`A | B`), guard clauses, nested destructuring
+- ✅ Redundant/unreachable arm detection with diagnostics
+- ✅ AST extensions: Or/Tuple patterns, Handle expression
+- ✅ 1,177 tests · 61 modules · 45,703 LOC
+
 ---
 
 ## 📋 Planned
-
-### v24.0 — Effect Handlers & Pattern Exhaustiveness
-- 📋 Effect handler blocks (`handle { ... } with { ... }`) for capturing and resuming algebraic effects
-- 📋 First-class continuations within effect handlers (resume/abort)
-- 📋 Pattern matching exhaustiveness checker — warn on non-total match expressions
-- 📋 Wildcard patterns (`_`), or-patterns (`A | B`), guard clauses in match arms
-- 📋 Nested pattern matching with destructuring (struct/enum/tuple)
-- 📋 Dead code detection for unreachable match arms
 
 ### v25.0 — Code Formatter & Linter
 - 📋 Code formatter for `.sl` files (`vtc fmt`)
@@ -178,3 +183,4 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v21.0.0 | 2025-07-05 | 47 | 870 | ~35,856 | Async, generics, WASM, GPU |
 | v22.0.0 | 2025-07-19 | 58 | 1,043 | ~41,772 | Borrow checker, DAP, AOT |
 | v23.0.0 | 2025-07-26 | 59 | 1,087 | ~43,095 | Non-Lexical Lifetimes |
+| v24.0.0 | 2026-03-03 | 61 | 1,177 | ~45,703 | Effect handlers, pattern exhaustiveness |

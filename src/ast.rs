@@ -513,6 +513,16 @@ pub enum Pattern {
         fields: Vec<(String, Pattern)>,
         span: Span,
     },
+    /// Or-pattern: A | B | C
+    Or {
+        patterns: Vec<Pattern>,
+        span: Span,
+    },
+    /// Tuple pattern: (a, b, c)
+    Tuple {
+        elements: Vec<Pattern>,
+        span: Span,
+    },
 }
 
 // ─── Struct / Enum Definitions ──────────────────────────────────────────

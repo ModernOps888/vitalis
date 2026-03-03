@@ -32,9 +32,9 @@ When working in ANY repo, NEVER:
 
 | Stat | Value |
 |------|-------|
-| LOC | ~43,095 |
-| Source files | 59 `.rs` modules in `src/` |
-| Tests | 1,087 (all inline `#[cfg(test)]`) |
+| LOC | ~45,703 |
+| Source files | 61 `.rs` modules in `src/` |
+| Tests | 1,177 (all inline `#[cfg(test)]`) |
 | Stdlib builtins | ~196 functions |
 | Codegen backend | Cranelift 0.116 (JIT + AOT) |
 | LLVM dependency | None |
@@ -76,6 +76,8 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 | `aot.rs` | AOT compilation via Cranelift ObjectModule → native binaries |
 | `cross_compile.rs` | x86-64 / AArch64 / RISC-V targets, ISA features, ABI lowering |
 | `nll.rs` | Non-lexical lifetimes: CFG builder, liveness analysis, NLL borrow regions |
+| `effect_handlers.rs` | Algebraic effect handlers: resume/abort continuations, handler stack, dispatcher |
+| `pattern_exhaustiveness.rs` | Pattern exhaustiveness checker: Maranget usefulness, or-patterns, redundancy |
 | `stdlib.rs` | ~196 built-in functions registered as extern symbols |
 | `bridge.rs` | `extern "C"` FFI functions for Python/ctypes interop |
 

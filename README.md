@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C087_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-43%2C095-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C177_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-45%2C703-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v23.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v24.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**59**<br>
+**61**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**43,095**<br>
+**45,703**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,087**<br>
+**1,177**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -186,11 +186,13 @@ block-beta
 
     block:SAFETY:2
         columns 1
-        SA["🛡️ SAFETY & TOOLING · 4,600+ LOC"]
+        SA["🛡️ SAFETY & TOOLING · 7,200+ LOC"]
         SB["lifetimes.rs\nRegion analysis"]
         SC["effects.rs\nCapability types"]
         SD["hot_reload.rs\nLive reload"]
         SE["nll.rs\nNon-lexical lifetimes"]
+        SF["effect_handlers.rs\nAlgebraic handlers"]
+        SG["pattern_exhaustiveness.rs\nMatch checking"]
     end
 
     block:NATIVE:2
@@ -255,7 +257,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 1,087 tests
+# Run all 1,177 tests
 cargo test
 
 # Compile and run a .sl file
@@ -835,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,087 tests across every compiler stage and all subsystems through v23:
+1,177 tests across every compiler stage and all subsystems through v24:
 
 ```
 $ cargo test
-test result: ok. 1087 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1177 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -870,6 +872,8 @@ test result: ok. 1087 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | AOT compilation | 10 | Native ahead-of-time code generation |
 | Cross-compilation | 18 | x86-64, AArch64, RISC-V targets |
 | NLL borrow analysis | 44 | CFG, liveness, NLL regions, conflict detection |
+| Effect handlers | 39 | Handler stack, continuations, dispatch, composition |
+| Pattern exhaustiveness | 51 | Usefulness, redundancy, or-patterns, nested destructuring |
 
 <br>
 
@@ -942,7 +946,9 @@ vitalis/
 │   ├── bootstrap.rs          # Self-hosted bootstrap — Stage 0/1/2 pipeline
 │   ├── aot.rs                # AOT compilation — native ahead-of-time code generation
 │   ├── cross_compile.rs      # Cross-compilation — x86-64, AArch64, RISC-V targets
-│   └── nll.rs                # Non-lexical lifetimes — CFG, liveness, NLL borrow regions
+│   ├── nll.rs                # Non-lexical lifetimes — CFG, liveness, NLL borrow regions
+│   ├── effect_handlers.rs    # Algebraic effect handlers — resume/abort continuations
+│   └── pattern_exhaustiveness.rs  # Pattern exhaustiveness — usefulness, redundancy, or-patterns
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1068,16 +1074,25 @@ timeline
         : Modify-while-borrowed checks
         : 1,087 tests passing · 59 modules · 43,095 LOC
 
-    v24+ · The Future
-        : Effect handlers with resumptions
-        : Pattern matching exhaustiveness checking
-        : WASM AOT target (compile .sl to standalone .wasm files)
+    v24 · Effect Handlers & Pattern Exhaustiveness
+        : Algebraic effect handlers with resume/abort continuations
+        : Handler stack + dispatcher for nested handler frames
+        : Handler composition (combine, layer multiple handlers)
+        : Pattern exhaustiveness checking (Maranget usefulness algorithm)
+        : Or-patterns, guard clauses, nested destructuring
+        : Redundant/unreachable arm detection with diagnostics
+        : AST extensions (Or, Tuple patterns, Handle expression)
+        : 1,177 tests passing · 61 modules · 45,703 LOC
+
+    v25+ · The Future
         : Code formatter and linter (vtc fmt, vtc lint)
-        : Distributed compilation across nodes
+        : WASM AOT target (compile .sl to standalone .wasm files)
         : Package registry server + vitalis install
+        : Distributed compilation across nodes
         : ARM/RISC-V hardware validation on real devices
         : Profile-guided JIT optimization (PGO)
         : Gradual typing with refinement types
+        : Multi-language FFI (C, C++, JS)
 ```
 
 <br>

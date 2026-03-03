@@ -5,6 +5,52 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [24.0.0] - 2026-03-03
+
+### Added
+
+#### Algebraic Effect Handlers
+- **`effect_handlers.rs`** (1,245+ LOC, 39 tests) — Full algebraic effect handler system
+  - **Effect Declarations**: Define effects with named operation signatures (args + return types)
+  - **Handler Blocks**: `handle { body } with { Effect::op(args) => resume(val) }` syntax representation
+  - **Continuations**: `Resume(value)` and `Abort(value)` for controlling suspended computations
+  - **Handler Stack**: Nested handler frames with LIFO dispatch — inner handlers shadow outer
+  - **Effect Dispatcher**: Resolves `perform Effect::op(args)` through the handler chain
+  - **Handler Composition**: Combine multiple handlers, layer handlers with fallback chains
+  - **Validation**: Duplicate-effect detection, unhandled-effect checking, arity verification
+  - **Convenience API**: `validate_handler()`, `check_unhandled_effects()`, `compose_handlers()`
+
+#### Pattern Exhaustiveness Checking
+- **`pattern_exhaustiveness.rs`** (1,345+ LOC, 51 tests) — Matrix-based Maranget usefulness algorithm
+  - **Exhaustiveness Analysis**: Detects non-exhaustive match expressions with missing pattern suggestions
+  - **Redundancy Detection**: Identifies unreachable/redundant match arms
+  - **Or-Patterns**: `A | B` disjunctive patterns with automatic expansion in the pattern matrix
+  - **Guard Clauses**: Guarded arms treated as potentially non-matching for soundness
+  - **Nested Destructuring**: Struct, enum, and tuple patterns with field-level analysis
+  - **Type Descriptors**: Bool, enum, integer, string, struct, tuple, option, result type shapes
+  - **Constructor Coverage**: Tracks which constructors are matched, suggests missing ones
+  - **Diagnostics**: `ExhaustivenessWarning` and `RedundancyWarning` with source spans and descriptions
+
+#### AST Extensions
+- **Pattern::Or**: Or-pattern `A | B` — matches if any sub-pattern matches
+- **Pattern::Tuple**: Tuple destructuring `(a, b, c)` in match arms
+- **Expr::Handle**: Handle expression node for `handle { body } with { handlers }`
+
+### Changed
+- Version bumped from 23.0.0 → 24.0.0
+- `lib.rs` expanded from 59 → 61 public modules
+- `ast.rs` extended with Or, Tuple pattern variants and Handle expression
+- `ir.rs` updated to handle new pattern variants in IR lowering
+
+### Metrics
+| Metric | v23.0.0 | v24.0.0 | Delta |
+|--------|---------|---------|-------|
+| Rust source files | 59 | 61 | +2 |
+| Rust LOC (total) | ~43,095 | ~45,703 | +2,608 |
+| Test cases | 1,087 | 1,177 | +90 |
+
+---
+
 ## [23.0.0] - 2025-07-26
 
 ### Added

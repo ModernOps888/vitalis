@@ -1641,8 +1641,9 @@ impl IrBuilder {
                             // Wildcard: always matches.
                             self.emit(Inst::Jump { target: body_bb });
                         }
-                        ast::Pattern::Variant { .. } | ast::Pattern::Struct { .. } => {
-                            // Phase 7 scaffolding: variant/struct patterns
+                        ast::Pattern::Variant { .. } | ast::Pattern::Struct { .. }
+                        | ast::Pattern::Or { .. } | ast::Pattern::Tuple { .. } => {
+                            // Phase 7 scaffolding: variant/struct/or/tuple patterns
                             // treated as wildcard for now.
                             self.emit(Inst::Jump { target: body_bb });
                         }

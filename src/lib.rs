@@ -1,4 +1,5 @@
-//! Vitalis v23.0 — A JIT/AOT-compiled language with non-lexical lifetimes (NLL),
+//! Vitalis v24.0 — A JIT/AOT-compiled language with algebraic effect handlers,
+//! pattern exhaustiveness checking, or-patterns, non-lexical lifetimes (NLL),
 //! async/await, generics, WASM target, LSP IDE support, GPU compute, package management,
 //! impl blocks, try/catch, closures with capture, stdlib functions, built-in code
 //! evolution, multi-domain algorithm libraries, lifetime annotations, region analysis,
@@ -6,7 +7,8 @@
 //! bootstrap, native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
 //! and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 59 modules spanning NLL borrow analysis, async runtimes,
+//! Enterprise-grade release with 61 modules spanning algebraic effect handlers, pattern
+//! exhaustiveness analysis, NLL borrow analysis, async runtimes,
 //! type-system generics, WebAssembly compilation, GPU compute shaders, language server
 //! protocol, package management, quantum computing, bioinformatics, neuromorphic
 //! computation, advanced evolutionary algorithms, physical sciences, lifetime/region
@@ -66,6 +68,8 @@
 //! - **Native AOT Compilation**: aot (ObjectModule backend, static linking, standalone executables)
 //! - **Cross-Compilation**: cross_compile (x86_64, AArch64, RISC-V targets, ABI configs)
 //! - **Non-Lexical Lifetimes**: nll (CFG builder, liveness analysis, NLL regions, conflict detection)
+//! - **Effect Handlers**: effect_handlers (algebraic effects, continuations, handler stacks)
+//! - **Pattern Analysis**: pattern_exhaustiveness (exhaustiveness, redundancy, or-patterns, witnesses)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -193,3 +197,7 @@ pub mod cross_compile;
 
 // ── v23: Non-Lexical Lifetimes (NLL) ────────────────────────────────
 pub mod nll;
+
+// ── v24: Effect Handlers & Pattern Exhaustiveness ───────────────────
+pub mod effect_handlers;
+pub mod pattern_exhaustiveness;
