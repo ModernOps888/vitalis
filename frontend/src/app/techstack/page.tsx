@@ -596,7 +596,7 @@ function StickyNav() {
       // Show after scrolling past hero (~320px)
       setVisible(scrollY > 320);
 
-      const scrollPos = scrollY + 140;
+      const scrollPos = scrollY + 160;
       let idx = 0;
       NAV_SECTIONS.forEach((s, i) => {
         const el = document.getElementById(s.id);
@@ -788,6 +788,15 @@ export default function TechStackPage() {
       <div className="cyber-grid"><div className="cyber-grid-inner" /></div>
       <div className="holo-scan" />
       <ScrollProgress />
+
+      {/* Nebula / Atomic orbital background */}
+      <div className="nebula-atomic">
+        <div className="nebula-core" />
+        <div className="orbital orbital-1"><div className="electron" /></div>
+        <div className="orbital orbital-2"><div className="electron" /></div>
+        <div className="orbital orbital-3"><div className="electron" /></div>
+      </div>
+
       <div className="holo-shapes">
         <div className="holo-shape" />
         <div className="holo-shape" />
@@ -3086,6 +3095,78 @@ export default function TechStackPage() {
           100% { opacity: 0.45; }
         }
 
+        /* ═══════ NEBULA / ATOMIC ORBITAL BACKGROUND ═══════ */
+        .nebula-atomic {
+          position: fixed;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          width: 700px; height: 700px;
+          z-index: 0; pointer-events: none;
+          contain: strict;
+          perspective: 800px;
+          transform-style: preserve-3d;
+        }
+        .nebula-core {
+          position: absolute; top: 50%; left: 50%;
+          width: 8px; height: 8px;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(0,240,255,0.6) 0%, rgba(176,38,255,0.2) 50%, transparent 70%);
+          box-shadow: 0 0 60px 20px rgba(0,240,255,0.08), 0 0 120px 40px rgba(176,38,255,0.04);
+          animation: corePulse 6s ease-in-out infinite alternate;
+        }
+        @keyframes corePulse {
+          0%   { opacity: 0.5; box-shadow: 0 0 60px 20px rgba(0,240,255,0.08), 0 0 120px 40px rgba(176,38,255,0.04); }
+          100% { opacity: 0.9; box-shadow: 0 0 80px 30px rgba(0,240,255,0.12), 0 0 160px 60px rgba(176,38,255,0.06); }
+        }
+
+        .orbital {
+          position: absolute; top: 50%; left: 50%;
+          border: 1px solid rgba(0,240,255,0.06);
+          border-radius: 50%;
+          transform-origin: center center;
+        }
+        .orbital-1 {
+          width: 280px; height: 280px;
+          margin-top: -140px; margin-left: -140px;
+          transform: rotateX(65deg) rotateZ(0deg);
+          animation: orbit1 28s linear infinite;
+        }
+        .orbital-2 {
+          width: 420px; height: 420px;
+          margin-top: -210px; margin-left: -210px;
+          border-color: rgba(255,0,229,0.05);
+          transform: rotateX(70deg) rotateZ(60deg);
+          animation: orbit2 38s linear infinite;
+        }
+        .orbital-3 {
+          width: 580px; height: 580px;
+          margin-top: -290px; margin-left: -290px;
+          border-color: rgba(176,38,255,0.04);
+          transform: rotateX(60deg) rotateZ(120deg);
+          animation: orbit3 52s linear infinite;
+        }
+        @keyframes orbit1 { 0% { transform: rotateX(65deg) rotateZ(0deg); }   100% { transform: rotateX(65deg) rotateZ(360deg); } }
+        @keyframes orbit2 { 0% { transform: rotateX(70deg) rotateZ(60deg); }  100% { transform: rotateX(70deg) rotateZ(420deg); } }
+        @keyframes orbit3 { 0% { transform: rotateX(60deg) rotateZ(120deg); } 100% { transform: rotateX(60deg) rotateZ(480deg); } }
+
+        .electron {
+          position: absolute; top: -3px; left: 50%;
+          width: 6px; height: 6px;
+          margin-left: -3px;
+          border-radius: 50%;
+          background: rgba(0,240,255,0.7);
+          box-shadow: 0 0 12px 4px rgba(0,240,255,0.3), 0 0 30px 8px rgba(0,240,255,0.1);
+        }
+        .orbital-2 .electron {
+          background: rgba(255,0,229,0.6);
+          box-shadow: 0 0 12px 4px rgba(255,0,229,0.25), 0 0 30px 8px rgba(255,0,229,0.08);
+        }
+        .orbital-3 .electron {
+          background: rgba(176,38,255,0.5);
+          box-shadow: 0 0 12px 4px rgba(176,38,255,0.2), 0 0 30px 8px rgba(176,38,255,0.06);
+        }
+
         /* ═══════ FLOATING HOLOGRAPHIC SHAPES ═══════ */
         .holo-shapes {
           position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
@@ -3144,7 +3225,7 @@ export default function TechStackPage() {
         }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
-        .container[id] { scroll-margin-top: 56px; }
+        .container[id] { scroll-margin-top: 68px; }
 
         /* ═══════ HERO ═══════ */
         .hero { text-align: center; padding: 100px 24px 60px; position: relative; z-index: 2; }
@@ -4223,28 +4304,28 @@ export default function TechStackPage() {
           position: fixed; top: 0; left: 0; right: 0; z-index: 999;
           transform: translateY(-100%);
           transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
-          background: rgba(6,6,20,0.85);
+          background: rgba(6,6,20,0.88);
           border-bottom: 1px solid var(--border-glow);
-          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+          backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
         }
         .sticky-nav-visible { transform: translateY(0); }
         .snav-inner {
           display: flex; gap: 0; overflow-x: auto; overflow-y: hidden;
-          max-width: 1100px; margin: 0 auto; padding: 0 1rem;
+          max-width: 1200px; margin: 0 auto; padding: 0 1.2rem;
           scrollbar-width: none; -ms-overflow-style: none;
         }
         .snav-inner::-webkit-scrollbar { display: none; }
         .snav-link {
-          flex-shrink: 0; padding: 0.65rem 0.9rem; font-size: 0.68rem;
-          font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.06em;
+          flex-shrink: 0; padding: 1rem 1.1rem; font-size: 0.72rem;
+          font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.07em;
           text-transform: uppercase; color: var(--text-dim);
           text-decoration: none; white-space: nowrap; position: relative;
           transition: color 0.25s;
         }
         .snav-link::after {
-          content: ''; position: absolute; bottom: 0; left: 0.9rem; right: 0.9rem; height: 2px;
+          content: ''; position: absolute; bottom: 0; left: 1.1rem; right: 1.1rem; height: 2.5px;
           background: var(--alien-cyan); transform: scaleX(0); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
-          box-shadow: 0 0 8px var(--alien-cyan);
+          box-shadow: 0 0 10px var(--alien-cyan);
         }
         .snav-link:hover { color: #c8d6e5; }
         .snav-link.snav-active { color: var(--alien-cyan); }
@@ -4466,7 +4547,7 @@ export default function TechStackPage() {
             transition-duration: 0.01ms !important;
           }
           .star-field, .nebula-overlay, .data-stream-overlay, .film-grain,
-          .holo-shapes, .holo-scan, .cyber-grid, .holo-wave-canvas { display: none; }
+          .holo-shapes, .holo-scan, .cyber-grid, .holo-wave-canvas, .nebula-atomic { display: none; }
           .cine-loader { display: none; }
           .cyber-cursor-dot, .cyber-cursor-ring { display: none; }
           .scroll-progress { animation: none; background-size: 100% 100%; }
