@@ -28,13 +28,13 @@ When working in ANY repo, NEVER:
 
 ## Vitalis — Project Overview
 
-**Vitalis** is a compiled programming language built from scratch in Rust. Version 25.0.0, Rust edition 2024.
+**Vitalis** is a compiled programming language built from scratch in Rust. Version 26.0.0, Rust edition 2024.
 
 | Stat | Value |
 |------|-------|
-| LOC | ~47,743 |
-| Source files | 64 `.rs` modules in `src/` |
-| Tests | 1,284 (all inline `#[cfg(test)]`) |
+| LOC | ~53,359 |
+| Source files | 67 `.rs` modules in `src/` |
+| Tests | 1,458 (all inline `#[cfg(test)]`) |
 | Stdlib builtins | ~196 functions |
 | Codegen backend | Cranelift 0.116 (JIT + AOT) |
 | LLVM dependency | None |
@@ -57,7 +57,7 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
     → Backend: Cranelift JIT (codegen.rs) | AOT ObjectModule (aot.rs) | WASM (wasm_target.rs)
 ```
 
-### Module Map (59 files)
+### Module Map (67 files)
 
 **Core Compiler Pipeline:**
 | Module | Purpose |
@@ -81,9 +81,9 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 | `stdlib.rs` | ~196 built-in functions registered as extern symbols |
 | `bridge.rs` | `extern "C"` FFI functions for Python/ctypes interop |
 
-**Tooling:**
+**Tooling & Analysis:**
 | Module | Purpose |
-|--------|---------|
+|--------|--------|
 | `lsp.rs` | LSP server: diagnostics, hover, go-to-def, completion, signature help |
 | `dap.rs` | Debug Adapter Protocol: breakpoints, stepping, variable inspection |
 | `repl.rs` | Interactive REPL with `:help`, `:ast`, `:ir`, `:type` commands |
@@ -91,6 +91,17 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 | `incremental.rs` | Hash-based incremental compilation cache with dep graph invalidation |
 | `hot_reload.rs` | File watcher → change detection → incremental compile → JIT function swap |
 | `bootstrap.rs` | 3-stage self-hosting: Stage 0 (Rust) → Stage 1 (.sl) → Stage 2 (self-compiled) |
+| `formatter.rs` | AST-based code formatter/pretty-printer with configurable style |
+| `linter.rs` | Static analysis with 17 lint rules, configurable severity |
+| `refinement_types.rs` | Refinement/dependent types with constraint solver, subtype checking |
+| `trait_dispatch.rs` | Trait dispatch: vtables, method resolution, impl registry |
+
+**v26 Modules:**
+| Module | Purpose |
+|--------|--------|
+| `macro_system.rs` | Hygienic macro expansion: token trees, derive macros (Debug, Clone, etc.), pattern matching |
+| `const_eval.rs` | Compile-time evaluation: const fns, static assertions, constant folding, overflow detection |
+| `iterators.rs` | Lazy iterator protocol: 13 adapters, generator→state-machine lowering, terminal operations |
 
 **Evolution System:**
 | Module | Purpose |
@@ -151,7 +162,7 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 ```powershell
 cd C:\Vitalis-OSS
 cargo build --release          # → target/release/vtc.exe + vitalis.dll
-cargo test --release           # 1,087 tests
+cargo test --release           # 1,458 tests
 cargo run --release -- run examples/hello.sl  # Run .sl file
 cargo run --release -- repl    # Interactive REPL
 cargo run --release -- build examples/hello.sl -o hello.exe  # AOT compile
@@ -289,7 +300,7 @@ When referencing the website, use `infinitytechstack.uk` URLs. This is the PUBLI
 - NEVER commit Infinity code to any public repo
 
 ### Testing
-- Run `cargo test --release` — all 1,087 Vitalis tests must pass
+- Run `cargo test --release` — all 1,458 Vitalis tests must pass
 - Nova: `cargo test --release` — all 75 tests must pass
 - No external test frameworks — pure `#[test]` + `assert!`/`assert_eq!`
 

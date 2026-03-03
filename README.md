@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C284_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-47%2C743-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C458_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-53%2C359-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v25.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v26.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**64**<br>
+**67**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**47,743**<br>
+**53,359**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,284**<br>
+**1,458**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -257,7 +257,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 1,177 tests
+# Run all 1,458 tests
 cargo test
 
 # Compile and run a .sl file
@@ -837,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,284 tests across every compiler stage and all subsystems through v25:
+1,458 tests across every compiler stage and all subsystems through v26:
 
 ```
 $ cargo test
-test result: ok. 1284 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1458 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -877,6 +877,9 @@ test result: ok. 1284 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Formatter | 33 | AST formatting, config, idempotency, all node types |
 | Linter | 30 | 17 lint rules, unused detection, naming, dead code |
 | Refinement types | 44 | Predicates, solver, subtyping, registry, bounds |
+| Macro system | 35 | Token trees, hygiene, derives, pattern matching |
+| Compile-time evaluation | 35 | Const exprs, const fns, static assertions, folding |
+| Iterator / generator protocol | 40 | Adapters, pipelines, state machines, terminals |
 
 <br>
 
@@ -955,7 +958,11 @@ vitalis/
 │   │
 │   ├── formatter.rs          # Code formatter — AST-based pretty-printer with config
 │   ├── linter.rs             # Static linter — 17 rules, unused detection, naming
-│   └── refinement_types.rs   # Refinement types — constraint solver, subtyping, predicates
+│   ├── refinement_types.rs   # Refinement types — constraint solver, subtyping, predicates
+│   │
+│   ├── macro_system.rs       # Macro system — hygienic expansion, derives, token trees
+│   ├── const_eval.rs         # Compile-time eval — const exprs, const fns, static asserts
+│   └── iterators.rs          # Iterator protocol — lazy adapters, generators, state machines
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1099,7 +1106,15 @@ timeline
         : Predicate language (Compare, And, Or, Not, Implies, Arith)
         : 1,284 tests passing · 64 modules · 47,743 LOC
 
-    v26+ · The Future
+    v26 · Macros, Const Eval & Iterators
+        : Hygienic macro system with token trees, pattern matching, derive macros
+        : Compile-time evaluation engine with const fns and static assertions
+        : Lazy iterator protocol with 13 adapters and generator state machines
+        : Built-in derives (Debug, Clone, PartialEq, Default, Display, Hash)
+        : Terminal operations (collect, count, sum, fold, any, all, find)
+        : 1,458 tests passing · 67 modules · 53,359 LOC
+
+    v27+ · The Future
         : WASM AOT target (compile .sl to standalone .wasm files)
         : Package registry server + vitalis install
         : Distributed compilation across nodes
@@ -1107,6 +1122,8 @@ timeline
         : Profile-guided JIT optimization (PGO)
         : Async channels and structured concurrency
         : Multi-language FFI (C, C++, JS)
+        : Dependent types and proof-carrying code
+        : Module-level parallelism in compilation
 ```
 
 <br>

@@ -5,6 +5,49 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.0.0] - 2026-06-10
+
+### Added
+
+#### Macro System
+- **`macro_system.rs`** (780+ LOC, 35 tests) — Hygienic macro expansion engine
+  - **TokenTree**: 7 token tree variants (Ident, Literal, Punct, Group, Repetition, Fragment, Whitespace)
+  - **Declarative Macros**: Pattern matching with fragment specifiers (expr, ident, ty, block, stmt, pat, literal, tt)
+  - **Derive Macros**: Built-in derive registry with Debug, Clone, PartialEq, Default, Display, Hash
+  - **Hygiene System**: Scope-aware renaming with SyntaxContext stamps to prevent accidental capture
+  - **Pattern Matching**: Recursive token-tree pattern matching with fragment binding
+  - **Template Expansion**: Variable substitution, splicing, repetition expansion
+  - **MacroExpander**: Full expansion pipeline with nested macro support
+  - **Error Reporting**: Detailed expansion errors with context
+
+#### Compile-Time Evaluation
+- **`const_eval.rs`** (720+ LOC, 35 tests) — Compile-time expression evaluator
+  - **ConstValue**: 7 value types (Int, Float, Bool, Str, Array, Struct, Void)
+  - **ConstExpr**: Full expression tree (Literal, Var, BinOp, UnaryOp, If, Call, Array, Index, Let)
+  - **18 Binary Operators**: Arithmetic, comparison, logical, bitwise (Shl, Shr, BitAnd, BitOr, BitXor)
+  - **Const Functions**: User-defined const fns with recursive evaluation support
+  - **Static Assertions**: Compile-time assertion checking with custom messages
+  - **Constant Folding**: `try_fold()` for optimizer integration
+  - **Overflow Detection**: Checked arithmetic to catch compile-time overflow
+  - **Built-in Const Fns**: abs, max, min pre-registered
+
+#### Iterator & Generator Protocol
+- **`iterators.rs`** (780+ LOC, 40 tests) — Lazy iterator protocol with generator support
+  - **IteratorSource**: Range, Collection, Generator, Empty, Repeat, Counter sources
+  - **13 Adapters**: Map, Filter, Take, Skip, Zip, Chain, Enumerate, FlatMap, TakeWhile, SkipWhile, Inspect, Dedup, Reverse
+  - **Terminal Operations**: collect, count, sum, fold, any, all, find, first, last, nth
+  - **Generator Definitions**: Yield points, infinite generators, yield type tracking
+  - **State Machine Lowering**: GeneratorTransformer lowers generators to finite state machines
+  - **Pipeline Builder**: Fluent API for composing iterator chains
+  - **Eager Evaluation**: Full runtime evaluation engine with function registry
+  - **IterValue**: 7 value types with Display formatting
+
+### Changed
+- Version bumped from 25.0.0 → 26.0.0
+- Module count: 64 → 67 (macro_system, const_eval, iterators)
+- Test count: 1,284 → 1,458 (+174 new tests)
+- LOC: ~47,743 → ~53,359 (~5,616 new lines)
+
 ## [25.0.0] - 2026-06-06
 
 ### Added

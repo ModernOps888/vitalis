@@ -1,4 +1,7 @@
-//! Vitalis v25.0 — A JIT/AOT-compiled language with code formatter, static linter,
+//! Vitalis v26.0 — A JIT/AOT-compiled language with hygienic macro system,
+//! compile-time evaluation (const fn, const generics, static_assert),
+//! lazy iterator protocol with generator/yield support,
+//! code formatter, static linter,
 //! refinement types, algebraic effect handlers, pattern exhaustiveness checking,
 //! or-patterns, non-lexical lifetimes (NLL), async/await, generics, WASM target,
 //! LSP IDE support, GPU compute, package management, impl blocks, try/catch,
@@ -8,7 +11,8 @@
 //! native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
 //! and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 64 modules spanning code formatting, static linting,
+//! Enterprise-grade release with 67 modules spanning macro system, compile-time
+//! evaluation, iterator/generator protocol, code formatting, static linting,
 //! refinement types, algebraic effect handlers, pattern exhaustiveness analysis,
 //! NLL borrow analysis, async runtimes,
 //! type-system generics, WebAssembly compilation, GPU compute shaders, language server
@@ -31,7 +35,7 @@
 //!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v25.0 — 64 modules)
+//! # Module Domains (v26.0 — 67 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
 //! - **Generics**: generics (type params, monomorphization, type inference, bounds)
@@ -75,6 +79,9 @@
 //! - **Code Formatter**: formatter (AST-based pretty-printer, configurable style)
 //! - **Static Linter**: linter (unused vars, naming, complexity, unreachable code)
 //! - **Refinement Types**: refinement_types (dependent types, constraint solver, subtyping)
+//! - **Macro System**: macro_system (hygienic macros, derive, token trees, pattern matching)
+//! - **Compile-Time Eval**: const_eval (const fn, const generics, static_assert, folding)
+//! - **Iterator Protocol**: iterators (lazy iterators, generators, adapters, state machines)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -211,3 +218,8 @@ pub mod pattern_exhaustiveness;
 pub mod formatter;
 pub mod linter;
 pub mod refinement_types;
+
+// ── v26: Macro System, Compile-Time Eval & Iterator Protocol ────────
+pub mod macro_system;
+pub mod const_eval;
+pub mod iterators;
