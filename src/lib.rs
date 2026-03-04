@@ -308,3 +308,18 @@ pub mod experiment;
 // ── v40: Model Serving & AI Observability ───────────────────────────
 pub mod model_serving;
 pub mod ai_observability;
+
+// ── v41: WASM AOT & WASI Runtime ───────────────────────────────────
+pub mod wasm_aot;
+
+// ── v42: Package Registry & Distributed Build ──────────────────────
+pub mod distributed_build;
+
+// ── v43: Formal Verification & Advanced IDE ────────────────────────
+pub mod formal_verification;
+pub mod ide_features;
+
+// ── v44: NAS, Continual Learning & Federated Learning ──────────────
+pub mod nas;
+pub mod continual_learning;
+pub mod federated_learning;

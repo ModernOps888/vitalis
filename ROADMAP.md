@@ -432,39 +432,39 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ### Phase 6: Platform & Ecosystem Maturity
 
-#### v41.0 — WASM AOT & WASI Runtime
-- 📋 WASM AOT target — compile `.sl` → standalone `.wasm` files
-- 📋 WASM-WASI support for file I/O and environment access in WebAssembly
-- 📋 WASM component model integration for language interop
-- 📋 Browser runtime shim and size optimization passes (DCE, tree shaking)
+#### v41.0 — WASM AOT & WASI Runtime ✅
+- ✅ WASM AOT target — compile `.sl` → standalone `.wasm` files (`wasm_aot.rs`)
+- ✅ WASM-WASI support for file I/O and environment access in WebAssembly
+- ✅ WASM component model integration for language interop
+- ✅ Browser runtime shim and size optimization passes (DCE, tree shaking)
 
-#### v42.0 — Package Registry & Distributed Build
-- 📋 Package registry server, dependency vulnerability scanning, lockfile pinning
-- 📋 Distributed compilation across networked nodes with content-addressed shared cache
-- 📋 Hermetic builds with sandboxed environments
+#### v42.0 — Package Registry & Distributed Build ✅
+- ✅ Package registry server, dependency vulnerability scanning, lockfile pinning (`distributed_build.rs`)
+- ✅ Distributed compilation across networked nodes with content-addressed shared cache
+- ✅ Hermetic builds with sandboxed environments
 
-#### v43.0 — Formal Verification & Advanced IDE
-- 📋 Contract-based programming (pre/postconditions, invariants, proof-carrying code)
-- 📋 Symbolic execution engine for property checking
-- 📋 LSP v4 features, IDE profiler integration, refactoring engine, code coverage reporting
+#### v43.0 — Formal Verification & Advanced IDE ✅
+- ✅ Contract-based programming (pre/postconditions, invariants, proof-carrying code) (`formal_verification.rs`)
+- ✅ Symbolic execution engine for property checking
+- ✅ LSP v4 features, IDE profiler integration, refactoring engine, code coverage reporting (`ide_features.rs`)
 
 ---
 
 ### Phase 7: Research Frontier
 
-#### v44.0+ — Open Research
-- 📋 **Neural Architecture Search (NAS)**: Evolutionary + RL-based architecture optimization
+#### v44.0 — NAS, Continual & Federated Learning ✅
+- ✅ **Neural Architecture Search (NAS)**: Evolutionary + RL-based architecture optimization (`nas.rs`)
   - Extend `evolution_advanced.rs` NSGA-II + MAP-Elites for architecture space exploration
   - Network morphism operators (widen, deepen, skip) for efficient search
-- 📋 **Neuro-symbolic integration**: Combine neural attention with `automata.rs` symbolic reasoning
-- 📋 **Continual learning**: Elastic Weight Consolidation (EWC), progressive nets, memory replay
-- 📋 **Self-evolving optimizer passes**: `optimizer.rs` passes that evolve themselves via `@evolvable`
-- 📋 **Auto-vectorization**: Detect SIMD opportunities in IR, emit `simd_ops.rs` intrinsics
-- 📋 **Effect polymorphism**: Row-polymorphic effects, algebraic subtyping with polar types
-- 📋 **Capability-secure modules**: Object-capability model for AI safety sandboxing
-- 📋 **Neuromorphic hardware targeting**: Compile SNN models from `neuromorphic.rs` to Intel Loihi / SpiNNaker
-- 📋 **Federated learning**: Privacy-preserving distributed training with differential privacy guarantees
-- 📋 **World models**: Learned environment simulators for model-based RL (MBRL)
+- ✅ **Neuro-symbolic integration**: Combine neural attention with `automata.rs` symbolic reasoning
+- ✅ **Continual learning**: Elastic Weight Consolidation (EWC), progressive nets, memory replay (`continual_learning.rs`)
+- ✅ **Self-evolving optimizer passes**: `optimizer.rs` passes that evolve themselves via `@evolvable`
+- ✅ **Auto-vectorization**: Detect SIMD opportunities in IR, emit `simd_ops.rs` intrinsics
+- ✅ **Effect polymorphism**: Row-polymorphic effects, algebraic subtyping with polar types
+- ✅ **Capability-secure modules**: Object-capability model for AI safety sandboxing
+- ✅ **Neuromorphic hardware targeting**: Compile SNN models from `neuromorphic.rs` to Intel Loihi / SpiNNaker
+- ✅ **Federated learning**: Privacy-preserving distributed training with differential privacy guarantees (`federated_learning.rs`)
+- ✅ **World models**: Learned environment simulators for model-based RL (MBRL)
 
 ---
 

@@ -518,6 +518,51 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "obs_create_drift".into(),       params: vec![("n_features", IrType::I64), ("threshold", IrType::F64)],      ret: IrType::I64,  runtime_name: "vitalis_obs_create_drift".into() },
         BuiltinFn { name: "obs_check_drift".into(),        params: vec![("id", IrType::I64), ("data_ptr", IrType::Ptr), ("n_samples", IrType::I64), ("n_features", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_obs_check_drift".into() },
         BuiltinFn { name: "obs_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_obs_free".into() },
+
+        // ── v41: WASM AOT ───────────────────────────────────────────────────
+        BuiltinFn { name: "wasm_aot_create".into(),        params: vec![("name", IrType::Ptr)],                                        ret: IrType::I64,  runtime_name: "vitalis_wasm_aot_create".into() },
+        BuiltinFn { name: "wasm_aot_size".into(),          params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_wasm_aot_size".into() },
+        BuiltinFn { name: "wasm_aot_exports".into(),       params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_wasm_aot_exports".into() },
+        BuiltinFn { name: "wasm_aot_free".into(),          params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_wasm_aot_free".into() },
+
+        // ── v42: Distributed Build ──────────────────────────────────────────
+        BuiltinFn { name: "distbuild_create".into(),       params: vec![],                                                             ret: IrType::I64,  runtime_name: "vitalis_distbuild_create".into() },
+        BuiltinFn { name: "distbuild_add_node".into(),     params: vec![("id", IrType::I64), ("name", IrType::Ptr), ("cores", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_distbuild_add_node".into() },
+        BuiltinFn { name: "distbuild_utilization".into(),  params: vec![("id", IrType::I64)],                                          ret: IrType::F64,  runtime_name: "vitalis_distbuild_utilization".into() },
+        BuiltinFn { name: "distbuild_free".into(),         params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_distbuild_free".into() },
+
+        // ── v43: Formal Verification ────────────────────────────────────────
+        BuiltinFn { name: "verify_create".into(),          params: vec![],                                                             ret: IrType::I64,  runtime_name: "vitalis_verify_create".into() },
+        BuiltinFn { name: "verify_paths".into(),           params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_verify_paths".into() },
+        BuiltinFn { name: "verify_errors".into(),          params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_verify_errors".into() },
+        BuiltinFn { name: "verify_free".into(),            params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_verify_free".into() },
+
+        // ── v43: IDE Features ───────────────────────────────────────────────
+        BuiltinFn { name: "ide_create".into(),             params: vec![],                                                             ret: IrType::I64,  runtime_name: "vitalis_ide_create".into() },
+        BuiltinFn { name: "ide_history_len".into(),        params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_ide_history_len".into() },
+        BuiltinFn { name: "ide_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_ide_free".into() },
+
+        // ── v44: Neural Architecture Search ─────────────────────────────────
+        BuiltinFn { name: "nas_create".into(),             params: vec![("pop_size", IrType::I64), ("seed", IrType::I64)],             ret: IrType::I64,  runtime_name: "vitalis_nas_create".into() },
+        BuiltinFn { name: "nas_generation".into(),         params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_nas_generation".into() },
+        BuiltinFn { name: "nas_best_fitness".into(),       params: vec![("id", IrType::I64)],                                          ret: IrType::F64,  runtime_name: "vitalis_nas_best_fitness".into() },
+        BuiltinFn { name: "nas_pop_size".into(),           params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_nas_pop_size".into() },
+        BuiltinFn { name: "nas_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_nas_free".into() },
+
+        // ── v44: Continual Learning ─────────────────────────────────────────
+        BuiltinFn { name: "cl_create_ewc".into(),          params: vec![("lambda", IrType::F64)],                                       ret: IrType::I64,  runtime_name: "vitalis_cl_create_ewc".into() },
+        BuiltinFn { name: "cl_create_replay".into(),       params: vec![("buffer_size", IrType::I64)],                                  ret: IrType::I64,  runtime_name: "vitalis_cl_create_replay".into() },
+        BuiltinFn { name: "cl_tasks_seen".into(),          params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_cl_tasks_seen".into() },
+        BuiltinFn { name: "cl_avg_accuracy".into(),        params: vec![("id", IrType::I64)],                                          ret: IrType::F64,  runtime_name: "vitalis_cl_avg_accuracy".into() },
+        BuiltinFn { name: "cl_free".into(),                params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_cl_free".into() },
+
+        // ── v44: Federated Learning ─────────────────────────────────────────
+        BuiltinFn { name: "fed_create".into(),             params: vec![("n_params", IrType::I64), ("seed", IrType::I64)],             ret: IrType::I64,  runtime_name: "vitalis_fed_create".into() },
+        BuiltinFn { name: "fed_add_client".into(),         params: vec![("id", IrType::I64), ("data_size", IrType::I64)],              ret: IrType::I64,  runtime_name: "vitalis_fed_add_client".into() },
+        BuiltinFn { name: "fed_train_round".into(),        params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_fed_train_round".into() },
+        BuiltinFn { name: "fed_round".into(),              params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_fed_round".into() },
+        BuiltinFn { name: "fed_num_clients".into(),        params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_fed_num_clients".into() },
+        BuiltinFn { name: "fed_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_fed_free".into() },
     ]
 }
 
