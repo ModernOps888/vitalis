@@ -1,6 +1,6 @@
 [package]
 name = "vitalis"
-version = "30.0.0"
+version = "36.0.0"
 edition = "2024"
 description = "Vitalis v22.0 — a JIT/AOT-compiled language with borrow checker, REPL, DAP debugger, trait dispatch, incremental compilation, async/await, generics, WASM, LSP, GPU compute, package manager, lifetime annotations, region analysis, effect system, capability types, hot-reload, self-hosted bootstrap, native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V), 200+ stdlib functions, 24 algorithm libraries — native Cranelift JIT & AOT"
 license = "MIT OR Apache-2.0"

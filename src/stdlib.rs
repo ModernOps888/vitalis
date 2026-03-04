@@ -412,6 +412,63 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "ecs_get_component".into(),     params: vec![("world", IrType::I64), ("entity", IrType::I64), ("type", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_ecs_get_component".into() },
         BuiltinFn { name: "ecs_has_component".into(),     params: vec![("world", IrType::I64), ("entity", IrType::I64), ("type", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_ecs_has_component".into() },
         BuiltinFn { name: "ecs_entity_count".into(),      params: vec![("world", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_ecs_entity_count".into() },
+
+        // ── v31: Tensor Engine ───────────────────────────────────────────────
+        BuiltinFn { name: "tensor_zeros".into(),          params: vec![("rows", IrType::I64), ("cols", IrType::I64)],                    ret: IrType::I64,  runtime_name: "vitalis_tensor_zeros".into() },
+        BuiltinFn { name: "tensor_ones".into(),           params: vec![("rows", IrType::I64), ("cols", IrType::I64)],                    ret: IrType::I64,  runtime_name: "vitalis_tensor_ones".into() },
+        BuiltinFn { name: "tensor_rand".into(),           params: vec![("rows", IrType::I64), ("cols", IrType::I64), ("seed", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_tensor_rand".into() },
+        BuiltinFn { name: "tensor_matmul".into(),         params: vec![("a", IrType::I64), ("b", IrType::I64)],                          ret: IrType::I64,  runtime_name: "vitalis_tensor_matmul".into() },
+        BuiltinFn { name: "tensor_add".into(),            params: vec![("a", IrType::I64), ("b", IrType::I64)],                          ret: IrType::I64,  runtime_name: "vitalis_tensor_add".into() },
+        BuiltinFn { name: "tensor_shape".into(),          params: vec![("t", IrType::I64)],                                              ret: IrType::Ptr,  runtime_name: "vitalis_tensor_shape".into() },
+        BuiltinFn { name: "tensor_relu".into(),           params: vec![("t", IrType::I64)],                                              ret: IrType::I64,  runtime_name: "vitalis_tensor_relu".into() },
+        BuiltinFn { name: "tensor_softmax".into(),        params: vec![("t", IrType::I64)],                                              ret: IrType::I64,  runtime_name: "vitalis_tensor_softmax".into() },
+        BuiltinFn { name: "tensor_free".into(),           params: vec![("t", IrType::I64)],                                              ret: IrType::I64,  runtime_name: "vitalis_tensor_free".into() },
+
+        // ── v31: Autograd ────────────────────────────────────────────────────
+        BuiltinFn { name: "autograd_tape_new".into(),     params: vec![],                                                                 ret: IrType::I64,  runtime_name: "vitalis_tape_new".into() },
+        BuiltinFn { name: "autograd_var".into(),          params: vec![("val", IrType::F64)],                                            ret: IrType::I64,  runtime_name: "vitalis_tape_variable".into() },
+        BuiltinFn { name: "autograd_backward".into(),     params: vec![("tape", IrType::I64), ("loss", IrType::I64)],                    ret: IrType::I64,  runtime_name: "vitalis_tape_backward".into() },
+
+        // ── v32: Training Engine ─────────────────────────────────────────────
+        BuiltinFn { name: "train_adamw_step".into(),      params: vec![("opt", IrType::I64), ("grad", IrType::Ptr), ("n", IrType::I64)], ret: IrType::I64,  runtime_name: "vitalis_train_adamw_step".into() },
+        BuiltinFn { name: "train_cross_entropy".into(),   params: vec![("logits", IrType::Ptr), ("target", IrType::I64), ("n", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_train_cross_entropy".into() },
+        BuiltinFn { name: "train_mse".into(),             params: vec![("pred", IrType::Ptr), ("targ", IrType::Ptr), ("n", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_train_mse".into() },
+        BuiltinFn { name: "train_grad_norm".into(),       params: vec![("grads", IrType::Ptr), ("n", IrType::I64)],                      ret: IrType::F64,  runtime_name: "vitalis_train_grad_norm".into() },
+
+        // ── v33: Transformer ─────────────────────────────────────────────────
+        BuiltinFn { name: "attention_sdpa".into(),        params: vec![("q", IrType::Ptr), ("k", IrType::Ptr), ("v", IrType::Ptr), ("n", IrType::I64), ("dk", IrType::I64)], ret: IrType::Ptr, runtime_name: "vitalis_attention_sdpa".into() },
+        BuiltinFn { name: "flash_attention".into(),       params: vec![("q", IrType::Ptr), ("k", IrType::Ptr), ("v", IrType::Ptr), ("n", IrType::I64), ("dk", IrType::I64)], ret: IrType::Ptr, runtime_name: "vitalis_flash_attention".into() },
+
+        // ── v34: Inference & Quantization ────────────────────────────────────
+        BuiltinFn { name: "inference_argmax".into(),      params: vec![("logits", IrType::Ptr), ("n", IrType::I64)],                     ret: IrType::I64,  runtime_name: "vitalis_inference_argmax".into() },
+        BuiltinFn { name: "inference_top_k".into(),       params: vec![("logits", IrType::Ptr), ("n", IrType::I64), ("k", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_inference_apply_top_k".into() },
+        BuiltinFn { name: "inference_top_p".into(),       params: vec![("logits", IrType::Ptr), ("n", IrType::I64), ("p", IrType::F64)], ret: IrType::I64, runtime_name: "vitalis_inference_apply_top_p".into() },
+        BuiltinFn { name: "quantize_int8".into(),         params: vec![("data", IrType::Ptr), ("n", IrType::I64)],                       ret: IrType::I64,  runtime_name: "vitalis_quantize_int8".into() },
+        BuiltinFn { name: "quantize_int4".into(),         params: vec![("data", IrType::Ptr), ("n", IrType::I64)],                       ret: IrType::I64,  runtime_name: "vitalis_quantize_int4".into() },
+        BuiltinFn { name: "quantize_error".into(),        params: vec![("data", IrType::Ptr), ("n", IrType::I64)],                       ret: IrType::F64,  runtime_name: "vitalis_quantize_error".into() },
+        BuiltinFn { name: "lora_create".into(),           params: vec![("in_dim", IrType::I64), ("out_dim", IrType::I64), ("rank", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_lora_create".into() },
+        BuiltinFn { name: "lora_params".into(),           params: vec![("id", IrType::I64)],                                             ret: IrType::I64,  runtime_name: "vitalis_lora_params".into() },
+
+        // ── v35: Code Intelligence & Program Synthesis ───────────────────────
+        BuiltinFn { name: "code_cyclomatic".into(),       params: vec![("code", IrType::Ptr)],                                           ret: IrType::I64,  runtime_name: "vitalis_code_cyclomatic".into() },
+        BuiltinFn { name: "code_cognitive".into(),        params: vec![("code", IrType::Ptr)],                                           ret: IrType::I64,  runtime_name: "vitalis_code_cognitive".into() },
+        BuiltinFn { name: "code_maintainability".into(),  params: vec![("code", IrType::Ptr)],                                           ret: IrType::F64,  runtime_name: "vitalis_code_maintainability".into() },
+        BuiltinFn { name: "synth_complexity".into(),      params: vec![("expr", IrType::Ptr)],                                           ret: IrType::I64,  runtime_name: "vitalis_synth_complexity".into() },
+
+        // ── v35: Self-Optimizer ──────────────────────────────────────────────
+        BuiltinFn { name: "selfopt_num_passes".into(),    params: vec![],                                                                 ret: IrType::I64,  runtime_name: "vitalis_selfopt_num_passes".into() },
+        BuiltinFn { name: "selfopt_tier".into(),          params: vec![("call_count", IrType::I64)],                                     ret: IrType::I64,  runtime_name: "vitalis_selfopt_tier".into() },
+
+        // ── v36: Autonomous Agents ───────────────────────────────────────────
+        BuiltinFn { name: "agent_create".into(),          params: vec![("name", IrType::Ptr), ("len", IrType::I64)],                     ret: IrType::I64,  runtime_name: "vitalis_agent_create".into() },
+        BuiltinFn { name: "agent_success_rate".into(),    params: vec![("id", IrType::I64)],                                             ret: IrType::F64,  runtime_name: "vitalis_agent_success_rate".into() },
+        BuiltinFn { name: "agent_total_actions".into(),   params: vec![("id", IrType::I64)],                                             ret: IrType::I64,  runtime_name: "vitalis_agent_total_actions".into() },
+        BuiltinFn { name: "agent_free".into(),            params: vec![("id", IrType::I64)],                                             ret: IrType::I64,  runtime_name: "vitalis_agent_free".into() },
+
+        // ── v36: Reward Model (RLHF) ────────────────────────────────────────
+        BuiltinFn { name: "reward_create".into(),         params: vec![("dim", IrType::I64), ("lr", IrType::F64)],                       ret: IrType::I64,  runtime_name: "vitalis_reward_create".into() },
+        BuiltinFn { name: "reward_score".into(),          params: vec![("id", IrType::I64), ("features", IrType::Ptr), ("n", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_reward_score".into() },
+        BuiltinFn { name: "reward_free".into(),           params: vec![("id", IrType::I64)],                                             ret: IrType::I64,  runtime_name: "vitalis_reward_free".into() },
     ]
 }
 

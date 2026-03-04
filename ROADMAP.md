@@ -158,50 +158,378 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ---
 
-## 📋 Planned
+## 📋 Planned — The AI Programming Language Arc
 
-### v31.0 — WASM AOT & WASI Runtime
+> **Vision**: Transform Vitalis from a compiled language *with* AI libraries into a language
+> *built for* AI — where tensors are first-class types, every function is differentiable,
+> the compiler optimizes itself, and programs can write, test, and improve themselves.
+>
+> Vitalis already has: self-modifying code (`@evolvable`), Thompson sampling compiler
+> oracles, meta-evolution (learning to learn), bio-inspired memory (5 engram types),
+> spiking neural networks (STDP, ESN, NEAT), and research-grade evolutionary algorithms
+> (CMA-ES, NSGA-II, MAP-Elites, Novelty Search). The roadmap below builds on these
+> foundations with a laser focus on **differentiable computing**, **neural architecture**,
+> **self-improvement**, and **AI-native language semantics**.
+
+---
+
+### Phase 1: Tensor & Differentiable Computing Foundation
+
+#### v31.0 — Tensor Engine & Accelerated Linear Algebra ✅
+> **Goal**: Make tensors a first-class citizen with shape-aware operations and hardware acceleration.
+> Everything downstream (autograd, neural nets, transformers) depends on this being fast and correct.
+
+- 📋 **`tensor.rs`** — N-dimensional tensor type with compile-time and runtime shape tracking
+  - `Tensor<f32>` / `Tensor<f64>` / `Tensor<bf16>` with contiguous + strided memory layouts
+  - Shape inference, broadcasting (NumPy semantics), reshaping, slicing, transposition with zero-copy views
+  - Element-wise ops: add, sub, mul, div, pow, exp, log, sqrt, abs, clamp
+  - Reduction ops: sum, mean, max, min, argmax, argmin over arbitrary axes
+  - Tiled SIMD matrix multiplication (Goto algorithm — 6×16 micro-kernel, L1/L2 cache blocking)
+  - Batched matmul for attention heads: `(B, H, S, D) × (B, H, D, S) → (B, H, S, S)`
+  - Memory pool integration (reuse `memory_pool.rs` arena allocators for tensor scratch space)
+  - In-place mutation API (`.add_()`, `.mul_()`) for memory-efficient training
+  - FFI: create, fill, matmul, elementwise, reduce, reshape, slice, broadcast
+
+- 📋 **`autograd.rs`** — Reverse-mode automatic differentiation
+  - Wengert list (tape) recording: each operation appends a `TapeEntry { op, inputs, output }`
+  - Topological sort backward pass — correct gradient ordering for arbitrary DAGs
+  - Gradient accumulation for parameter sharing and multi-use intermediate values
+  - Gradient checkpointing (Chen et al. 2016) — trade O(√n) recomputation for O(√n) memory
+  - Backward implementations for all tensor ops: matmul, softmax, layer_norm, cross_entropy, etc.
+  - `no_grad` context — skip tape recording for inference
+  - Gradient clipping (max-norm, value clipping) for training stability
+  - Second-order gradients (Hessian-vector products) for meta-learning
+  - Integration with `hotpath.rs` existing forward ops (ReLU, GELU, sigmoid, softmax, batch_norm)
+
+#### v32.0 — Neural Network Layers & Training Engine ✅
+> **Goal**: Production-grade neural network building blocks. Designed so that layers compose
+> cleanly and the training loop handles gradient accumulation, mixed precision, and checkpointing.
+
+- 📋 **`neural_net.rs`** — Layer abstractions (all with forward + backward)
+  - **Linear**: `y = xW^T + b` with Kaiming/Xavier initialization
+  - **Conv2D**: im2col + GEMM implementation (no FFT — simpler, GEMM-bound anyway)
+  - **Embedding**: Lookup table with sparse gradient support
+  - **LayerNorm / RMSNorm**: Pre-norm and post-norm variants (RMSNorm for transformers)
+  - **Dropout**: Inverted dropout with deterministic mask replay for reproducibility
+  - **Residual**: `f(x) + x` with optional projection
+  - **Sequential**: Chain layers with automatic shape propagation
+  - Weight initialization: Xavier uniform/normal, Kaiming fan-in/fan-out, zero, orthogonal
+
+- 📋 **`training_engine.rs`** — Training loop with optimizer integration
+  - **Optimizers**: SGD+momentum, Adam, AdamW (decoupled weight decay), LAMB, Adafactor
+    - Extend `ml.rs` existing `adam_step`/`sgd_momentum_step` with parameter groups and state
+  - **LR Schedulers**: Cosine annealing with warm restarts, linear warmup, OneCycleLR, polynomial decay
+  - Gradient accumulation over N micro-batches (constant memory, effective batch = N × micro)
+  - Mixed precision via f32 master weights + bf16 forward/backward (loss scaling for underflow)
+  - Checkpointing: save/load model weights + optimizer state + RNG state + step counter
+  - EarlyStopping with patience and delta threshold
+  - **Loss functions**: Extend `hotpath.rs` with backward variants — cross_entropy_backward, mse_backward, etc.
+
+---
+
+### Phase 2: Transformer Architecture & LLM Stack
+
+#### v33.0 — Transformer & Attention Mechanisms ✅
+> **Goal**: Complete transformer implementation — the architecture powering all modern AI.
+> Built on v31/v32 tensors and autograd. Designed for both training and efficient inference.
+
+- 📋 **`transformer.rs`** — Transformer building blocks
+  - **Scaled Dot-Product Attention**: `softmax(QK^T / √d_k) V` with causal masking
+  - **Multi-Head Attention (MHA)**: Parallel attention heads with output projection
+  - **Grouped-Query Attention (GQA)**: Key-value sharing across query groups (LLaMA-style)
+  - **Positional Encoding**: Sinusoidal, Rotary (RoPE — Su et al. 2021), ALiBi (Press et al. 2022)
+  - **Feed-Forward Network**: SwiGLU activation (Shazeer 2020) — `SwiGLU(x) = (xW₁ ⊙ Swish(xV)) W₂`
+  - **Pre-Norm Transformer Block**: RMSNorm → Attention → Residual → RMSNorm → FFN → Residual
+  - **KV Cache**: Pre-allocated key-value cache for autoregressive generation (O(1) per new token)
+  - **Flash Attention approximation**: Tiled softmax with online normalization (Dao et al. 2022 algorithm)
+  - Full encoder and decoder stacks with configurable depth, width, heads
+
+- 📋 **`tokenizer.rs`** — Subword tokenization
+  - **Byte-Pair Encoding (BPE)**: Sennrich et al. 2016 — merge frequency-based, O(n·V) training
+  - **WordPiece**: Schuster & Nakajima 2012 — likelihood-based merging
+  - **Unigram**: Kudo 2018 — EM algorithm for subword selection with entropy-based pruning
+  - Byte-level fallback for unknown characters (UTF-8 → byte tokens)
+  - Special tokens: `<PAD>`, `<BOS>`, `<EOS>`, `<UNK>`, `<MASK>`
+  - Vocabulary persistence (save/load), configurable vocab size, merge rules export
+  - Pre-tokenization: whitespace splitting, regex-based (GPT-2 pattern), byte-level
+
+#### v34.0 — Inference Engine & Model Adaptation ✅
+> **Goal**: Efficient inference for trained models + fine-tuning without full retraining.
+> This is where Vitalis becomes practical for deploying and adapting AI models.
+
+- 📋 **`inference.rs`** — High-performance inference runtime
+  - **Batched inference**: Dynamic batching with padding and attention masks
+  - **KV cache management**: Ring buffer eviction, paged attention (vLLM-inspired)
+  - **Speculative decoding**: Draft model generates N tokens, target model verifies in parallel
+  - **Sampling strategies**: Temperature, top-k, top-p (nucleus), min-p, repetition penalty, typical sampling
+  - **Beam search**: Width-configurable with length normalization and n-gram blocking
+  - **Streaming token generation**: Yield tokens as produced, not waiting for full sequence
+  - Token-per-second throughput tracking, latency percentiles
+
+- 📋 **`model_adaptation.rs`** — Parameter-efficient fine-tuning
+  - **LoRA**: Low-Rank Adaptation (Hu et al. 2021) — `W' = W + BA` where B∈ℝ^(d×r), A∈ℝ^(r×k)
+  - **QLoRA**: 4-bit NormalFloat quantized base + fp16 LoRA adapters (Dettmers et al. 2023)
+  - **Adapter Layers**: Bottleneck adapters inserted after attention/FFN (Houlsby et al. 2019)
+  - **Prefix Tuning**: Learnable prefix tokens prepended to key/value projections (Li & Liang 2021)
+  - Adapter merging: Fold trained adapters into base weights for zero-overhead inference
+  - Multi-adapter serving: Switch between task-specific adapters at runtime
+
+- 📋 **`quantization.rs`** — Model compression for deployment
+  - **INT8 quantization**: Per-tensor and per-channel symmetric/asymmetric (calibrated min-max)
+  - **INT4 quantization**: GPTQ (Frantar et al. 2023) — layer-wise Hessian-based optimal quantization
+  - **NormalFloat4** (NF4): Information-theoretically optimal 4-bit dtype (QLoRA)
+  - **Dynamic quantization**: Quantize weights offline, activations at runtime
+  - **Quantized matmul**: INT8×INT8→INT32 accumulate with dequantization
+  - **Mixed-precision graph**: Per-layer quantization sensitivity analysis
+
+---
+
+### Phase 3: Self-Improving & Autonomous Intelligence
+
+#### v35.0 — Code Intelligence & Program Synthesis ✅
+> **Goal**: The compiler understands code semantically, generates code from specifications,
+> and learns from its own history. This connects the evolution system to modern AI techniques.
+
+- 📋 **`code_intelligence.rs`** — AI-powered code understanding
+  - **Code embedding**: AST → fixed-dimensional vector (tree-LSTM or GNN on AST structure)
+  - **Similarity search**: Cosine similarity over code embeddings for clone detection
+  - **Complexity prediction**: ML model predicting execution time from IR features
+  - **Bug prediction**: Logistic regression over code metrics (cyclomatic complexity, churn, coupling)
+  - **Semantic code search**: Natural language query → ranked code snippet results
+  - Integration with `memory.rs` — store code embeddings as semantic engrams for associative recall
+
+- 📋 **`program_synthesis.rs`** — Generate programs from specifications
+  - **Type-guided synthesis**: Fill holes in typed programs via constraint satisfaction (SyGuS-style)
+  - **Input/Output synthesis**: Generate functions from example input-output pairs (FlashFill algorithm)
+  - **Sketch completion**: User provides program skeleton with `??` holes, synthesizer fills them
+  - **Counter-example guided refinement** (CEGIS): Synthesize → verify → refine loop
+  - **Enumeration with pruning**: Bottom-up search with observational equivalence pruning
+  - Integration with `property_testing.rs` for automatic verification of synthesized programs
+
+- 📋 **`self_optimizer.rs`** — ML-driven compiler optimization
+  - **RL pass ordering**: Reinforcement learning agent (contextual bandit) selects optimization pass sequence
+  - **Cost model**: Neural network predicting execution cycles from IR features
+  - **Inlining policy network**: Extend `optimizer.rs` Thompson sampling oracle with learned features
+  - **Auto-tuning**: Bayesian optimization (Gaussian Process + Expected Improvement) for compiler flags
+  - **Profile-guided optimization**: Use `profiler.rs` data to train cost models
+  - **Transfer learning**: Apply optimization knowledge from one program to similar programs
+
+#### v36.0 — Autonomous Evolution & Self-Rewriting ✅
+> **Goal**: Vitalis programs can rewrite themselves — not just evolve variants, but
+> understand their own structure, propose improvements, and verify safety before applying them.
+> This extends the existing `@evolvable` system into a full autonomous improvement loop.
+
+- 📋 **`autonomous_agent.rs`** — Self-improving program agent
+  - **Reflection API**: Programs inspect their own AST, types, effects, and performance profile
+  - **Mutation operators**: AST-level mutations (swap expressions, change operators, reorder statements)
+  - **Crossover**: Homologous crossover between function variants at AST level
+  - **Safety verification**: Synthesized code must pass type checker + effect checker + property tests
+  - **Improvement budget**: Cap computation spent on self-improvement per cycle (resource bounds)
+  - **Improvement journal**: Persistent log of all attempted + accepted mutations with fitness deltas
+  - Extend `engine.rs` and `meta_evolution.rs` with AST-aware mutation and crossover
+
+- 📋 **`reward_model.rs`** — Learned fitness functions
+  - **Preference learning**: Learn fitness from pairwise comparisons (Bradley-Terry model)
+  - **Reward shaping**: Potential-based reward shaping for faster convergence
+  - **Multi-objective reward**: Scalarization, Pareto, and hypervolume-based aggregation
+  - **Surrogate model**: Gaussian Process regression to predict fitness without full execution
+  - **Curiosity-driven exploration**: Intrinsic reward for novel code patterns (prediction error)
+  - Integration with `scoring.rs` existing Elo, Pareto, and A/B testing infrastructure
+
+---
+
+### Phase 4: AI-Native Language Semantics
+
+#### v37.0 — Differentiable & Probabilistic Programming
+> **Goal**: Make differentiation and probability first-class language concepts.
+> Not library calls — actual language semantics where the type system tracks gradients
+> and the compiler generates efficient gradient code automatically.
+
+- 📋 **`differentiable.rs`** — Language-level differentiable programming
+  - **`@differentiable` annotation**: Mark functions as differentiable, compiler generates backward pass
+  - **Dual numbers**: Forward-mode AD via dual number arithmetic (`value + ε·derivative`)
+  - **Differentiable control flow**: Differentiate through if/else (straight-through estimator), while loops (scan), recursion (implicit differentiation)
+  - **Custom VJP rules**: User-defined vector-Jacobian products for opaque operations
+  - **Shape types**: Compile-time tensor shape checking: `Tensor<f32, [B, 768]>` catches shape errors at compile time
+  - Integration with `type_inference.rs` — infer gradient types from forward types
+  - Integration with `effects.rs` — `Differentiable` as a capability effect
+
+- 📋 **`probabilistic.rs`** — Probabilistic programming primitives
+  - **Distribution types**: Normal, Bernoulli, Categorical, Dirichlet, Beta, Poisson as first-class values
+  - **`sample` / `observe` / `condition`**: Probabilistic programming operators
+  - **Inference engines**: MCMC (Metropolis-Hastings, HMC/NUTS), Variational Inference (ELBO + reparameterization trick)
+  - **Bayesian neural networks**: Weight distributions instead of point estimates
+  - **Gaussian Process regression**: Kernel functions (RBF, Matérn, periodic), posterior prediction
+  - **Probabilistic model checking**: Verify probabilistic safety properties
+  - Extend `probability.rs` distributions with sampling, log-probability, and gradient support
+
+#### v38.0 — Reinforcement Learning & Simulation
+> **Goal**: Native RL types and simulation framework. Programs define environments,
+> agents learn policies, and the `@evolvable` system can use RL for code optimization.
+
+- 📋 **`rl_framework.rs`** — Reinforcement learning primitives
+  - **Environment protocol**: `State`, `Action`, `Reward`, `Done` types with `step()` / `reset()` interface
+  - **Policy types**: ε-greedy, softmax, Gaussian (continuous), categorical (discrete)
+  - **Value functions**: Q-table, linear function approximation, neural value network
+  - **Algorithms**: DQN (replay buffer + target network), PPO (clipped surrogate objective), A2C, REINFORCE
+  - **Replay buffers**: Uniform, prioritized experience replay (sum-tree), HER (Hindsight Experience Replay)
+  - **Multi-agent**: Independent learners, centralized-critic, communication channels
+  - Integration with `evolution_advanced.rs` — evolutionary strategies as RL baselines
+  - Integration with `autonomous_agent.rs` — RL agent optimizes code via environment interface
+
+- 📋 **`simulation.rs`** — Simulation environments for RL and testing
+  - **Grid worlds**: Configurable maze, cliff walking, frozen lake (tabular RL benchmarks)
+  - **Continuous control**: CartPole, inverted pendulum, point navigation (function approximation benchmarks)
+  - **Code optimization environment**: State=IR, Action=optimization pass, Reward=speedup
+  - **Competitive environments**: Two-player adversarial games for coevolutionary training
+  - Time-stepped simulation loop with configurable physics and rendering hooks
+
+---
+
+### Phase 5: Production AI Infrastructure
+
+#### v39.0 — Data Pipeline & Experiment Tracking
+> **Goal**: Complete ML workflow — from raw data to trained model to deployed inference.
+> No dependency on external Python tools for the full AI lifecycle.
+
+- 📋 **`data_pipeline.rs`** — ML data loading and preprocessing
+  - **Dataset abstraction**: `Dataset` trait with `len()`, `get(index)`, random access
+  - **DataLoader**: Batching, shuffling, prefetching with configurable workers
+  - **Transforms**: Normalize, one-hot encode, tokenize, augment (random crop, flip, noise)
+  - **Streaming datasets**: Iterator-based for datasets that don't fit in memory
+  - **Data formats**: CSV, TSV, JSON Lines, binary tensor format (memory-mapped)
+  - **Train/val/test splitting**: Stratified splitting, k-fold cross-validation
+
+- 📋 **`experiment.rs`** — Experiment tracking and reproducibility
+  - **Run tracking**: Log hyperparameters, metrics (loss, accuracy, etc.), artifacts per experiment
+  - **Metric history**: Time-series of training metrics with visualization data export
+  - **Hyperparameter search**: Grid search, random search, Bayesian optimization (GP+EI)
+  - **Reproducibility**: Seed management, config snapshots, environment fingerprinting
+  - **Model registry**: Version models with metadata, promote candidates to production
+  - **Comparison**: Tabular comparison of runs, statistical significance testing via `scoring.rs`
+
+#### v40.0 — Model Serving & AI Observability
+> **Goal**: Deploy trained models with monitoring, safety guardrails, and A/B testing.
+> The full loop from training to production to monitoring back to retraining.
+
+- 📋 **`model_serving.rs`** — Production inference serving
+  - **Model loading**: Weight deserialization, JIT warm-up, memory-mapped weights
+  - **Batched request handling**: Dynamic batching with timeout-based flush
+  - **Model versioning**: Serve multiple model versions, gradual traffic shifting
+  - **ONNX export**: Convert Vitalis models to ONNX for cross-platform deployment
+  - **Edge deployment**: Quantized models for resource-constrained environments
+  - Integration with `networking.rs` HTTP/2 for gRPC-style model endpoints
+
+- 📋 **`ai_observability.rs`** — AI model monitoring and safety
+  - **Drift detection**: Kolmogorov-Smirnov, Population Stability Index (PSI), MMD for feature/prediction drift
+  - **Fairness metrics**: Demographic parity, equalized odds, calibration across groups
+  - **Explainability**: SHAP values (KernelSHAP), LIME-style local explanations, attention visualization
+  - **Safety guardrails**: Output filtering, toxicity scoring, confidence thresholds, fallback policies
+  - **A/B testing for models**: Integrate with `scoring.rs` Bayesian A/B, track conversion metrics
+  - **Alert system**: Configurable thresholds, anomaly detection via `analytics.rs` CUSUM/Z-score
+
+---
+
+### Phase 6: Platform & Ecosystem Maturity
+
+#### v41.0 — WASM AOT & WASI Runtime
 - 📋 WASM AOT target — compile `.sl` → standalone `.wasm` files
 - 📋 WASM-WASI support for file I/O and environment access in WebAssembly
 - 📋 WASM component model integration for language interop
-- 📋 Browser runtime shim for running `.wasm` output in web environments
-- 📋 Size optimization passes for WASM output (dead code elimination, tree shaking)
+- 📋 Browser runtime shim and size optimization passes (DCE, tree shaking)
 
-### v32.0 — Package Registry & Ecosystem
-- 📋 Package registry server (`vitalis install <package>`)
-- 📋 Online package search, publishing, and version management
-- 📋 Dependency vulnerability scanning and advisory database
-- 📋 Lockfile pinning with reproducible builds
-- 📋 Package templating and scaffolding (`vtc new`)
+#### v42.0 — Package Registry & Distributed Build
+- 📋 Package registry server, dependency vulnerability scanning, lockfile pinning
+- 📋 Distributed compilation across networked nodes with content-addressed shared cache
+- 📋 Hermetic builds with sandboxed environments
 
-### v33.0 — Distributed Compilation & Remote Build
-- 📋 Distributed compilation across networked nodes
-- 📋 Build server protocol for remote compilation offloading
-- 📋 Shared compilation cache across machines (content-addressed)
-- 📋 Build graph visualization and profiling (`vtc build --profile`)
-- 📋 Hermetic builds with sandboxed build environments
-
-### v34.0 — Formal Verification & Safety
-- 📋 Verified compilation passes (proof-carrying code)
-- 📋 Formal verification integration for safety-critical code
-- 📋 Contract-based programming (pre/postconditions, invariants)
+#### v43.0 — Formal Verification & Advanced IDE
+- 📋 Contract-based programming (pre/postconditions, invariants, proof-carrying code)
 - 📋 Symbolic execution engine for property checking
-- 📋 Certified compiler pass — provably correct optimizations
+- 📋 LSP v4 features, IDE profiler integration, refactoring engine, code coverage reporting
 
-### v35.0 — Advanced IDE & Tooling
-- 📋 LSP v4 features (inlay hints, semantic tokens, call hierarchy)
-- 📋 IDE-native debugger integration with watch expressions
-- 📋 Profiler integration in IDE (flame graph visualization, hotspot highlighting)
-- 📋 Refactoring engine (rename, extract function, inline, move)
-- 📋 Code coverage reporting and visualization
+---
 
-### v36.0+ — Research Frontier
-- 📋 Self-evolving optimizer passes via evolution engine
-- 📋 Auto-vectorization via SIMD intrinsics detection
-- 📋 Incremental type checking with demand-driven analysis
-- 📋 Effect polymorphism and row-polymorphic effects
-- 📋 Algebraic subtyping with polar types
-- 📋 Capability-secure module system with object-capability model
+### Phase 7: Research Frontier
+
+#### v44.0+ — Open Research
+- 📋 **Neural Architecture Search (NAS)**: Evolutionary + RL-based architecture optimization
+  - Extend `evolution_advanced.rs` NSGA-II + MAP-Elites for architecture space exploration
+  - Network morphism operators (widen, deepen, skip) for efficient search
+- 📋 **Neuro-symbolic integration**: Combine neural attention with `automata.rs` symbolic reasoning
+- 📋 **Continual learning**: Elastic Weight Consolidation (EWC), progressive nets, memory replay
+- 📋 **Self-evolving optimizer passes**: `optimizer.rs` passes that evolve themselves via `@evolvable`
+- 📋 **Auto-vectorization**: Detect SIMD opportunities in IR, emit `simd_ops.rs` intrinsics
+- 📋 **Effect polymorphism**: Row-polymorphic effects, algebraic subtyping with polar types
+- 📋 **Capability-secure modules**: Object-capability model for AI safety sandboxing
+- 📋 **Neuromorphic hardware targeting**: Compile SNN models from `neuromorphic.rs` to Intel Loihi / SpiNNaker
+- 📋 **Federated learning**: Privacy-preserving distributed training with differential privacy guarantees
+- 📋 **World models**: Learned environment simulators for model-based RL (MBRL)
+
+---
+
+## Architecture: How It All Connects
+
+```
+                          ┌─────────────────────────────────────────────────┐
+                          │          VITALIS AI LANGUAGE STACK              │
+                          │                                                 │
+  ┌──────────┐           │  ┌─────────────────────────────────────────┐   │
+  │ .sl code │──parse──▶ │  │  Compiler Pipeline (lexer→parser→IR)    │   │
+  │ @evolvable│           │  │    + type_inference + effects + autograd│   │
+  └──────────┘           │  │    + @differentiable shape-checking      │   │
+                          │  └────────┬────────────────────────────────┘   │
+                          │           │                                     │
+                          │           ▼                                     │
+                          │  ┌────────────────────────────────────────┐    │
+                          │  │  Tensor Engine + SIMD Matmul            │    │
+                          │  │  (tensor.rs + simd_ops.rs + numerical)  │    │
+                          │  └────────┬───────────────────────────────┘    │
+                          │           │                                     │
+                          │           ▼                                     │
+                          │  ┌────────────────────────────────────────┐    │
+                          │  │  Autograd (reverse-mode AD tape)        │    │
+                          │  │  + checkpointing + gradient clipping    │    │
+                          │  └────────┬───────────────────────────────┘    │
+                          │           │                                     │
+                          │           ▼                                     │
+                          │  ┌────────────────────────────────────────┐    │
+                          │  │  Neural Layers + Transformer + Training │    │
+                          │  │  (neural_net + transformer + training)  │    │
+                          │  └────────┬───────────────────────────────┘    │
+                          │           │                                     │
+                          │     ┌─────┴─────────┐                          │
+                          │     ▼               ▼                          │
+                          │  ┌────────┐   ┌──────────────┐                │
+                          │  │Inference│   │ LoRA / QLoRA │                │
+                          │  │KV cache │   │ Fine-tuning  │                │
+                          │  │Sampling │   │ Quantization │                │
+                          │  └────────┘   └──────────────┘                │
+                          │                                                 │
+                          │  ┌────────────────────────────────────────┐    │
+                          │  │  Self-Improvement Loop                  │    │
+                          │  │  evolution.rs ←→ engine.rs              │    │
+                          │  │  meta_evolution ←→ autonomous_agent     │    │
+                          │  │  code_intelligence ←→ program_synthesis │    │
+                          │  │  reward_model ←→ rl_framework           │    │
+                          │  │  memory.rs (engram) ←→ profiler.rs      │    │
+                          │  └────────────────────────────────────────┘    │
+                          └─────────────────────────────────────────────────┘
+```
+
+## Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **f32 as default precision** | All modern AI uses f32 or lower; f64 is 2× slower and unnecessary for neural nets |
+| **Tape-based autograd** (not source-transformation) | More flexible for dynamic computation graphs, easier to implement, covers all control flow |
+| **Goto-algorithm SIMD matmul** | Best known single-threaded matmul performance without external dependencies (BLAS) |
+| **Thompson sampling for compiler decisions** | Already proven in `optimizer.rs`; extend to all compiler heuristics |
+| **RoPE over sinusoidal positional encoding** | RoPE generalizes to unseen sequence lengths and is now standard (LLaMA, Mistral, Gemma) |
+| **SwiGLU over ReLU FFN** | ~1% accuracy gain at same compute; standard in all modern transformers |
+| **QLoRA for fine-tuning** | Enables fine-tuning of large models on consumer hardware (4-bit quantization) |
+| **CEGIS for program synthesis** | Sound verification loop ensures synthesized code is correct, not just plausible |
+| **PPO for RL** | Most stable policy-gradient algorithm; used in RLHF, robotics, and game AI |
 
 ---
 

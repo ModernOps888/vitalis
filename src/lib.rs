@@ -266,3 +266,29 @@ pub mod property_testing;
 pub mod data_structures;
 pub mod networking;
 pub mod ecs;
+
+// ── v31: Deep Learning Foundation — Tensor Engine & Autograd ─────────
+pub mod tensor;
+pub mod autograd;
+
+// ── v32: Neural Network Layers & Training Engine ─────────────────────
+pub mod neural_net;
+pub mod training_engine;
+
+// ── v33: Transformer Architecture & Tokenization ────────────────────
+pub mod transformer;
+pub mod tokenizer_engine;
+
+// ── v34: Inference Engine, Model Adaptation & Quantization ──────────
+pub mod inference;
+pub mod model_adaptation;
+pub mod quantization;
+
+// ── v35: Code Intelligence, Program Synthesis & Self-Optimization ───
+pub mod code_intelligence;
+pub mod program_synthesis;
+pub mod self_optimizer;
+
+// ── v36: Autonomous Agents & Reward Modeling (RLHF) ─────────────────
+pub mod autonomous_agent;
+pub mod reward_model;
