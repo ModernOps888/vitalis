@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C765_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-62%2C700+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C931_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-68%2C200+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v28.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v29.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,25 +40,25 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**76**<br>
+**82**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**62,700+**<br>
+**68,200+**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,765**<br>
+**1,931**<br>
 <sub>Tests passing</sub>
 
 </td>
 <td width="25%" align="center">
 
-**230+**<br>
+**260+**<br>
 <sub>Stdlib functions</sub>
 
 </td>
@@ -837,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,765 tests across every compiler stage and all subsystems through v28:
+1,931 tests across every compiler stage and all subsystems through v29:
 
 ```
 $ cargo test
-test result: ok. 1765 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1931 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -889,6 +889,12 @@ test result: ok. 1765 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Creative coding | 35 | Sketch lifecycle, particle systems, L-systems, cellular automata |
 | Visual nodes | 30 | Node graph, evaluation, templates, DOT export, type checking |
 | Chart rendering | 30 | Pie/bar/line/scatter/histogram/radar/heatmap/treemap/candlestick |
+| Profiler & PGO | 30 | Call graphs, flame graphs, PGO hints, hot-path detection |
+| Memory pools | 30 | Arena, pool, slab, buddy allocators, RC heap, cycle detection |
+| FFI bindgen | 30 | C headers, TypeScript .d.ts, struct layout, calling conventions |
+| Type classes & HKTs | 35 | Kinds, type classes, GADTs, type families, type-level naturals |
+| Build system | 25 | DAG, SHA-256 cache, work-stealing, critical path, topo sort |
+| Benchmarks | 25 | Welford stats, outlier detection, confidence intervals, regression |
 
 <br>
 
@@ -903,7 +909,7 @@ vitalis/
 │   ├── types.rs              # Two-pass type checker with scope chains
 │   ├── ir.rs                 # SSA-form IR with 26+ instruction types
 │   ├── codegen.rs            # Cranelift JIT backend + 204 runtime functions
-│   ├── stdlib.rs             # 200 built-in function registrations
+│   ├── stdlib.rs             # 260+ built-in function registrations
 │   ├── optimizer.rs          # IR optimization passes
 │   ├── bridge.rs             # extern "C" FFI for Python/C interop
 │   ├── main.rs               # CLI binary (vtc) with clap subcommands
@@ -983,6 +989,12 @@ vitalis/
 │   ├── creative_coding.rs    # Creative coding — Processing/p5.js, particles, L-systems, automata
 │   ├── visual_nodes.rs       # Visual nodes — node graphs, evaluation, TouchDesigner/Blueprints
 │   └── chart_rendering.rs    # Chart rendering — pie, bar, line, scatter, histogram, radar, treemap
+│   ├── profiler.rs           # Profiler & PGO — call graphs, flame graphs, PGO hints, hot-path detection
+│   ├── memory_pool.rs        # Memory pools — arena, pool, slab, buddy allocators, RC heap, cycle detection
+│   ├── ffi_bindgen.rs        # FFI bindgen — C headers, TypeScript .d.ts, calling conventions, type marshal
+│   ├── type_classes.rs       # Type classes — kinds, HKTs, GADTs, type families, type-level naturals
+│   ├── build_system.rs       # Build system — build graph DAG, SHA-256 cache, work-stealing, critical path
+│   └── benchmark.rs          # Benchmarks — Welford stats, outlier detection, CI, regression testing
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1159,18 +1171,49 @@ timeline
         : 30 new stdlib builtins (gfx_*, chart_*, shader_*, gui_*, noise_*, node_graph_*)
         : 1,765 tests passing · 76 modules · 62,700+ LOC
 
-    v29+ · The Future
+    v29 · Profiler, Memory Pools, FFI Bindgen, Type Classes, Build System & Benchmarks
+        : Execution profiler with call graphs, flame graphs, hot-path detection, PGO hints
+        : Profile-Guided Optimization with branch stats, inlining hints, block layout
+        : Advanced memory allocators — arena (bump), pool (free list), slab (generational handles),
+          buddy (power-of-2 splitting/coalescing), RC heap with mark-sweep cycle detection
+        : Multi-language FFI bindgen — C ABI layout, padding, struct/union/enum generation
+        : C header (.h) generator with include guards, typedefs, extern "C" declarations
+        : TypeScript .d.ts generator for WASM exports with interfaces and type mapping
+        : Calling conventions (C, Stdcall, Fastcall, System V AMD64, Windows x64)
+        : C++ name mangling (Itanium ABI) with encode/decode
+        : Higher-kinded types with kind system (*, * → *, Constraint)
+        : Type classes with superclasses, methods, default impls, functional dependencies
+        : Instance resolution with overlap detection and structural matching
+        : GADTs with type witnesses and constructor validation
+        : Type families (open/closed) with pattern-matching evaluation
+        : Type-level natural numbers with Peano arithmetic
+        : Kind checker with built-in type constructors (List, Map, Option, Result, Future)
+        : Build graph DAG with topological sort (Kahn's algorithm) and cycle detection
+        : Content-addressed compilation cache (SHA-256 keyed, with eviction)
+        : Work-stealing parallel scheduler with load balancing
+        : Critical path analysis and parallelism profiling
+        : Remote compilation protocol with build node registry and load balancing
+        : Micro-benchmarking framework with Welford online statistics
+        : Outlier detection (modified Z-score via MAD, Tukey fences)
+        : 95% confidence intervals (Student's t distribution)
+        : Regression detection (Welch's t-test, Cohen's d effect size)
+        : Comparison reports, suite management, history tracking, trend analysis
+        : 30 new stdlib builtins (profiler_*, arena_*, pool_*, ffi_*, build_*, bench_*)
+        : 1,931 tests passing · 82 modules · ~68,200 LOC
+
+    v30+ · The Future
         : WASM AOT target (compile .sl to standalone .wasm files)
-        : Package registry server + vitalis install
-        : Distributed compilation across nodes
-        : ARM/RISC-V hardware validation on real devices
-        : Profile-guided JIT optimization (PGO)
-        : Async streams and reactive programming
-        : Multi-language FFI (C, C++, JS)
-        : Dependent types and proof-carrying code
-        : Module-level parallelism in compilation
-        : Language server protocol v2 (semantic tokens, inlay hints)
-        : Interactive playground and web IDE
+        : WASM-WASI runtime support for file I/O and environment access
+        : Package registry server + vitalis install + vulnerability scanning
+        : Distributed compilation across networked nodes
+        : Hermetic builds with sandboxed environments
+        : Formal verification with contract-based programming
+        : Symbolic execution engine for property checking
+        : Advanced IDE tooling (inlay hints, semantic tokens, refactoring engine)
+        : Code coverage reporting and visualization
+        : Self-evolving optimizer passes via evolution engine
+        : Auto-vectorization via SIMD intrinsics detection
+        : Effect polymorphism and algebraic subtyping
 ```
 
 <br>

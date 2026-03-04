@@ -1,4 +1,4 @@
-//! Vitalis v27.0 — A JIT/AOT-compiled language with structured concurrency
+//! Vitalis v29.0 — A JIT/AOT-compiled language with profiling & PGO,
 //! (Mutex, RwLock, channels, Select, WaitGroup, atomics, scoped tasks, deadlock detection),
 //! advanced type inference (Hindley-Milner Algorithm W, unification, bidirectional checking,
 //! union/intersection types, flow-sensitive narrowing),
@@ -15,7 +15,7 @@
 //! native AOT compilation, cross-compilation (x86_64, AArch64, RISC-V),
 //! and native Cranelift JIT performance.
 //!
-//! Enterprise-grade release with 70 modules spanning structured concurrency,
+//! Enterprise-grade release with 82 modules spanning profiling & PGO,
 //! type inference, documentation generation, macro system, compile-time
 //! evaluation, iterator/generator protocol, code formatting, static linting,
 //! refinement types, algebraic effect handlers, pattern exhaustiveness analysis,
@@ -40,7 +40,7 @@
 //!                                             Python (vitalis.py)
 //! ```
 //!
-//! # Module Domains (v27.0 — 70 modules)
+//! # Module Domains (v29.0 — 82 modules)
 //! - **Core Compiler**: lexer, ast, parser, types, ir, codegen, stdlib
 //! - **Async Runtime**: async_runtime (executor, tasks, channels, futures)
 //! - **Generics**: generics (type params, monomorphization, type inference, bounds)
@@ -90,6 +90,12 @@
 //! - **Structured Concurrency**: concurrency (Mutex, RwLock, channels, Select, WaitGroup, atomics, scoped tasks)
 //! - **Type Inference**: type_inference (Hindley-Milner, unification, bidirectional, union/intersection, narrowing)
 //! - **Documentation Generation**: documentation (doc-comment parsing, API model, Markdown/HTML output, cross-refs)
+//! - **Profiler & PGO**: profiler (execution profiling, call graphs, flame graphs, PGO hints, hot-path detection)
+//! - **Memory Pools**: memory_pool (arena, pool, slab, buddy allocators, RC heap with cycle detection)
+//! - **FFI Bindgen**: ffi_bindgen (C ABI layout, header generation, TypeScript .d.ts, calling conventions, type marshaling)
+//! - **Type Classes & HKTs**: type_classes (kind system, type classes, GADTs, type families, type-level naturals)
+//! - **Build System**: build_system (build graph DAG, content-addressed cache, work-stealing scheduler, critical path)
+//! - **Benchmarks**: benchmark (micro-benchmarking, statistical analysis, outlier detection, regression testing)
 
 // ── Core Compiler Pipeline ───────────────────────────────────────────
 pub mod lexer;
@@ -244,3 +250,11 @@ pub mod gui_framework;
 pub mod creative_coding;
 pub mod visual_nodes;
 pub mod chart_rendering;
+
+// ── v29: Profiler, Memory Pools, FFI Bindgen, Type Classes, Build System & Benchmarks ──
+pub mod profiler;
+pub mod memory_pool;
+pub mod ffi_bindgen;
+pub mod type_classes;
+pub mod build_system;
+pub mod benchmark;

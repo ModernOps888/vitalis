@@ -106,66 +106,88 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ AST extensions: Or/Tuple patterns, Handle expression
 - ✅ 1,177 tests · 61 modules · 45,703 LOC
 
+### v25.0 — Code Formatter, Linter & Refinement Types
+- ✅ AST-based code formatter with configurable style
+- ✅ Static linter with 17 rules and configurable severity
+- ✅ Refinement/dependent types with constraint solver and subtype checking
+- ✅ 1,284 tests · 64 modules · 47,743 LOC
+
+### v26.0 — Macro System, Compile-Time Eval & Iterators
+- ✅ Hygienic macro system with token trees and derive macros
+- ✅ Compile-time evaluation (const fns, static assertions, constant folding)
+- ✅ Lazy iterator protocol with 13 adapters and generator→state-machine lowering
+- ✅ 1,458 tests · 67 modules · 53,359 LOC
+
+### v27.0 — Structured Concurrency, Type Inference & Documentation
+- ✅ Structured concurrency (Mutex, RwLock, channels, Select, WaitGroup, atomics)
+- ✅ Hindley-Milner Algorithm W type inference with union/intersection types
+- ✅ Documentation generation (doc-comment parser, API model, Markdown/HTML output)
+- ✅ 1,586 tests · 70 modules · 57,196 LOC
+
+### v28.0 — Graphics Engine, Shaders, GUI & Creative Coding
+- ✅ Software rasterizer with 2D/3D primitives and transformation pipeline
+- ✅ Shader language compiler (GLSL/HLSL/Metal/WGSL/SPIR-V backends)
+- ✅ Retained-mode GUI framework with layout engine and theming
+- ✅ Creative coding toolkit (Perlin noise, particle systems, L-systems)
+- ✅ Visual node graph editor for data-flow programming
+- ✅ Chart rendering (bar, line, pie, scatter, histogram, heatmap)
+- ✅ 1,765 tests · 76 modules · 62,700 LOC
+
+### v29.0 — Profiler, Memory Pools, FFI Bindgen, Type Classes, Build System & Benchmarks (Current Release)
+- ✅ Execution profiler with call graphs, flame graphs, PGO hints, hot-path detection
+- ✅ Advanced memory allocators (arena, pool, slab, buddy) with RC heap and cycle detection
+- ✅ Multi-language FFI bindgen — C headers, TypeScript .d.ts, calling conventions, type marshaling
+- ✅ Higher-kinded types, type classes, GADTs, type families, type-level naturals, kind checker
+- ✅ Build graph DAG with content-addressed cache (SHA-256), work-stealing scheduler, critical path
+- ✅ Micro-benchmarking framework with outlier detection, confidence intervals, regression testing
+- ✅ 1,931 tests · 82 modules · ~68,200 LOC
+
 ---
 
 ## 📋 Planned
 
-### v25.0 — Code Formatter & Linter
-- 📋 Code formatter for `.sl` files (`vtc fmt`)
-- 📋 Configurable formatting rules (indent style, line width, trailing commas)
-- 📋 Built-in linter (`vtc lint`) with configurable rule severity
-- 📋 Auto-fix suggestions for common lint issues
-- 📋 CI-friendly `--check` mode that exits non-zero on unformatted code
-
-### v26.0 — WASM AOT & WASI
+### v30.0 — WASM AOT & WASI Runtime
 - 📋 WASM AOT target — compile `.sl` → standalone `.wasm` files
 - 📋 WASM-WASI support for file I/O and environment access in WebAssembly
-- 📋 WASM component model integration for interop
+- 📋 WASM component model integration for language interop
 - 📋 Browser runtime shim for running `.wasm` output in web environments
 - 📋 Size optimization passes for WASM output (dead code elimination, tree shaking)
 
-### v27.0 — Package Registry & Ecosystem
+### v31.0 — Package Registry & Ecosystem
 - 📋 Package registry server (`vitalis install <package>`)
 - 📋 Online package search, publishing, and version management
 - 📋 Dependency vulnerability scanning and advisory database
-- 📋 Documentation generator for `.sl` files (`vtc doc`) with Markdown output
 - 📋 Lockfile pinning with reproducible builds
+- 📋 Package templating and scaffolding (`vtc new`)
 
-### v28.0 — Distributed Compilation & Build System
+### v32.0 — Distributed Compilation & Remote Build
 - 📋 Distributed compilation across networked nodes
 - 📋 Build server protocol for remote compilation offloading
-- 📋 Parallel translation unit compilation within a single machine
 - 📋 Shared compilation cache across machines (content-addressed)
 - 📋 Build graph visualization and profiling (`vtc build --profile`)
+- 📋 Hermetic builds with sandboxed build environments
 
-### v29.0 — Hardware Validation & Profile-Guided Optimization
-- 📋 ARM64 / RISC-V hardware validation on real devices (Raspberry Pi, RISC-V boards)
-- 📋 Profile-guided optimization (PGO) for JIT — record hot paths, specialize codegen
-- 📋 Auto-vectorization via SIMD intrinsics detection
-- 📋 Memory pool allocator for reduced allocation pressure
-- 📋 Codegen benchmark suite with regression tracking
-
-### v30.0 — Advanced Type System
-- 📋 Gradual typing with refinement types (`x: i64 where x > 0`)
-- 📋 Lightweight dependent types for array bounds and numeric constraints
-- 📋 Higher-kinded types (type constructors as parameters)
-- 📋 GADTs (Generalized Algebraic Data Types)
-- 📋 Type-level computation for compile-time guarantees
-
-### v31.0 — Multi-Language FFI & Interop
-- 📋 C FFI with automatic header generation (`vtc bindgen`)
-- 📋 C++ interop via extern blocks with name mangling support
-- 📋 JavaScript/TypeScript FFI for WASM targets
-- 📋 Go-style interface interop for cross-language trait dispatch
-- 📋 Auto-generated bindings for popular C libraries
-
-### v32.0+ — Research Frontier
+### v33.0 — Formal Verification & Safety
 - 📋 Verified compilation passes (proof-carrying code)
-- 📋 GPU shader language subset (compute shaders from `.sl`)
-- 📋 Self-evolving optimizer passes via evolution engine
 - 📋 Formal verification integration for safety-critical code
-- 📋 Language server protocol v4 features (inlay hints, semantic tokens, call hierarchy)
-- 📋 Debugger integration with IDE-native stepping and watch expressions
+- 📋 Contract-based programming (pre/postconditions, invariants)
+- 📋 Symbolic execution engine for property checking
+- 📋 Certified compiler pass — provably correct optimizations
+
+### v34.0 — Advanced IDE & Tooling
+- 📋 LSP v4 features (inlay hints, semantic tokens, call hierarchy)
+- 📋 IDE-native debugger integration with watch expressions
+- 📋 Profiler integration in IDE (flame graph visualization, hotspot highlighting)
+- 📋 Refactoring engine (rename, extract function, inline, move)
+- 📋 Code coverage reporting and visualization
+
+### v35.0+ — Research Frontier
+- 📋 Self-evolving optimizer passes via evolution engine
+- 📋 Auto-vectorization via SIMD intrinsics detection
+- 📋 Incremental type checking with demand-driven analysis
+- 📋 Effect polymorphism and row-polymorphic effects
+- 📋 Algebraic subtyping with polar types
+- 📋 Capability-secure module system with object-capability model
 
 ---
 
@@ -188,3 +210,4 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v26.0.0 | 2026-03-17 | 67 | 1,458 | ~53,359 | Macros, const eval, iterators |
 | v27.0.0 | 2026-03-24 | 70 | 1,586 | ~57,196 | Concurrency, type inference, documentation |
 | v28.0.0 | 2026-03-31 | 76 | 1,765 | ~62,700 | Graphics engine, shaders, GUI, creative coding, visual nodes, charts |
+| v29.0.0 | 2026-04-07 | 82 | 1,931 | ~68,200 | Profiler, memory pools, FFI bindgen, type classes, build system, benchmarks |

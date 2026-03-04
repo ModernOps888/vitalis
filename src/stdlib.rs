@@ -309,6 +309,46 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "tcp_connect".into(),   params: vec![("host", IrType::Ptr), ("port", IrType::I64)],                          ret: IrType::I64,  runtime_name: "slang_tcp_connect".into() },
         BuiltinFn { name: "tcp_send".into(),      params: vec![("handle", IrType::I64), ("data", IrType::Ptr)],                        ret: IrType::I64,  runtime_name: "slang_tcp_send".into() },
         BuiltinFn { name: "tcp_close".into(),     params: vec![("handle", IrType::I64)],                                               ret: IrType::Void, runtime_name: "slang_tcp_close".into() },
+
+        // ── v29: Profiler & PGO ──────────────────────────────────────────────
+        BuiltinFn { name: "profiler_start".into(),        params: vec![("name", IrType::Ptr)],                                           ret: IrType::Void, runtime_name: "slang_profiler_start".into() },
+        BuiltinFn { name: "profiler_stop".into(),         params: vec![("name", IrType::Ptr)],                                           ret: IrType::I64,  runtime_name: "slang_profiler_stop".into() },
+        BuiltinFn { name: "profiler_report".into(),       params: vec![],                                                                 ret: IrType::Ptr,  runtime_name: "slang_profiler_report".into() },
+        BuiltinFn { name: "profiler_flamegraph".into(),   params: vec![],                                                                 ret: IrType::Ptr,  runtime_name: "slang_profiler_flamegraph".into() },
+        BuiltinFn { name: "profiler_hotpath".into(),      params: vec![("threshold", IrType::F64)],                                      ret: IrType::Ptr,  runtime_name: "slang_profiler_hotpath".into() },
+
+        // ── v29: Memory Pools ────────────────────────────────────────────────
+        BuiltinFn { name: "arena_create".into(),          params: vec![("capacity", IrType::I64)],                                       ret: IrType::I64,  runtime_name: "slang_arena_create".into() },
+        BuiltinFn { name: "arena_alloc".into(),           params: vec![("arena", IrType::I64), ("size", IrType::I64)],                   ret: IrType::I64,  runtime_name: "slang_arena_alloc".into() },
+        BuiltinFn { name: "arena_reset".into(),           params: vec![("arena", IrType::I64)],                                          ret: IrType::Void, runtime_name: "slang_arena_reset".into() },
+        BuiltinFn { name: "pool_create".into(),           params: vec![("block_size", IrType::I64), ("count", IrType::I64)],             ret: IrType::I64,  runtime_name: "slang_pool_create".into() },
+        BuiltinFn { name: "pool_alloc".into(),            params: vec![("pool", IrType::I64)],                                           ret: IrType::I64,  runtime_name: "slang_pool_alloc".into() },
+        BuiltinFn { name: "pool_free".into(),             params: vec![("pool", IrType::I64), ("ptr", IrType::I64)],                     ret: IrType::Void, runtime_name: "slang_pool_free".into() },
+
+        // ── v29: FFI Bindgen ─────────────────────────────────────────────────
+        BuiltinFn { name: "ffi_type_size".into(),         params: vec![("type_name", IrType::Ptr)],                                      ret: IrType::I64,  runtime_name: "slang_ffi_type_size".into() },
+        BuiltinFn { name: "ffi_type_align".into(),        params: vec![("type_name", IrType::Ptr)],                                      ret: IrType::I64,  runtime_name: "slang_ffi_type_align".into() },
+        BuiltinFn { name: "ffi_gen_header".into(),        params: vec![("module", IrType::Ptr)],                                         ret: IrType::Ptr,  runtime_name: "slang_ffi_gen_header".into() },
+        BuiltinFn { name: "ffi_gen_typescript".into(),    params: vec![("module", IrType::Ptr)],                                         ret: IrType::Ptr,  runtime_name: "slang_ffi_gen_typescript".into() },
+
+        // ── v29: Type Classes ────────────────────────────────────────────────
+        BuiltinFn { name: "kind_check".into(),            params: vec![("type_expr", IrType::Ptr)],                                      ret: IrType::Ptr,  runtime_name: "slang_kind_check".into() },
+        BuiltinFn { name: "resolve_instance".into(),      params: vec![("class", IrType::Ptr), ("type_arg", IrType::Ptr)],               ret: IrType::Ptr,  runtime_name: "slang_resolve_instance".into() },
+
+        // ── v29: Build System ────────────────────────────────────────────────
+        BuiltinFn { name: "build_graph_create".into(),    params: vec![],                                                                 ret: IrType::I64,  runtime_name: "slang_build_graph_create".into() },
+        BuiltinFn { name: "build_add_unit".into(),        params: vec![("graph", IrType::I64), ("name", IrType::Ptr)],                   ret: IrType::I64,  runtime_name: "slang_build_add_unit".into() },
+        BuiltinFn { name: "build_add_dep".into(),         params: vec![("graph", IrType::I64), ("from", IrType::I64), ("to", IrType::I64)], ret: IrType::I64, runtime_name: "slang_build_add_dep".into() },
+        BuiltinFn { name: "build_topo_sort".into(),       params: vec![("graph", IrType::I64)],                                          ret: IrType::Ptr,  runtime_name: "slang_build_topo_sort".into() },
+        BuiltinFn { name: "content_hash".into(),          params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "slang_content_hash".into() },
+
+        // ── v29: Benchmarks ──────────────────────────────────────────────────
+        BuiltinFn { name: "bench_mean".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::F64,  runtime_name: "slang_bench_mean".into() },
+        BuiltinFn { name: "bench_median".into(),          params: vec![("data", IrType::Ptr)],                                           ret: IrType::F64,  runtime_name: "slang_bench_median".into() },
+        BuiltinFn { name: "bench_stddev".into(),          params: vec![("data", IrType::Ptr)],                                           ret: IrType::F64,  runtime_name: "slang_bench_stddev".into() },
+        BuiltinFn { name: "bench_percentile".into(),      params: vec![("data", IrType::Ptr), ("p", IrType::F64)],                       ret: IrType::F64,  runtime_name: "slang_bench_percentile".into() },
+        BuiltinFn { name: "bench_ci95".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "slang_bench_ci95".into() },
+        BuiltinFn { name: "bench_regression".into(),      params: vec![("old", IrType::Ptr), ("new", IrType::Ptr)],                      ret: IrType::Ptr,  runtime_name: "slang_bench_regression".into() },
     ]
 }
 
