@@ -323,3 +323,26 @@ pub mod ide_features;
 pub mod nas;
 pub mod continual_learning;
 pub mod federated_learning;
+
+// ── v45: GC & Green Threads ────────────────────────────────────────
+pub mod gc;
+pub mod green_threads;
+
+// ── v46: Database & KV Store ───────────────────────────────────────
+pub mod database;
+pub mod kv_store;
+
+// ── v47: Consensus & Distributed Primitives ────────────────────────
+pub mod consensus;
+pub mod distributed_primitives;
+
+// ── v48: Polyhedral Optimization & Parallel Runtime ────────────────
+pub mod polyhedral;
+pub mod parallel_runtime;
+
+// ── v49: Tiered JIT ────────────────────────────────────────────────
+pub mod tiered_jit;
+
+// ── v50: Dependent Types & Proof Assistant ─────────────────────────
+pub mod dependent_types;
+pub mod proof_assistant;

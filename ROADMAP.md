@@ -468,6 +468,420 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ---
 
+### Phase 8: Systems Programming Foundation
+
+> **Vision**: Give Vitalis the low-level systems programming capability to build databases,
+> operating system components, and distributed infrastructure — all with the same safety
+> guarantees from the borrow checker, effect system, and formal verification.
+
+#### v45.0 — Garbage Collector & Green Threads ✅
+> **Goal**: Optional managed memory for shared-ownership scenarios, plus lightweight concurrency
+> primitives that scale to millions of tasks. The GC interops with the ownership system —
+> GC handles shared cycles, borrow checker handles unique ownership.
+
+- ✅ **`gc.rs`** — Tracing garbage collector
+  - **Tri-color mark-sweep**: White/grey/black invariant, incremental marking, concurrent sweep
+  - **Generational collection**: Nursery (bump allocation, copying GC) → Old gen (mark-compact)
+  - **Write barriers**: Card marking for remembered sets (old→young pointers)
+  - **Finalization**: Weak references, Release-ordered destructor queue, resurrection prevention
+  - **Pinning API**: `Pin<T>` to prevent GC from moving objects (FFI interop, async frames)
+  - **GC/ownership interop**: `Gc<T>` type for shared ownership, borrow checker for `&T` / `&mut T`
+  - **Heap statistics**: Allocation rate, collection pause times, fragmentation ratio, live set size
+  - **Tuning knobs**: Heap growth factor, nursery size, concurrent marking threads, pause target
+
+- ✅ **`green_threads.rs`** — M:N threading with work-stealing
+  - **Stackful coroutines**: 8KB initial stacks with guard pages, growable via segmented stacks
+  - **Context switching**: Platform-specific stack swap (x86-64 `swapcontext`, AArch64 `stp`/`ldp`)
+  - **Work-stealing scheduler**: Per-core LIFO deques, random victim selection, adaptive spinning
+  - **Green thread API**: `spawn_green(|| { ... })`, `yield_now()`, `park()` / `unpark()`
+  - **Channel integration**: Green threads block on `concurrency.rs` channels without OS thread stall
+  - **Preemption**: Timer-based preemption for fairness (cooperative → preemptive fallback)
+  - **I/O integration**: epoll/kqueue/IOCP integration for non-blocking I/O on green threads
+  - ~20 tests · ~1,800 LOC each
+
+#### v46.0 — Database Engine & Persistent Storage ✅
+> **Goal**: An embedded relational database engine — from B+Tree pages to SQL queries.
+> Systems programming credibility: if your language can build a database, it can build anything.
+
+- ✅ **`database.rs`** — Embedded relational database
+  - **B+Tree pages**: Fixed-size (4KB/16KB) pages, internal + leaf nodes, page splits and merges
+  - **Buffer pool manager**: LRU/Clock eviction, dirty page tracking, page pinning
+  - **Write-Ahead Log (WAL)**: ARIES-style with physiological logging, checkpointing, crash recovery
+  - **MVCC**: Read snapshots via timestamp ordering, no read locks, GC of old versions
+  - **Query planner**: Scan, index scan, nested-loop join, sort-merge join, hash join, hash aggregate
+  - **SQL subset**: SELECT, INSERT, UPDATE, DELETE, CREATE TABLE, WHERE, GROUP BY, ORDER BY, LIMIT
+  - **Prepared statements**: Parse once, execute many with parameter binding
+  - **Transactions**: BEGIN / COMMIT / ROLLBACK, serializable isolation via SSI
+
+- ✅ **`kv_store.rs`** — LSM-Tree key-value store
+  - **MemTable**: Skip list (from `data_structures.rs`) as write buffer
+  - **Sorted String Tables (SSTs)**: Block-based format, index block, bloom filter per SST
+  - **Leveled compaction**: L0 flush, L1+ size-ratio compaction, tombstone GC
+  - **Block cache**: LRU cache for hot SST blocks, compressed block support
+  - **Range queries**: Forward/reverse iterators, prefix scan, seek-to-key
+  - **Write batching**: Group commits for throughput, atomic multi-key writes
+  - ~25 tests · ~2,200 LOC each
+
+#### v47.0 — Distributed Systems Primitives ✅
+> **Goal**: The building blocks for distributed applications — consensus, coordination,
+> and fault tolerance. Combined with `networking.rs` and `concurrency.rs`, this makes
+> Vitalis viable for building distributed databases, message queues, and service meshes.
+
+- ✅ **`consensus.rs`** — Raft consensus protocol
+  - **Leader election**: Randomized election timeouts, RequestVote RPC, split-brain prevention
+  - **Log replication**: AppendEntries RPC, log matching, commit index advancement
+  - **Safety**: Election restriction (up-to-date logs), leader completeness, state machine safety
+  - **Snapshot transfer**: InstallSnapshot RPC for slow followers, compaction
+  - **Membership changes**: Joint consensus for safe cluster reconfiguration
+  - **Linearizable reads**: ReadIndex protocol (leader lease or heartbeat-based)
+  - **Pluggable state machine**: `Apply(command) → response` trait for arbitrary replicated services
+
+- ✅ **`distributed_primitives.rs`** — Coordination & fault tolerance
+  - **CRDTs**: G-Counter, PN-Counter, OR-Set, LWW-Register, MV-Register (conflict-free replicated data types)
+  - **Vector clocks**: Logical timestamps for causal ordering, lamport timestamps
+  - **Consistent hashing**: Jump hash + virtual nodes for balanced shard distribution
+  - **Circuit breaker**: Closed/Open/Half-Open states, failure rate threshold, recovery timeout
+  - **Bulkhead**: Concurrency limits per downstream service, queue overflow rejection
+  - **Retry with backoff**: Exponential backoff + jitter, configurable max retries, idempotency keys
+  - **Saga orchestrator**: Distributed transaction via compensating actions, saga log persistence
+  - ~20 tests · ~1,600 LOC each
+
+---
+
+### Phase 9: Advanced Compiler Technology
+
+> **Vision**: Push the compiler beyond what most languages attempt — polyhedral loop
+> optimization, multi-tier JIT with OSR, and dependent types with a proof assistant.
+> These are research-grade compiler features that put Vitalis in the same conversation
+> as GHC, MLton, and Graal.
+
+#### v48.0 — Polyhedral Optimization & Auto-Parallelization ✅
+> **Goal**: The polyhedral model gives the compiler mathematical control over loop nest
+> optimization — tiling, fusion, interchange, skewing — and enables automatic parallelization
+> of affine loop nests with provably correct transformations.
+
+- ✅ **`polyhedral.rs`** — Polyhedral loop optimizer
+  - **Integer set representation**: Polyhedra as integer linear constraints (Ax ≤ b)
+  - **Dependence analysis**: Banerjee test, GCD test, Omega test for exact array dependences
+  - **Affine scheduling**: Pluto algorithm — find legal tiling hyperplanes via ILP
+  - **Loop transformations**: Tiling, fusion, interchange, skewing, unroll-and-jam, strip-mining
+  - **Auto-parallelization**: Detect parallel dimensions, emit fork-join via `parallel_runtime.rs`
+  - **Memory layout optimization**: Array padding, alignment, SoA↔AoS transformation
+  - **Code generation**: Emit tiled loop nests back to IR (`ir.rs`) with bounds and guards
+
+- ✅ **`parallel_runtime.rs`** — Parallel execution runtime
+  - **Thread pool**: Fixed-size pool with per-thread affinity, NUMA-aware allocation
+  - **Parallel for**: Static/dynamic/guided scheduling, chunk size tuning
+  - **Parallel reduce / scan**: Tree-based reduction, Blelloch scan (exclusive prefix sum)
+  - **Task graph**: DAG of dependent tasks with topological scheduling, dynamic task spawning
+  - **Work-stealing scheduler**: Chase-Lev deque, random victim selection
+  - **Barrier / Fork-Join**: Structured parallelism with nested parallel regions
+  - ~25 tests · ~2,000 LOC each
+
+#### v49.0 — Tiered JIT Compilation & On-Stack Replacement ✅
+> **Goal**: Three compilation tiers for optimal startup + peak performance.
+> Tier 0 interprets or baseline-compiles for instant startup. Tier 1 does quick JIT.
+> Tier 2 runs the full `optimizer.rs` pipeline. OSR promotes hot loops mid-execution.
+
+- ✅ **`tiered_jit.rs`** — Multi-tier compilation engine
+  - **Tier 0 — Interpreter**: Bytecode interpreter for instant startup, zero compile overhead
+  - **Tier 1 — Baseline JIT**: Quick Cranelift compilation, minimal optimization (no inlining, no CSE)
+  - **Tier 2 — Optimizing JIT**: Full `optimizer.rs` pipeline (DCE, CSE, inlining, loop tiling, vectorization)
+  - **Profile counters**: Per-function invocation count, per-loop back-edge count, type feedback
+  - **Tier promotion**: Tier 0 → Tier 1 at 100 invocations, Tier 1 → Tier 2 at 10,000 invocations
+  - **On-Stack Replacement (OSR)**: Mid-loop tier promotion — reconstruct optimized frame from interpreter frame
+  - **Deoptimization**: Bail out from Tier 2 to Tier 1 when speculative assumptions are invalidated
+  - **Speculative optimization**: Type-specialization guards, monomorphic call-site inline caching
+  - **Warm-up profiling**: Record branch probabilities, memory access patterns, call frequencies
+  - ~25 tests · ~2,500 LOC
+
+#### v50.0 — Dependent Types & Proof Assistant ✅
+> **Goal**: Full dependent type system — types that depend on values. This bridges the gap
+> between programming and theorem proving. Combined with `formal_verification.rs`, this makes
+> Vitalis a language where you can *prove* your code correct, not just test it.
+
+- ✅ **`dependent_types.rs`** — Dependent type system
+  - **Pi types**: Dependent function types `(x: A) → B(x)` — return type depends on argument value
+  - **Sigma types**: Dependent pairs `(x: A, B(x))` — second component's type depends on first's value
+  - **Type-level computation**: Evaluate type expressions at compile time via `const_eval.rs`
+  - **Propositional equality**: `Eq(a, b)` as a type, `refl` constructor, `transport` / `subst` eliminators
+  - **Indexed types**: `Vec(n, T)` — length-indexed vectors, `Fin(n)` — bounded naturals
+  - **Proof irrelevance**: Erase proof terms from runtime code (zero-cost safety)
+  - **Universe hierarchy**: Type₀ : Type₁ : Type₂ to prevent Girard's paradox
+  - Integration with `type_inference.rs` for partial inference of dependent arguments
+
+- ✅ **`proof_assistant.rs`** — Interactive proof assistant
+  - **Tactic language**: `intro`, `apply`, `rewrite`, `induction`, `cases`, `auto`, `simp`, `ring`
+  - **Proof search**: Depth-bounded automated search with backtracking
+  - **Proof by reflection**: Run programs during type-checking to discharge proof obligations
+  - **Certified programs**: Type = specification, program = proof, extraction to runtime code
+  - **Proof state display**: Show goals and hypotheses (LSP integration for IDE proof views)
+  - **Decidable fragments**: Automatic proofs for Presburger arithmetic, linear arithmetic, propositional logic
+  - ~30 tests · ~2,200 LOC each
+
+---
+
+### Phase 10: Developer Experience v2
+
+> **Vision**: Make Vitalis the best *experience* for building software — not just the
+> best compiler. Time-travel debugging, a mature package ecosystem, and interactive
+> computing environments that rival Jupyter/Observable.
+
+#### v51.0 — Time-Travel Debugging & Structured Tracing 📋
+> **Goal**: Record program execution and replay it forwards/backwards. Debug failures
+> by rewinding to the exact point where state diverged. Plus structured tracing for
+> production observability.
+
+- 📋 **`time_travel_debug.rs`** — Record-replay debugging
+  - **Execution recording**: Instruction-level trace with memory snapshots at salient points
+  - **Deterministic replay**: Replay non-deterministic events (I/O, scheduling, randomness) from trace
+  - **Reverse stepping**: Step backward through execution, reverse-continue to previous breakpoint
+  - **Reverse watchpoints**: "When did this variable last change?" — search backward through trace
+  - **Trace diffing**: Compare two execution traces to find divergence point (regression debugging)
+  - **Snapshot compression**: Delta-compress memory snapshots for space-efficient long traces
+  - **DAP integration**: Extend `dap.rs` with reverse stepping capabilities
+
+- 📋 **`tracing.rs`** — Structured distributed tracing
+  - **Span-based instrumentation**: Enter/exit spans with structured key-value fields
+  - **Trace context propagation**: W3C TraceContext headers for distributed tracing
+  - **Flame graph export**: Convert span trees to `profiler.rs` flame graph format
+  - **OpenTelemetry format**: OTLP-compatible trace export (JSON + Protobuf wire format)
+  - **Automatic async instrumentation**: Auto-instrument `async_runtime.rs` task boundaries
+  - **Log correlation**: Link structured logs to trace spans, severity filtering
+  - ~20 tests · ~1,800 LOC each
+
+#### v52.0 — Package Ecosystem v2 & Documentation Site Generator 📋
+> **Goal**: A mature package ecosystem with security auditing, breaking change detection,
+> and a beautiful documentation site generator — the infrastructure that turns a language
+> into a platform.
+
+- 📋 **`registry_v2.rs`** — Package ecosystem infrastructure
+  - **Publishing workflow**: `vtc publish` — build, validate, sign, upload to registry
+  - **SemVer enforcement**: API diff detection — flag accidental breaking changes before publish
+  - **Security advisory database**: CVE tracking, `vtc audit` to check dependencies against advisories
+  - **Dependency audit**: License compliance checking (SPDX), transitive dependency tree analysis
+  - **Yanking**: Yank broken versions without deleting (dependents warned, new installs blocked)
+  - **Namespace governance**: Scoped packages `@org/name`, transfer ownership, deprecation notices
+
+- 📋 **`doc_site.rs`** — Static documentation site generator
+  - **API docs**: Auto-generate from `documentation.rs` doc comments, cross-reference linking
+  - **Guide pages**: Markdown-based tutorials and guides with code block extraction
+  - **Search index**: Full-text search over API docs and guides (inverted index, TF-IDF ranking)
+  - **Doctest execution**: Extract code examples from docs, compile and run as tests
+  - **Versioned docs**: Multiple documentation versions (by release tag), version switcher
+  - **Theme engine**: Configurable CSS themes, dark/light mode, syntax highlighting
+  - ~20 tests · ~1,600 LOC each
+
+#### v53.0 — Interactive Computing & Web Playground 📋
+> **Goal**: A Jupyter-compatible notebook kernel and a web-based playground.
+> Scientists, educators, and explorers can use Vitalis interactively — with rich output,
+> inline visualization, and share-by-URL.
+
+- 📋 **`notebook.rs`** — Jupyter-compatible kernel
+  - **Kernel protocol**: Jupyter wire protocol (ZMQ ROUTER/DEALER), execute/complete/inspect messages
+  - **Cell execution**: Compile-and-run cells, persistent state across cells using JIT module
+  - **Rich output**: Text, HTML, images (PNG/SVG), charts via `chart_rendering.rs`, LaTeX rendering
+  - **Magic commands**: `%time`, `%profile`, `%ast`, `%ir`, `%type` (reuse `repl.rs` commands)
+  - **Variable inspector**: List all bound variables with types and values
+  - **Autocomplete & hover**: Delegate to `lsp.rs` for completion and type information
+  - **Interrupt / restart**: Graceful cell interruption, kernel restart with state reset
+
+- 📋 **`playground.rs`** — Web-based playground
+  - **Compile-to-WASM**: Use `wasm_aot.rs` to compile user code in-browser (no server round-trip)
+  - **Editor integration**: Monaco editor with Vitalis syntax highlighting and LSP-lite
+  - **Share-by-URL**: Encode source in URL fragment (LZ-compressed, base64-encoded)
+  - **Example gallery**: Curated examples showcasing language features (from `examples/`)
+  - **Performance mode**: In-browser benchmarking with `benchmark.rs` micro-benchmark framework
+  - **Output panel**: Console output, AST viewer, IR viewer, type information
+  - ~20 tests · ~1,500 LOC each
+
+---
+
+### Phase 11: Hardware & Deployment Targets
+
+> **Vision**: Vitalis compiles to everything — from FPGAs and bare-metal microcontrollers
+> to serverless cloud functions. The same language, the same type safety, the same
+> borrow checker, from embedded firmware to Kubernetes pods.
+
+#### v54.0 — FPGA & Hardware Synthesis 📋
+> **Goal**: High-level synthesis — compile a Vitalis subset to hardware description languages.
+> Write your algorithm once, deploy to FPGA or ASIC. This is where `tensor.rs` matmul
+> becomes a silicon accelerator.
+
+- 📋 **`hardware_synth.rs`** — High-level synthesis engine
+  - **Vitalis subset → RTL**: Synthesizable subset (no heap, no recursion, bounded loops) → Verilog/VHDL
+  - **Pipeline scheduling**: Automatic pipelining of combinational chains, initiation interval optimization
+  - **Resource binding**: Map operations to ALUs, multipliers, DSP blocks, BRAMs
+  - **FSM extraction**: Convert control flow to finite state machines with one-hot encoding
+  - **Fixed-point arithmetic**: Automatic floating-point to fixed-point conversion with precision analysis
+  - **Streaming dataflow**: Convert pipeline stages to streaming interfaces (ready/valid handshake)
+  - **Hardware-software partitioning**: Profile-guided decision on what to accelerate in hardware
+
+- 📋 **`fpga_target.rs`** — FPGA backend
+  - **Xilinx / Intel primitives**: Target-specific BRAM, DSP, LUT, FF mapping
+  - **Clock domain crossing**: CDC synchronizers, async FIFO generation, metastability analysis
+  - **Constraint generation**: Timing constraints (SDC), placement constraints, I/O pin assignment
+  - **Resource estimation**: Pre-synthesis LUT/FF/BRAM/DSP utilization estimates
+  - **Simulation testbench**: Auto-generate Verilog testbench from Vitalis test cases
+  - ~20 tests · ~2,000 LOC each
+
+#### v55.0 — Bare-Metal & Embedded Systems 📋
+> **Goal**: Compile Vitalis to bare-metal targets — no OS, no allocator, no runtime.
+> Write firmware for ARM Cortex-M and RISC-V microcontrollers with full type safety
+> and borrow-checked peripheral access.
+
+- 📋 **`embedded.rs`** — Bare-metal compilation target
+  - **`no_std` mode**: Compile without stdlib, no heap allocation, stack-only execution
+  - **Interrupt vector table**: Generate IVT from annotated handler functions
+  - **MMIO register access**: Type-safe memory-mapped I/O with volatile read/write semantics
+  - **DMA configuration**: Descriptor rings, transfer completion callbacks, double-buffering
+  - **Static memory layout**: Linker script generation (.text, .data, .bss, .stack sections)
+  - **HAL trait abstraction**: `Gpio`, `Uart`, `Spi`, `I2c`, `Timer` traits for MCU families
+  - **Target support**: ARM Cortex-M0/M3/M4/M7, RISC-V (RV32I/RV32IMAC), via `cross_compile.rs`
+
+- 📋 **`rtos.rs`** — Minimal real-time operating system kernel
+  - **Preemptive scheduler**: Priority-based with deadline monotonic analysis, O(1) dispatch
+  - **Synchronization**: Binary/counting semaphores, mutexes with priority inheritance
+  - **Message queues**: Fixed-size, zero-copy IPC between tasks, timeout support
+  - **Timer service**: Software timers multiplexed over one hardware timer, one-shot and periodic
+  - **Memory protection**: MPU region configuration, stack overflow detection via guard regions
+  - **Static allocation**: All RTOS objects statically allocated at compile time (no malloc)
+  - ~25 tests · ~1,800 LOC each
+
+#### v56.0 — Cloud-Native & Serverless Deployment 📋
+> **Goal**: One command from source code to running in the cloud. Container images,
+> Kubernetes manifests, serverless functions — generated from Vitalis source with
+> the right configuration inferred from the code's effect annotations.
+
+- 📋 **`cloud_deploy.rs`** — Cloud-native deployment pipeline
+  - **Container image builder**: OCI-compatible image from AOT binary (scratch base, ~5MB images)
+  - **Kubernetes manifests**: Generate Deployment, Service, ConfigMap, HPA from annotations
+  - **Serverless packaging**: AWS Lambda, Cloudflare Workers, GCP Cloud Functions targets
+  - **Auto-scaling config**: Infer scaling parameters from `effects.rs` capability annotations
+  - **Health checks**: Liveness/readiness probes auto-generated from function signatures
+  - **Graceful shutdown**: Signal handling (SIGTERM), connection draining, in-flight request completion
+  - **Environment config**: `.env` / secrets management, configuration schema validation
+
+- 📋 **`service_mesh.rs`** — Service mesh primitives
+  - **Sidecar proxy**: L7 proxy with request routing, header-based routing, path matching
+  - **Load balancing**: Round-robin, least-connections, weighted, consistent hash, P2C
+  - **Rate limiting**: Token bucket and sliding window, per-client and global limits
+  - **mTLS**: Mutual TLS with certificate rotation, SPIFFE identity verification
+  - **Service registry**: Service discovery with health checking and DNS resolution
+  - **Canary deployment**: Traffic splitting (1%/5%/25%/50%/100%), automatic rollback on error rate
+  - ~20 tests · ~1,600 LOC each
+
+---
+
+### Phase 12: AI-Native Compiler Intelligence
+
+> **Vision**: The compiler uses AI to help you write code, the compiler verifies its
+> own correctness with mathematical proofs, and the final act — the compiler rewrites
+> itself in its own language. v60 is endgame.
+
+#### v57.0 — LLM-Assisted Compilation & Error Recovery 📋
+> **Goal**: Integrate language model intelligence directly into the compiler pipeline.
+> Not an external tool calling an API — the compiler itself uses learned models to
+> produce better errors, suggest fixes, and recover from parse failures gracefully.
+
+- 📋 **`llm_compiler.rs`** — LLM integration for compilation
+  - **Natural language errors**: Translate type errors into plain English explanations
+  - **Fix suggestions**: "Did you mean X?" powered by learned edit-distance + type-aware ranking
+  - **Code completion from IR**: Context-aware completion using IR-level type information
+  - **Docstring generation**: Auto-generate doc comments from function body semantics
+  - **Commit message generation**: Summarize AST diffs into human-readable descriptions
+  - **Model hosting**: Load quantized model via `inference.rs`, run locally (no API calls)
+  - Integration with `lsp.rs` for real-time IDE suggestions
+
+- 📋 **`error_recovery.rs`** — Advanced error recovery
+  - **Parser recovery**: Insertion/deletion/synchronization strategies for malformed syntax
+  - **Type error repair**: Suggest type annotations, missing conversions, trait implementations
+  - **Cascading suppression**: Detect errors caused by earlier errors, show root cause only
+  - **Edit distance suggestions**: Levenshtein + Damerau for "did you mean `foo`?" on unknown identifiers
+  - **Contextual recovery**: Use scope and type context to disambiguate recovery strategies
+  - **Error budget**: Stop reporting after N errors per function to avoid overwhelming output
+  - ~25 tests · ~1,800 LOC each
+
+#### v58.0 — Multi-Modal AI 📋
+> **Goal**: Vision and audio as first-class modalities in Vitalis's AI stack.
+> Combined with `transformer.rs` and `tensor.rs`, this enables multi-modal models
+> (image captioning, speech recognition, vision-language) natively.
+
+- 📋 **`vision.rs`** — Computer vision pipeline
+  - **Image I/O**: PNG decode (DEFLATE + unfilter), JPEG decode (Huffman + IDCT), PPM/BMP support
+  - **Image tensor**: HWC / CHW layout, u8→f32 normalization, channel-first for convolution
+  - **Convolution pipeline**: Use `neural_net.rs` Conv2D with pooling, batch norm, residual blocks
+  - **Feature extraction**: ResNet-style backbone (configurable depth), feature pyramid
+  - **Object detection**: Single-shot detection (YOLO-style), anchor boxes, NMS post-processing
+  - **Data augmentation**: Random crop, horizontal flip, color jitter, cutout, mixup, mosaic
+  - **Image generation**: Diffusion forward/reverse process primitives, noise scheduler
+
+- 📋 **`audio.rs`** — Audio processing pipeline
+  - **Audio I/O**: WAV read/write (PCM 16-bit/32-bit float), sample rate conversion
+  - **FFT**: Cooley-Tukey radix-2 FFT, inverse FFT, windowing (Hann, Hamming, Blackman)
+  - **Mel-spectrogram**: Mel filter bank, STFT → power spectrum → mel scaling → log compression
+  - **MFCC features**: Mel-frequency cepstral coefficients for speech recognition
+  - **CTC loss**: Connectionist Temporal Classification for sequence-to-sequence alignment
+  - **Vocoder**: Griffin-Lim phase reconstruction, WaveRNN-style neural vocoder primitives
+  - **Streaming pipeline**: Ring-buffer audio input, frame-by-frame processing, real-time inference
+  - ~25 tests · ~2,000 LOC each
+
+#### v59.0 — Compiler Verification & Certified Compilation 📋
+> **Goal**: Prove that the compiler itself is correct. Translation validation checks
+> that optimization passes preserve semantics. Abstract interpretation catches entire
+> classes of bugs at compile time. This is CompCert-level ambition — in a self-hosting compiler.
+
+- 📋 **`certified_compiler.rs`** — Verified compilation passes
+  - **Translation validation**: For each optimization, verify output IR ≡ input IR (bisimulation)
+  - **Verified register allocation**: Prove register allocation preserves variable liveness
+  - **Correct-by-construction codegen**: Generate proof witnesses alongside machine code
+  - **Optimization proofs**: Prove constant folding, DCE, CSE are semantics-preserving
+  - **Refinement proofs**: Show compiled code refines source-level behavior
+  - Integration with `dependent_types.rs` and `proof_assistant.rs` for proof discharge
+
+- 📋 **`abstract_interp.rs`** — Abstract interpretation framework
+  - **Interval domain**: Integer interval analysis `[lo, hi]` for bounds checking
+  - **Octagon domain**: Constraints of form `±x ± y ≤ c` for relational analysis
+  - **Widening / narrowing**: Termination-guaranteed fixpoint computation on lattices
+  - **Null-pointer analysis**: Track definite-null, definite-non-null, maybe-null states
+  - **Array bounds checking**: Prove array accesses in-bounds at compile time (eliminate runtime checks)
+  - **Taint analysis**: Track untrusted input flow through program, flag unsanitized sinks
+  - **Alias analysis**: Points-to analysis for optimization (Andersen's / Steensgaard's)
+  - ~30 tests · ~2,200 LOC each
+
+#### v60.0 — Self-Hosting v2: The Vitalis Rewrite 📋
+> **Goal**: The final act. The Vitalis compiler, currently written in Rust, rewrites itself
+> in Vitalis. Not just bootstrap (we did that at v22) — a full reimplementation using
+> every capability from v23-v59. The compiler that writes itself using the AI, types,
+> proofs, and optimization it spent 60 versions building.
+
+HUMAN SUGGESTION, HOW ABOUT WE createa a new directory at this point and try to rewrit all to vitalis actually run on vitalis no rust no limitation sky is the limit for vitalis running on vitalis so we keep whats working up to v60 and then create new folder copy everything and just work in new folder on vitalis rewrite to vitalis.
+
+as a matter of fact i created already folder for you where you can copy everything from C:\Vitalis-Oss to c:\Vitalis-V60 and start compiling everything vitalis running on vitalis making sure its all compatible with all current frameworks and other so back compatibility kinda thing and can be edited and viewed in vs code ok.
+
+
+IMPORTANT!: Make sure you copy the directory safely leaving the vitalis-oss as a backup and all working tested and all and then the new one work on in new location explicitly do not mix them up later c:\Vitalis-V60
+
+- 📋 **`bootstrap_v2.rs`** — Self-hosted compiler rewrite
+  - **Stage 0**: Current Rust compiler (`vtc`) — compiles the Vitalis compiler source
+  - **Stage 1**: Vitalis compiler written in `.sl` — compiled by Stage 0
+  - **Stage 2**: Stage 1 compiles itself — output must be bit-identical to Stage 1 (fixpoint)
+  - **Feature parity**: All v1-v59 features reimplemented in Vitalis (parser, type checker, codegen)
+  - **Performance target**: Within 2× of Rust implementation (tiered JIT + polyhedral optimization)
+  - **Verification**: Use `certified_compiler.rs` to prove Stage 1 ≡ Stage 0 semantics
+  - **Dog-fooding**: Every `dependent_types.rs` proof, every `gc.rs` collection — used by the compiler itself
+
+- 📋 **`meta_compiler.rs`** — Multi-stage meta-programming
+  - **Quasi-quotation**: `quote { let x = $(expr) }` — construct AST fragments with splicing
+  - **Splice**: `$(...)` — insert computed AST nodes into quoted templates
+  - **Cross-stage persistence**: Values computed at stage N available at stage N+1
+  - **Staging annotations**: `@stage(0)` / `@stage(1)` — explicit multi-stage program structure
+  - **Compiler-compiler**: Vitalis generates its own parser from a grammar specification
+  - **Self-modifying compilation**: Compiler plugins written in Vitalis, loaded at compile time
+  - ~25 tests · ~2,500 LOC each
+
+---
+
 ## Architecture: How It All Connects
 
 ```
@@ -568,3 +982,19 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v42.0.0 | 2026-07-07 | 112 | 2,608 | ~109,000 | Package registry, distributed build |
 | v43.0.0 | 2026-07-14 | 114 | 2,618 | ~109,500 | Formal verification, IDE features |
 | v44.0.0 | 2026-07-21 | 117 | 2,627 | ~110,000 | NAS, continual learning, federated learning |
+| v45.0.0 | 2025-07-14 | 119 | 2,665 | ~114,000 | Garbage collector, green threads |
+| v46.0.0 | 2025-07-14 | 121 | 2,703 | ~118,000 | Database engine, KV store |
+| v47.0.0 | 2025-07-14 | 123 | 2,744 | ~122,000 | Raft consensus, distributed primitives |
+| v48.0.0 | 2025-07-14 | 125 | 2,784 | ~126,000 | Polyhedral optimization, parallel runtime |
+| v49.0.0 | 2025-07-14 | 126 | 2,804 | ~129,000 | Tiered JIT, on-stack replacement |
+| v50.0.0 | 2025-07-14 | 128 | 2,859 | ~133,000 | Dependent types, proof assistant |
+| v51.0.0 | — | ~130 | ~2,975 | ~137,000 | Time-travel debugging, structured tracing |
+| v52.0.0 | — | ~132 | ~3,015 | ~140,000 | Package ecosystem v2, doc site generator |
+| v53.0.0 | — | ~134 | ~3,055 | ~143,000 | Notebook kernel, web playground |
+| v54.0.0 | — | ~136 | ~3,095 | ~147,000 | Hardware synthesis, FPGA target |
+| v55.0.0 | — | ~138 | ~3,145 | ~151,000 | Bare-metal embedded, RTOS kernel |
+| v56.0.0 | — | ~140 | ~3,185 | ~154,000 | Cloud-native deploy, service mesh |
+| v57.0.0 | — | ~142 | ~3,235 | ~158,000 | LLM-assisted compiler, error recovery |
+| v58.0.0 | — | ~144 | ~3,285 | ~162,000 | Computer vision, audio processing |
+| v59.0.0 | — | ~146 | ~3,345 | ~166,000 | Certified compilation, abstract interpretation |
+| v60.0.0 | — | ~149 | ~3,395 | ~170,000 | Self-hosting v2, meta-compiler |
