@@ -184,3 +184,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v22.0.0 | 2025-07-19 | 58 | 1,043 | ~41,772 | Borrow checker, DAP, AOT |
 | v23.0.0 | 2025-07-26 | 59 | 1,087 | ~43,095 | Non-Lexical Lifetimes |
 | v24.0.0 | 2026-03-03 | 61 | 1,177 | ~45,703 | Effect handlers, pattern exhaustiveness |
+| v25.0.0 | 2026-03-10 | 64 | 1,284 | ~47,743 | Formatter, linter, refinement types |
+| v26.0.0 | 2026-03-17 | 67 | 1,458 | ~53,359 | Macros, const eval, iterators |
+| v27.0.0 | 2026-03-24 | 70 | 1,586 | ~57,196 | Concurrency, type inference, documentation |
+| v28.0.0 | 2026-03-31 | 76 | 1,765 | ~62,700 | Graphics engine, shaders, GUI, creative coding, visual nodes, charts |

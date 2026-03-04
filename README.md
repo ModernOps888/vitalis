@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C586_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-57%2C196-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-1%2C765_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-62%2C700+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v27.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v28.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,25 +40,25 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**70**<br>
+**76**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**57,196**<br>
+**62,700+**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,586**<br>
+**1,765**<br>
 <sub>Tests passing</sub>
 
 </td>
 <td width="25%" align="center">
 
-**200+**<br>
+**230+**<br>
 <sub>Stdlib functions</sub>
 
 </td>
@@ -837,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,586 tests across every compiler stage and all subsystems through v27:
+1,765 tests across every compiler stage and all subsystems through v28:
 
 ```
 $ cargo test
-test result: ok. 1586 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1765 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -883,6 +883,12 @@ test result: ok. 1586 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Structured concurrency | 45 | Mutex, RwLock, channels, Select, WaitGroup, atomics, deadlock detection |
 | Type inference | 40 | Hindley-Milner, unification, bidirectional, union/intersection, narrowing |
 | Documentation generation | 30 | Doc comment parsing, API model, Markdown/HTML output, cross-refs |
+| Graphics engine | 40 | Colors, vectors, matrices, paths, image buffers, render pipeline |
+| Shader languages | 25 | GLSL, HLSL, WGSL, MSL, SPIR-V compilation, cross-compilation |
+| GUI framework | 30 | CSS styling, flexbox layout, widget tree, themes, animations |
+| Creative coding | 35 | Sketch lifecycle, particle systems, L-systems, cellular automata |
+| Visual nodes | 30 | Node graph, evaluation, templates, DOT export, type checking |
+| Chart rendering | 30 | Pie/bar/line/scatter/histogram/radar/heatmap/treemap/candlestick |
 
 <br>
 
@@ -969,7 +975,14 @@ vitalis/
 │   │
 │   ├── concurrency.rs        # Structured concurrency — Mutex, RwLock, channels, Select, atomics
 │   ├── type_inference.rs     # Type inference — Hindley-Milner, unification, bidirectional
-│   └── documentation.rs      # Documentation gen — doc comments, API model, Markdown/HTML
+│   ├── documentation.rs      # Documentation gen — doc comments, API model, Markdown/HTML
+│   │
+│   ├── graphics_engine.rs    # Graphics engine — 2D/3D rendering, colors, vectors, matrices, SVG
+│   ├── shader_lang.rs        # Shader languages — GLSL, HLSL, WGSL, MSL, SPIR-V cross-compilation
+│   ├── gui_framework.rs      # GUI framework — QML/XAML/SwiftUI/CSS, widgets, layout, themes
+│   ├── creative_coding.rs    # Creative coding — Processing/p5.js, particles, L-systems, automata
+│   ├── visual_nodes.rs       # Visual nodes — node graphs, evaluation, TouchDesigner/Blueprints
+│   └── chart_rendering.rs    # Chart rendering — pie, bar, line, scatter, histogram, radar, treemap
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1131,7 +1144,22 @@ timeline
         : Cross-reference resolution and example extraction from doc comments
         : 1,586 tests passing · 70 modules · 57,196 LOC
 
-    v28+ · The Future
+    v28 · Graphics Engine, Shader Languages, GUI, Creative Coding, Visual Nodes & Charts
+        : 2D/3D graphics engine (RGBA/HSLA colors, Vec2/3/4, Mat4, Path2D, ImageBuffer, Camera)
+        : Multi-backend shader compilation (GLSL, HLSL, WGSL, MSL, SPIR-V cross-compiler)
+        : Declarative GUI framework (QML/XAML/SwiftUI/CSS, 30+ widgets, flex layout, themes)
+        : Processing/p5.js creative coding (sketch lifecycle, Perlin noise, particle systems)
+        : L-system fractal generation (Koch, Sierpinski, Dragon curve, fractal plant)
+        : Cellular automata (Conway's Game of Life, Wolfram elementary CA rules)
+        : Lorenz attractor visualization and flow field generation
+        : Node-based visual programming (TouchDesigner/Blueprints, typed ports, topological eval)
+        : Full chart rendering (pie/donut, bar, line, scatter, histogram, radar, heatmap)
+        : Treemap, candlestick, gauge, sparkline charts with SVG export
+        : Dashboard layout engine for multi-chart compositions
+        : 30 new stdlib builtins (gfx_*, chart_*, shader_*, gui_*, noise_*, node_graph_*)
+        : 1,765 tests passing · 76 modules · 62,700+ LOC
+
+    v29+ · The Future
         : WASM AOT target (compile .sl to standalone .wasm files)
         : Package registry server + vitalis install
         : Distributed compilation across nodes

@@ -236,3 +236,11 @@ pub mod iterators;
 pub mod concurrency;
 pub mod type_inference;
 pub mod documentation;
+
+// ── v28: Graphics Engine, Shader Languages, GUI, Creative Coding, Visual Nodes & Charts ──
+pub mod graphics_engine;
+pub mod shader_lang;
+pub mod gui_framework;
+pub mod creative_coding;
+pub mod visual_nodes;
+pub mod chart_rendering;

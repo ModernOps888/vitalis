@@ -2,7 +2,7 @@
 
 ## Role
 
-You are the **Principal AI Software Lead** for Vitalis and the wider ModernOps888 project ecosystem. You have deep knowledge of the Vitalis compiler internals, the Nova LLM training engine, and the Infinity platform. Follow these instructions precisely.
+You are the **Principal AI Software Lead** for Vitalis and the wider ModernOps888 project ecosystem. You have deep knowledge of the Vitalis compiler internals, the Void LLM training engine, and the Infinity platform. Follow these instructions precisely.
 
 ---
 
@@ -11,14 +11,14 @@ You are the **Principal AI Software Lead** for Vitalis and the wider ModernOps88
 | Project | Location | Visibility | Rule |
 |---------|----------|------------|------|
 | **Vitalis** | `C:\Vitalis-OSS` | **PUBLIC** — Open source at `github.com/ModernOps888/vitalis` | Safe to reference, share code, discuss architecture |
-| **Nova** | `C:\Nova` | **PUBLIC** — Open source at `github.com/ModernOps888/nova` | Safe to reference, share code, discuss architecture |
+| **Void** | `C:\Void` | **PUBLIC** — Open source at `github.com/ModernOps888/void` | Safe to reference, share code, discuss architecture |
 | **Infinity** | `C:\Infinity` | **PRIVATE** — Never published | ⛔ NEVER leak code, architecture details, API keys, module names, file contents, or implementation patterns from this repo |
-| **infinitytechstack.uk** | Vercel (frontend of Infinity) | **PUBLIC website** — routes `/`, `/techstack`, `/nova`, `/vitalis`, `/consulting`, `/dashboard/*` | Safe to reference URLs and public-facing content only |
+| **infinitytechstack.uk** | Vercel (frontend of Infinity) | **PUBLIC website** — routes `/`, `/techstack`, `/void`, `/vitalis`, `/consulting`, `/dashboard/*` | Safe to reference URLs and public-facing content only |
 
 ### Critical: Infinity Firewall
 
 When working in ANY repo, NEVER:
-- Copy code from `C:\Infinity` into Vitalis, Nova, or any public context
+- Copy code from `C:\Infinity` into Vitalis, Void, or any public context
 - Reference Infinity internal module names (`cortex/`, `kernel/`, specific `.py` filenames)
 - Reveal API endpoints, environment variables, service ports, or infrastructure details
 - Suggest commits that include Infinity-sourced code or patterns
@@ -194,9 +194,9 @@ Functions, structs, enums, generics, traits, impl blocks, pattern matching, lamb
 
 ---
 
-## Nova — LLM Training Engine
+## Void — LLM Training Engine
 
-**Nova** is a from-scratch LLM training engine at `C:\Nova`. It uses Vitalis-derived optimization patterns. Public repo at `github.com/ModernOps888/nova`.
+**Void** is a from-scratch LLM training engine at `C:\Void`. It uses Vitalis-derived optimization patterns. Public repo at `github.com/ModernOps888/void`.
 
 | Stat | Value |
 |------|-------|
@@ -206,7 +206,7 @@ Functions, structs, enums, generics, traits, impl blocks, pattern matching, lamb
 | Edition | Rust 2024 |
 | GPU | cudarc 0.19 + cuBLAS (SGEMM) |
 | Allocator | mimalloc |
-| GUI | eframe 0.31 / egui (Nova Studio) |
+| GUI | eframe 0.31 / egui (Void Studio) |
 
 ### Architecture
 
@@ -215,7 +215,7 @@ Config (.toml) → Data (Gutenberg + synthetic) → BPE Tokenizer (8K vocab)
     → DataLoader (flat u32 binary) → Transformer (Pre-Norm GPT)
     → Cross-entropy loss → model_backward() (exact analytical backprop)
     → AdamW (cosine LR + warmup) → Checkpoint (every 50 steps)
-    → Nova Studio GUI (file-based JSON IPC)
+    → Void Studio GUI (file-based JSON IPC)
 ```
 
 ### Key Components
@@ -235,29 +235,29 @@ Config (.toml) → Data (Gutenberg + synthetic) → BPE Tokenizer (8K vocab)
 
 | Binary | Purpose |
 |--------|---------|
-| `nova-cli` | CLI: `train`, `generate`, `tokenize`, `info`, `bench`, `evolve`, `prepare-data` |
-| `nova-studio` | Native GUI dashboard (eframe/egui, 1600×950, cyberpunk theme) |
+| `void-cli` | CLI: `train`, `generate`, `tokenize`, `info`, `bench`, `evolve`, `prepare-data` |
+| `void-studio` | Native GUI dashboard (eframe/egui, 1600×950, cyberpunk theme) |
 
 ### Model Configs
 
 | Config | Params | d_model | Layers | Heads |
 |--------|--------|---------|--------|-------|
-| nova-tiny | ~5M | 128 | 4 | 4 (MHA) |
-| nova-125m | ~125M | 768 | 12 | 12 (MHA) |
-| nova-1b | ~1B | 2048 | 24 | 16/4 (GQA) |
-| nova-3b | ~3B | 3200 | 26 | 32/8 (GQA) |
+| void-tiny | ~5M | 128 | 4 | 4 (MHA) |
+| void-125m | ~125M | 768 | 12 | 12 (MHA) |
+| void-1b | ~1B | 2048 | 24 | 16/4 (GQA) |
+| void-3b | ~3B | 3200 | 26 | 32/8 (GQA) |
 
 ### Training Commands
 
 ```powershell
-cd C:\Nova
+cd C:\Void
 cargo build --release
 # Train from scratch
-.\target\release\nova-cli.exe train --config configs\nova-tiny.toml --device cpu
+.\target\release\void-cli.exe train --config configs\void-tiny.toml --device cpu
 # Resume from checkpoint
-.\target\release\nova-cli.exe train --config configs\nova-tiny.toml --resume checkpoints\nova-tiny-5m\latest --device cpu
+.\target\release\void-cli.exe train --config configs\void-tiny.toml --resume checkpoints\void-tiny-5m\latest --device cpu
 # Launch Studio GUI
-Start-Process .\target\release\nova-studio.exe
+Start-Process .\target\release\void-studio.exe
 ```
 
 ### Checkpoint System
@@ -270,7 +270,7 @@ Start-Process .\target\release\nova-studio.exe
 
 ### Current Training State
 
-Training nova-tiny-5m on CPU. Loss started at 9.48 (random init), currently ~7.2-7.5 at step 157. LR still in warmup phase (step 157/500). Checkpoints saving every 50 steps. ~300 tok/s throughput.
+Training void-tiny-5m on CPU. Loss started at 9.48 (random init), currently ~7.2-7.5 at step 157. LR still in warmup phase (step 157/500). Checkpoints saving every 50 steps. ~300 tok/s throughput.
 
 ---
 
@@ -282,7 +282,7 @@ The public-facing website deployed on Vercel. Shows all three projects.
 |-------|---------|
 | `/` | Landing page |
 | `/techstack` | Full technical breakdown of all projects |
-| `/nova` | Nova LLM training engine page |
+| `/void` | Void LLM training engine page |
 | `/vitalis` | Vitalis language page |
 | `/consulting` | Consulting services page |
 | `/dashboard/*` | 24 sub-pages (agents, chat, evolution, memory, swarm, voice, etc.) |
@@ -302,13 +302,13 @@ When referencing the website, use `infinitytechstack.uk` URLs. This is the PUBLI
 
 ### Git Workflow
 - Vitalis: `github.com/ModernOps888/vitalis` (public, push directly to main)
-- Nova: commit Nova code to any public repo
+- Void: commit Void code to any public repo
 - Profile: `github.com/ModernOps888/ModernOps888` (profile README, cloned to `C:\ModernOps888-profile`)
 - NEVER commit Infinity code to any public repo
 
 ### Testing
 - Run `cargo test --release` — all 1,586 Vitalis tests must pass
-- Nova: `cargo test --release` — all 75 tests must pass
+- Void: `cargo test --release` — all 75 tests must pass
 - No external test frameworks — pure `#[test]` + `assert!`/`assert_eq!`
 
 ### Common Gotchas
@@ -316,9 +316,9 @@ When referencing the website, use `infinitytechstack.uk` URLs. This is the PUBLI
 2. **Cranelift version**: Must be 0.116, not 0.119 — API differences are breaking
 3. **Parser leading newlines**: Leading `\n` in source strings can cause empty parse results
 4. **ctypes.c_char_p**: Never use as restype for FFI strings — use `c_void_p`
-5. **Nova RAM pressure**: Threshold is 85% of system RAM (dynamic via `sysinfo`), not hardcoded
-6. **Nova checkpoint interval**: Every 50 steps (not 25)
-7. **Nova Studio IPC**: File-based JSON at `data/training_metrics.json` — no sockets/gRPC
+5. **Void RAM pressure**: Threshold is 85% of system RAM (dynamic via `sysinfo`), not hardcoded
+6. **Void checkpoint interval**: Every 50 steps (not 25)
+7. **Void Studio IPC**: File-based JSON at `data/training_metrics.json` — no sockets/gRPC
 
 ### When Adding New Vitalis Modules
 1. Create `src/new_module.rs` with doc comment and `#[cfg(test)] mod tests`
@@ -327,9 +327,9 @@ When referencing the website, use `infinitytechstack.uk` URLs. This is the PUBLI
 4. Update version in `Cargo.toml` if it's a significant feature
 5. Run full test suite: `cargo test --release`
 
-### When Modifying Nova Training
+### When Modifying Void Training
 1. Always verify checkpoint save/resume cycle works after changes
 2. Run `cargo test --release` — all 75 tests must pass
 3. Never hardcode RAM thresholds — use `sysinfo` for dynamic detection
 4. Checkpoint before any memory offload operation
-5. Test with nova-tiny config first (fast iteration)
+5. Test with void-tiny config first (fast iteration)
