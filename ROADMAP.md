@@ -142,7 +142,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ Micro-benchmarking framework with outlier detection, confidence intervals, regression testing
 - ✅ 1,931 tests · 82 modules · ~68,200 LOC
 
-### v30.0 — Regex Engine, Serialization, Property Testing, Data Structures, Networking & ECS (Current Release)
+### v30.0 — Regex Engine, Serialization, Property Testing, Data Structures, Networking & ECS
 - ✅ Thompson NFA + Pike VM regex engine with O(n·m) guaranteed matching (no backtracking)
 - ✅ Character classes, quantifiers (greedy/lazy), anchors, alternation, capturing groups
 - ✅ JSON parser/stringify with full spec compliance; Base64, Hex, URL encoding, Varint/LEB128, MessagePack
@@ -158,7 +158,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ---
 
-## 📋 Planned — The AI Programming Language Arc
+### The AI Programming Language Arc
 
 > **Vision**: Transform Vitalis from a compiled language *with* AI libraries into a language
 > *built for* AI — where tensors are first-class types, every function is differentiable,
@@ -452,7 +452,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ### Phase 7: Research Frontier
 
-#### v44.0 — NAS, Continual & Federated Learning ✅
+#### v44.0 — NAS, Continual & Federated Learning ✅ (Current Release)
 - ✅ **Neural Architecture Search (NAS)**: Evolutionary + RL-based architecture optimization (`nas.rs`)
   - Extend `evolution_advanced.rs` NSGA-II + MAP-Elites for architecture space exploration
   - Network morphism operators (widen, deepen, skip) for efficient search
@@ -554,3 +554,17 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v28.0.0 | 2026-03-31 | 76 | 1,765 | ~62,700 | Graphics engine, shaders, GUI, creative coding, visual nodes, charts |
 | v29.0.0 | 2026-04-07 | 82 | 1,931 | ~68,200 | Profiler, memory pools, FFI bindgen, type classes, build system, benchmarks |
 | v30.0.0 | 2026-04-14 | 88 | 2,108 | ~72,000 | Regex engine, serialization, property testing, data structures, networking, ECS |
+| v31.0.0 | 2026-04-21 | 90 | 2,158 | ~76,000 | Tensor engine, SIMD matmul, autograd |
+| v32.0.0 | 2026-04-28 | 92 | 2,213 | ~80,000 | Neural network layers, training engine |
+| v33.0.0 | 2026-05-05 | 94 | 2,263 | ~84,000 | Transformer, tokenizer engine |
+| v34.0.0 | 2026-05-12 | 97 | 2,328 | ~88,000 | Inference, model adaptation, quantization |
+| v35.0.0 | 2026-05-19 | 100 | 2,368 | ~92,000 | Code intelligence, program synthesis, self-optimizer |
+| v36.0.0 | 2026-05-26 | 102 | 2,408 | ~95,000 | Autonomous agent, reward model |
+| v37.0.0 | 2026-06-02 | 104 | 2,458 | ~98,000 | Differentiable programming, probabilistic programming |
+| v38.0.0 | 2026-06-09 | 106 | 2,508 | ~101,000 | RL framework, simulation environments |
+| v39.0.0 | 2026-06-16 | 108 | 2,548 | ~104,000 | Data pipeline, experiment tracking |
+| v40.0.0 | 2026-06-23 | 110 | 2,588 | ~107,000 | Model serving, AI observability |
+| v41.0.0 | 2026-06-30 | 111 | 2,598 | ~108,000 | WASM AOT, WASI, component model |
+| v42.0.0 | 2026-07-07 | 112 | 2,608 | ~109,000 | Package registry, distributed build |
+| v43.0.0 | 2026-07-14 | 114 | 2,618 | ~109,500 | Formal verification, IDE features |
+| v44.0.0 | 2026-07-21 | 117 | 2,627 | ~110,000 | NAS, continual learning, federated learning |

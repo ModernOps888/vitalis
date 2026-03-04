@@ -12,7 +12,7 @@
 [![Tests](https://img.shields.io/badge/Tests-2%2C627_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
 [![LOC](https://img.shields.io/badge/LOC-110%2C000+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v36.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v44.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -147,94 +147,247 @@ flowchart TB
 
 <br>
 
-### Module Map
+### Module Map — 117 Modules
 
-Every source file has a single responsibility. The codebase is organized into **six layers**:
+Every source file has a single responsibility. The codebase is organized into **ten layers**:
 
-```mermaid
-block-beta
-    columns 4
+<table>
+<tr><td colspan="4" align="center"><h4>⚙️ Core Compiler Pipeline</h4></td></tr>
+<tr>
+<td><code>lexer.rs</code><br><sub>Logos tokenizer</sub></td>
+<td><code>parser.rs</code><br><sub>Recursive-descent + Pratt</sub></td>
+<td><code>ast.rs</code><br><sub>30+ Expr, 12 TopLevel</sub></td>
+<td><code>types.rs</code><br><sub>Two-pass type checker</sub></td>
+</tr>
+<tr>
+<td><code>ir.rs</code><br><sub>SSA-form IR builder</sub></td>
+<td><code>codegen.rs</code><br><sub>Cranelift JIT backend</sub></td>
+<td><code>optimizer.rs</code><br><sub>IR optimization passes</sub></td>
+<td><code>stdlib.rs</code><br><sub>412+ built-in functions</sub></td>
+</tr>
+<tr>
+<td><code>bridge.rs</code><br><sub>C FFI for Python</sub></td>
+<td><code>main.rs</code><br><sub>CLI binary (vtc)</sub></td>
+<td><code>lib.rs</code><br><sub>Module root</sub></td>
+<td></td>
+</tr>
+</table>
 
-    block:CORE:4
-        columns 4
-        A["⚙️ CORE COMPILER · 10,400 LOC"]:4
-        B["lexer.rs\n637 lines"]
-        C["parser.rs\n1,905 lines"]
-        D["ast.rs\n594 lines"]
-        E["types.rs\n929 lines"]
-        F["ir.rs\n2,025 lines"]
-        G["codegen.rs\n3,852 lines"]
-        H["stdlib.rs\n290 lines"]
-        I["bridge.rs\n845 lines"]
-    end
+<table>
+<tr><td colspan="4" align="center"><h4>🛡️ Type System & Safety</h4></td></tr>
+<tr>
+<td><code>generics.rs</code><br><sub>Monomorphization</sub></td>
+<td><code>type_inference.rs</code><br><sub>Hindley-Milner</sub></td>
+<td><code>ownership.rs</code><br><sub>Borrow checker</sub></td>
+<td><code>lifetimes.rs</code><br><sub>Region analysis</sub></td>
+</tr>
+<tr>
+<td><code>nll.rs</code><br><sub>Non-lexical lifetimes</sub></td>
+<td><code>effects.rs</code><br><sub>Capability types</sub></td>
+<td><code>effect_handlers.rs</code><br><sub>Algebraic effects</sub></td>
+<td><code>refinement_types.rs</code><br><sub>Dependent types</sub></td>
+</tr>
+<tr>
+<td><code>trait_dispatch.rs</code><br><sub>VTables + resolution</sub></td>
+<td><code>type_classes.rs</code><br><sub>HKTs, GADTs</sub></td>
+<td><code>pattern_exhaustiveness.rs</code><br><sub>Maranget algorithm</sub></td>
+<td><code>formal_verification.rs</code><br><sub>Contracts, proofs</sub></td>
+</tr>
+</table>
 
-    block:EVO:2
-        columns 1
-        J["🧬 EVOLUTION · 2,500 LOC"]
-        K["evolution.rs\nGenerational tracking"]
-        L["evolution_advanced.rs\nMulti-strategy"]
-        M["meta_evolution.rs\nSelf-modifying"]
-    end
+<table>
+<tr><td colspan="4" align="center"><h4>🎯 Compilation Targets</h4></td></tr>
+<tr>
+<td><code>aot.rs</code><br><sub>AOT native binaries</sub></td>
+<td><code>cross_compile.rs</code><br><sub>ARM64 · RISC-V</sub></td>
+<td><code>wasm_target.rs</code><br><sub>WASM module builder</sub></td>
+<td><code>wasm_aot.rs</code><br><sub>WASM AOT + WASI</sub></td>
+</tr>
+<tr>
+<td><code>bootstrap.rs</code><br><sub>Self-hosted Stage 0/1/2</sub></td>
+<td><code>distributed_build.rs</code><br><sub>Distributed compilation</sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
 
-    block:PERF:2
-        columns 1
-        N["🚀 PERFORMANCE · 5,800 LOC"]
-        O["hotpath.rs · 2,106 lines"]
-        P["simd_ops.rs · 846 lines"]
-        Q["optimizer.rs · 1,294 lines"]
-    end
+<table>
+<tr><td colspan="4" align="center"><h4>🧬 Evolution & Self-Improvement</h4></td></tr>
+<tr>
+<td><code>evolution.rs</code><br><sub>@evolvable registry</sub></td>
+<td><code>evolution_advanced.rs</code><br><sub>DE, PSO, CMA-ES</sub></td>
+<td><code>meta_evolution.rs</code><br><sub>Thompson sampling</sub></td>
+<td><code>engine.rs</code><br><sub>Evolution brain</sub></td>
+</tr>
+<tr>
+<td><code>autonomous_agent.rs</code><br><sub>Self-rewriting code</sub></td>
+<td><code>reward_model.rs</code><br><sub>Learned fitness</sub></td>
+<td><code>self_optimizer.rs</code><br><sub>ML-driven compiler</sub></td>
+<td><code>code_intelligence.rs</code><br><sub>Code embeddings</sub></td>
+</tr>
+<tr>
+<td><code>program_synthesis.rs</code><br><sub>Type-guided synthesis</sub></td>
+<td><code>scoring.rs</code><br><sub>Fitness scoring</sub></td>
+<td><code>memory.rs</code><br><sub>Engram storage</sub></td>
+<td></td>
+</tr>
+</table>
 
-    block:SAFETY:2
-        columns 1
-        SA["🛡️ SAFETY & TOOLING · 7,200+ LOC"]
-        SB["lifetimes.rs\nRegion analysis"]
-        SC["effects.rs\nCapability types"]
-        SD["hot_reload.rs\nLive reload"]
-        SE["nll.rs\nNon-lexical lifetimes"]
-        SF["effect_handlers.rs\nAlgebraic handlers"]
-        SG["pattern_exhaustiveness.rs\nMatch checking"]
-    end
+<table>
+<tr><td colspan="4" align="center"><h4>🚀 Performance & Runtime</h4></td></tr>
+<tr>
+<td><code>hotpath.rs</code><br><sub>44 native Rust ops</sub></td>
+<td><code>simd_ops.rs</code><br><sub>AVX2 vectorization</sub></td>
+<td><code>async_runtime.rs</code><br><sub>Async executor</sub></td>
+<td><code>concurrency.rs</code><br><sub>Mutex, channels, Select</sub></td>
+</tr>
+<tr>
+<td><code>memory_pool.rs</code><br><sub>Arena, slab, buddy</sub></td>
+<td><code>profiler.rs</code><br><sub>Flame graphs, PGO</sub></td>
+<td><code>benchmark.rs</code><br><sub>Micro-benchmarks</sub></td>
+<td><code>gpu_compute.rs</code><br><sub>Compute shaders</sub></td>
+</tr>
+</table>
 
-    block:NATIVE:2
-        columns 1
-        NA["🎯 NATIVE TARGETS · 1,800 LOC"]
-        NB["aot.rs\nAOT compilation"]
-        NC["cross_compile.rs\nARM · RISC-V"]
-        ND["bootstrap.rs\nSelf-hosted"]
-    end
+<table>
+<tr><td colspan="4" align="center"><h4>🧠 AI & Machine Learning</h4></td></tr>
+<tr>
+<td><code>tensor.rs</code><br><sub>N-dim tensors</sub></td>
+<td><code>autograd.rs</code><br><sub>Reverse-mode AD</sub></td>
+<td><code>neural_net.rs</code><br><sub>Layers + training</sub></td>
+<td><code>transformer.rs</code><br><sub>MHA, GQA, RoPE</sub></td>
+</tr>
+<tr>
+<td><code>training_engine.rs</code><br><sub>Adam, LR schedules</sub></td>
+<td><code>inference.rs</code><br><sub>KV cache, sampling</sub></td>
+<td><code>tokenizer_engine.rs</code><br><sub>BPE, WordPiece</sub></td>
+<td><code>model_adaptation.rs</code><br><sub>LoRA, QLoRA</sub></td>
+</tr>
+<tr>
+<td><code>quantization.rs</code><br><sub>INT8/INT4, GPTQ</sub></td>
+<td><code>differentiable.rs</code><br><sub>@differentiable</sub></td>
+<td><code>probabilistic.rs</code><br><sub>Bayesian, MCMC</sub></td>
+<td><code>ml.rs</code><br><sub>k-means, KNN, PCA</sub></td>
+</tr>
+<tr>
+<td><code>nas.rs</code><br><sub>Architecture search</sub></td>
+<td><code>continual_learning.rs</code><br><sub>EWC, progressive</sub></td>
+<td><code>federated_learning.rs</code><br><sub>FedAvg, privacy</sub></td>
+<td><code>rl_framework.rs</code><br><sub>DQN, PPO, A2C</sub></td>
+</tr>
+<tr>
+<td><code>simulation.rs</code><br><sub>RL environments</sub></td>
+<td><code>data_pipeline.rs</code><br><sub>DataLoader, transforms</sub></td>
+<td><code>experiment.rs</code><br><sub>Experiment tracking</sub></td>
+<td><code>model_serving.rs</code><br><sub>Inference serving</sub></td>
+</tr>
+<tr>
+<td><code>ai_observability.rs</code><br><sub>Drift, fairness, SHAP</sub></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
 
-    block:MATH:4
-        columns 4
-        R["📊 DOMAIN LIBRARIES · 17,000 LOC"]:4
-        S["ml.rs\nNeural nets"]
-        T["quantum.rs\nCircuits"]
-        U["graph.rs\nDijkstra"]
-        V["numerical.rs\nODE · FFT"]
-        W["signal.rs\nDSP"]
-        X["bio.rs\nDNA"]
-        Y["neuro.rs\nSpiking"]
-        Z["crypto.rs\nSHA-256"]
-    end
+<table>
+<tr><td colspan="4" align="center"><h4>🔧 Language Features</h4></td></tr>
+<tr>
+<td><code>macro_system.rs</code><br><sub>Hygienic macros</sub></td>
+<td><code>const_eval.rs</code><br><sub>Compile-time eval</sub></td>
+<td><code>iterators.rs</code><br><sub>Lazy iterators</sub></td>
+<td><code>documentation.rs</code><br><sub>Doc generation</sub></td>
+</tr>
+<tr>
+<td><code>formatter.rs</code><br><sub>Code formatter</sub></td>
+<td><code>linter.rs</code><br><sub>17 lint rules</sub></td>
+<td><code>ffi_bindgen.rs</code><br><sub>C/.d.ts bindgen</sub></td>
+<td><code>build_system.rs</code><br><sub>Build DAG + cache</sub></td>
+</tr>
+<tr>
+<td><code>property_testing.rs</code><br><sub>QuickCheck shrinking</sub></td>
+<td><code>regex_engine.rs</code><br><sub>Thompson NFA</sub></td>
+<td><code>serialization.rs</code><br><sub>JSON, Base64, MsgPack</sub></td>
+<td><code>data_structures.rs</code><br><sub>B-Tree, Skip List, LRU</sub></td>
+</tr>
+<tr>
+<td><code>networking.rs</code><br><sub>HTTP/1.1, /2, WebSocket</sub></td>
+<td><code>ecs.rs</code><br><sub>Entity-Component-System</sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
 
-    CORE --> EVO
-    CORE --> PERF
-    CORE --> SAFETY
-    CORE --> NATIVE
-    CORE --> MATH
+<table>
+<tr><td colspan="4" align="center"><h4>🛠️ Developer Tooling</h4></td></tr>
+<tr>
+<td><code>lsp.rs</code><br><sub>LSP server</sub></td>
+<td><code>dap.rs</code><br><sub>Debug adapter</sub></td>
+<td><code>repl.rs</code><br><sub>Interactive REPL</sub></td>
+<td><code>ide_features.rs</code><br><sub>Refactoring, coverage</sub></td>
+</tr>
+<tr>
+<td><code>incremental.rs</code><br><sub>Incremental compilation</sub></td>
+<td><code>hot_reload.rs</code><br><sub>Live code reload</sub></td>
+<td><code>package_manager.rs</code><br><sub>SemVer, registry</sub></td>
+<td></td>
+</tr>
+</table>
 
-    style CORE fill:#0c1222,stroke:#38bdf8,stroke-width:3px,color:#bae6fd
-    style EVO fill:#1a0c22,stroke:#e879f9,stroke-width:3px,color:#f5d0fe
-    style PERF fill:#1a0c0c,stroke:#fb923c,stroke-width:3px,color:#fed7aa
-    style SAFETY fill:#0c1a0c,stroke:#4ade80,stroke-width:3px,color:#dcfce7
-    style NATIVE fill:#1a1a0c,stroke:#fbbf24,stroke-width:3px,color:#fef3c7
-    style MATH fill:#0c1a22,stroke:#a78bfa,stroke-width:3px,color:#ddd6fe
-    style A fill:#1e3a5f,stroke:#38bdf8,color:#e0f2fe
-    style J fill:#2d1042,stroke:#e879f9,color:#f5d0fe
-    style N fill:#2d1a0a,stroke:#fb923c,color:#fed7aa
-    style SA fill:#0f3d1e,stroke:#4ade80,color:#dcfce7
-    style NA fill:#3d3d0a,stroke:#fbbf24,color:#fef3c7
-    style R fill:#1a1040,stroke:#a78bfa,color:#ddd6fe
-```
+<table>
+<tr><td colspan="4" align="center"><h4>🎨 Graphics & Creative</h4></td></tr>
+<tr>
+<td><code>graphics_engine.rs</code><br><sub>2D/3D rendering</sub></td>
+<td><code>shader_lang.rs</code><br><sub>GLSL/HLSL/SPIR-V</sub></td>
+<td><code>gui_framework.rs</code><br><sub>Widget layout</sub></td>
+<td><code>creative_coding.rs</code><br><sub>Particles, L-systems</sub></td>
+</tr>
+<tr>
+<td><code>visual_nodes.rs</code><br><sub>Node graph editor</sub></td>
+<td><code>chart_rendering.rs</code><br><sub>Charts + SVG export</sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+<table>
+<tr><td colspan="4" align="center"><h4>📊 Domain Libraries — 24 modules</h4></td></tr>
+<tr>
+<td><code>quantum.rs</code><br><sub>Quantum circuits</sub></td>
+<td><code>quantum_algorithms.rs</code><br><sub>Grover, Shor, VQE</sub></td>
+<td><code>quantum_math.rs</code><br><sub>Quantum primitives</sub></td>
+<td><code>graph.rs</code><br><sub>Dijkstra, BFS, MST</sub></td>
+</tr>
+<tr>
+<td><code>numerical.rs</code><br><sub>ODE, FFT, integration</sub></td>
+<td><code>advanced_math.rs</code><br><sub>Matrix ops, stats</sub></td>
+<td><code>signal_processing.rs</code><br><sub>DSP, filters</sub></td>
+<td><code>bioinformatics.rs</code><br><sub>DNA, alignment</sub></td>
+</tr>
+<tr>
+<td><code>neuromorphic.rs</code><br><sub>Spiking NNs, STDP</sub></td>
+<td><code>geometry.rs</code><br><sub>Convex hull, Voronoi</sub></td>
+<td><code>sorting.rs</code><br><sub>Parallel sort</sub></td>
+<td><code>automata.rs</code><br><sub>FSM, NFA/DFA</sub></td>
+</tr>
+<tr>
+<td><code>combinatorial.rs</code><br><sub>Permutations, TSP</sub></td>
+<td><code>probability.rs</code><br><sub>Distributions</sub></td>
+<td><code>analytics.rs</code><br><sub>Statistical analysis</sub></td>
+<td><code>compression.rs</code><br><sub>LZ77, Huffman</sub></td>
+</tr>
+<tr>
+<td><code>chemistry_advanced.rs</code><br><sub>Molecular dynamics</sub></td>
+<td><code>string_algorithms.rs</code><br><sub>KMP, suffix arrays</sub></td>
+<td><code>crypto.rs</code><br><sub>SHA-256, AES</sub></td>
+<td><code>security.rs</code><br><sub>Sandboxing</sub></td>
+</tr>
+<tr>
+<td><code>science.rs</code><br><sub>Physics sims</sub></td>
+<td><code>wasm_target.rs</code><br><sub>WASM builder</sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
 
 <br>
 
@@ -257,7 +410,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 2,108 tests
+# Run all 2,627 tests
 cargo test
 
 # Compile and run a .sl file
@@ -635,7 +788,7 @@ mindmap
 
 ## 📐 Standard Library
 
-### 310+ Built-in Functions
+### 412+ Built-in Functions
 
 <details>
 <summary><b>🔢 Mathematics — 60+ functions</b></summary>
@@ -837,11 +990,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-2,108 tests across every compiler stage and all subsystems through v30:
+2,627 tests across every compiler stage and all subsystems through v44:
 
 ```
 $ cargo test
-test result: ok. 2108 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 2627 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -851,7 +1004,7 @@ test result: ok. 2108 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Type checker | 60+ | Inference, generics, errors |
 | IR builder | 110+ | SSA, control flow, closures, traits |
 | Codegen (JIT) | 200+ | End-to-end compilation |
-| Runtime stdlib | 120+ | All 310+ functions |
+| Runtime stdlib | 120+ | All 412+ functions |
 | Evolution | 20+ | Register, evolve, rollback |
 | Domain modules | 80+ | Math, quantum, ML, crypto |
 | Async runtime | 15 | Executor, tasks, channels, futures |
@@ -901,6 +1054,35 @@ test result: ok. 2108 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Data structures | 30 | B-Tree, Skip List, Ring Buffer, Union-Find, Interval Tree, LRU Cache |
 | Networking | 32 | URL parser, HTTP/1.1 & /2, WebSocket, DNS, TCP state machine, IP validation |
 | ECS | 30 | Generational entities, sparse set storage, component queries, system scheduling |
+| Tensor engine | 25 | N-dim tensors, broadcasting, matmul, SIMD tiling, memory pools |
+| Autograd | 25 | Tape recording, backward pass, gradient checkpointing, clipping |
+| Neural networks | 30 | Linear, Conv2D, LayerNorm, Dropout, Residual, Sequential, init |
+| Transformer | 30 | MHA, GQA, RoPE, SwiGLU, KV cache, Flash Attention, encoder/decoder |
+| Tokenizer | 20 | BPE, WordPiece, Unigram, byte-level fallback, special tokens |
+| Training engine | 25 | Adam/AdamW/LAMB, LR schedulers, gradient accumulation, checkpoints |
+| Inference | 25 | Batched inference, speculative decoding, sampling strategies, beam search |
+| Model adaptation | 20 | LoRA, QLoRA, adapter layers, prefix tuning, adapter merging |
+| Quantization | 20 | INT8/INT4, GPTQ, NF4, mixed-precision graph, calibration |
+| Code intelligence | 20 | Code embeddings, similarity search, bug prediction, semantic search |
+| Program synthesis | 20 | Type-guided, I/O examples, sketch completion, CEGIS |
+| Self optimizer | 20 | RL pass ordering, cost model, auto-tuning, PGO integration |
+| Autonomous agent | 20 | Reflection API, mutation ops, crossover, safety verification |
+| Reward model | 20 | Preference learning, surrogate model, curiosity-driven exploration |
+| Differentiable | 25 | @differentiable, dual numbers, custom VJPs, shape types |
+| Probabilistic | 25 | Distributions, sample/observe, MCMC/HMC, variational inference |
+| RL framework | 25 | DQN, PPO, A2C, replay buffers, multi-agent |
+| Simulation | 20 | Grid worlds, continuous control, code optimization environment |
+| Data pipeline | 20 | Dataset, DataLoader, transforms, streaming, CSV/JSON/binary |
+| Experiment tracking | 20 | Run tracking, hyperparameter search, model registry, comparison |
+| Model serving | 20 | Model loading, batched requests, versioning, ONNX export |
+| AI observability | 20 | Drift detection, fairness metrics, SHAP, safety guardrails |
+| WASM AOT | 20 | WASM AOT compilation, WASI, component model, tree-shaking |
+| Distributed build | 20 | Package registry, distributed compile, content-addressed cache |
+| Formal verification | 20 | Contracts, symbolic execution, SMT constraints, proofs |
+| IDE features | 20 | Refactoring, code coverage, call graphs, complexity metrics |
+| NAS | 15 | Neural architecture search, SuperNet, ENAS controller |
+| Continual learning | 15 | EWC, progressive nets, experience replay, curriculum |
+| Federated learning | 15 | FedAvg, differential privacy, gossip protocol |
 
 <br>
 
@@ -994,7 +1176,8 @@ vitalis/
 │   ├── gui_framework.rs      # GUI framework — QML/XAML/SwiftUI/CSS, widgets, layout, themes
 │   ├── creative_coding.rs    # Creative coding — Processing/p5.js, particles, L-systems, automata
 │   ├── visual_nodes.rs       # Visual nodes — node graphs, evaluation, TouchDesigner/Blueprints
-│   └── chart_rendering.rs    # Chart rendering — pie, bar, line, scatter, histogram, radar, treemap
+│   ├── chart_rendering.rs    # Chart rendering — pie, bar, line, scatter, histogram, radar, treemap
+│   │
 │   ├── profiler.rs           # Profiler & PGO — call graphs, flame graphs, PGO hints, hot-path detection
 │   ├── memory_pool.rs        # Memory pools — arena, pool, slab, buddy allocators, RC heap, cycle detection
 │   ├── ffi_bindgen.rs        # FFI bindgen — C headers, TypeScript .d.ts, calling conventions, type marshal
@@ -1007,7 +1190,41 @@ vitalis/
 │   ├── property_testing.rs   # Property testing — QuickCheck-style with shrinking, Xorshift128+ PRNG
 │   ├── data_structures.rs    # Data structures — B-Tree, Skip List, Ring Buffer, Union-Find, LRU Cache
 │   ├── networking.rs         # Networking — URL parser, HTTP/1.1 & /2, WebSocket, DNS, TCP state machine
-│   └── ecs.rs                # ECS — generational entities, sparse set storage, component queries, systems
+│   ├── ecs.rs                # ECS — generational entities, sparse set storage, component queries, systems
+│   │
+│   ├── tensor.rs             # Tensor engine — N-dim tensors, broadcasting, SIMD matmul, memory pools
+│   ├── autograd.rs           # Autograd — reverse-mode AD, tape recording, gradient checkpointing
+│   ├── neural_net.rs         # Neural networks — Linear, Conv2D, LayerNorm, Dropout, Residual, Sequential
+│   ├── transformer.rs        # Transformer — MHA, GQA, RoPE, SwiGLU, KV cache, Flash Attention
+│   ├── tokenizer_engine.rs   # Tokenizer — BPE, WordPiece, Unigram, byte-level fallback
+│   ├── training_engine.rs    # Training — Adam/AdamW/LAMB, LR schedulers, gradient accumulation
+│   ├── inference.rs          # Inference — batched inference, speculative decoding, beam search
+│   ├── model_adaptation.rs   # Adaptation — LoRA, QLoRA, adapter layers, prefix tuning
+│   ├── quantization.rs       # Quantization — INT8/INT4, GPTQ, NF4, mixed-precision graphs
+│   │
+│   ├── code_intelligence.rs  # Code intelligence — embeddings, similarity, bug prediction
+│   ├── program_synthesis.rs  # Program synthesis — type-guided, I/O synthesis, CEGIS
+│   ├── self_optimizer.rs     # Self-optimizer — RL pass ordering, cost model, auto-tuning
+│   ├── autonomous_agent.rs   # Autonomous agent — self-rewriting, reflection API, safety checks
+│   ├── reward_model.rs       # Reward model — preference learning, surrogate model, curiosity
+│   │
+│   ├── differentiable.rs     # Differentiable — @differentiable, dual numbers, shape types
+│   ├── probabilistic.rs      # Probabilistic — distributions, MCMC, variational inference, BNNs
+│   ├── rl_framework.rs       # RL framework — DQN, PPO, A2C, replay buffers, multi-agent
+│   ├── simulation.rs         # Simulation — grid worlds, continuous control, code optimization env
+│   │
+│   ├── data_pipeline.rs      # Data pipeline — Dataset, DataLoader, transforms, streaming
+│   ├── experiment.rs         # Experiment tracking — run logging, hyperparameter search, registry
+│   ├── model_serving.rs      # Model serving — batched requests, versioning, ONNX export
+│   ├── ai_observability.rs   # AI observability — drift detection, fairness, SHAP, guardrails
+│   │
+│   ├── wasm_aot.rs           # WASM AOT — standalone .wasm compilation, WASI, component model
+│   ├── distributed_build.rs  # Distributed build — package registry, remote compile, hermetic builds
+│   ├── formal_verification.rs # Formal verification — contracts, symbolic execution, SMT constraints
+│   ├── ide_features.rs       # IDE features — refactoring, code coverage, call graphs, complexity
+│   ├── nas.rs                # NAS — neural architecture search, SuperNet, ENAS controller
+│   ├── continual_learning.rs # Continual learning — EWC, progressive nets, experience replay
+│   └── federated_learning.rs # Federated learning — FedAvg, differential privacy, gossip protocol
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1237,19 +1454,54 @@ timeline
         : 50 new stdlib builtins (regex_*, json_*, base64_*, btree_*, url_*, ecs_*)
         : 2,108 tests passing · 88 modules · ~72,000 LOC
 
-    v31+ · The Future
-        : WASM AOT target (compile .sl to standalone .wasm files)
-        : WASM-WASI runtime support for file I/O and environment access
-        : Package registry server + vitalis install + vulnerability scanning
-        : Distributed compilation across networked nodes
-        : Hermetic builds with sandboxed environments
-        : Formal verification with contract-based programming
-        : Symbolic execution engine for property checking
-        : Advanced IDE tooling (inlay hints, semantic tokens, refactoring engine)
-        : Code coverage reporting and visualization
-        : Self-evolving optimizer passes via evolution engine
-        : Auto-vectorization via SIMD intrinsics detection
-        : Effect polymorphism and algebraic subtyping
+    v31–v32 · Tensor Engine & Neural Networks
+        : First-class N-dimensional tensors with SIMD matmul (Goto algorithm)
+        : Reverse-mode automatic differentiation (tape-based autograd)
+        : Gradient checkpointing, clipping, second-order gradients
+        : Neural network layers (Linear, Conv2D, LayerNorm, Dropout, Residual)
+        : Training engine with Adam/AdamW/LAMB optimizers + LR schedulers
+        : Mixed-precision training, gradient accumulation, checkpointing
+
+    v33–v34 · Transformers & Inference
+        : Multi-Head & Grouped-Query Attention with RoPE and ALiBi
+        : SwiGLU FFN, KV cache, Flash Attention approximation
+        : BPE/WordPiece/Unigram tokenizer engine
+        : Inference runtime with speculative decoding and beam search
+        : LoRA, QLoRA, adapter layers, prefix tuning
+        : INT8/INT4 quantization, GPTQ, NF4, mixed-precision graphs
+
+    v35–v36 · Code Intelligence & Autonomous Evolution
+        : Code embeddings, similarity search, bug prediction
+        : Type-guided program synthesis, sketch completion, CEGIS
+        : ML-driven compiler optimization with RL pass ordering
+        : Self-rewriting programs with reflection API and safety verification
+        : Learned fitness functions, curiosity-driven exploration
+
+    v37–v38 · Differentiable & RL Programming
+        : @differentiable annotation with auto backward pass generation
+        : Probabilistic programming (MCMC, variational inference, BNNs)
+        : RL framework (DQN, PPO, A2C, replay buffers, multi-agent)
+        : Simulation environments for RL and coevolution
+
+    v39–v40 · Production AI Infrastructure
+        : Data pipeline, DataLoader, transforms, streaming datasets
+        : Experiment tracking, hyperparameter search, model registry
+        : Model serving, batched inference, ONNX export
+        : AI observability (drift detection, fairness, SHAP, guardrails)
+
+    v41–v42 · WASM AOT & Distributed Builds
+        : WASM AOT target with WASI support and component model
+        : Browser runtime shim, dead-code elimination, tree-shaking
+        : Package registry, distributed compilation, hermetic builds
+        : Content-addressed shared build cache
+
+    v43–v44 · Verification, IDE, NAS & Federated Learning
+        : Formal verification with pre/post contracts and symbolic execution
+        : IDE features (refactoring, coverage, call graphs, complexity)
+        : Neural architecture search (SuperNet, ENAS controller)
+        : Continual learning (EWC, progressive nets, experience replay)
+        : Federated learning (FedAvg, differential privacy, gossip)
+        : 2,627 tests passing · 117 modules · 110,000+ LOC
 ```
 
 <br>
