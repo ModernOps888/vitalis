@@ -258,3 +258,11 @@ pub mod ffi_bindgen;
 pub mod type_classes;
 pub mod build_system;
 pub mod benchmark;
+
+// ── v30: Regex Engine, Serialization, Property Testing, Data Structures, Networking & ECS ──
+pub mod regex_engine;
+pub mod serialization;
+pub mod property_testing;
+pub mod data_structures;
+pub mod networking;
+pub mod ecs;

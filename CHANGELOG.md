@@ -5,6 +5,65 @@ All notable changes to Vitalis will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [30.0.0] - 2025-07-25
+
+### Added
+
+#### Regex Engine
+- **`regex_engine.rs`** (~700 LOC, 30+ tests) — Thompson NFA + Pike VM regex engine
+  - **Parser**: Recursive-descent regex parser supporting `.`, `*`, `+`, `?`, `|`, `()`, `(?:)`, `[abc]`, `[^abc]`, `[a-z]`, `\d\w\s\D\W\S`, `{n,m}`, `^$` anchors, non-greedy quantifiers
+  - **NFA Compiler**: Thompson's construction with ε-transitions, guaranteed O(n·m) matching
+  - **Pike VM Executor**: No backtracking, capture group support, find/replace/split operations
+  - **FFI**: `vitalis_regex_is_match`, `vitalis_regex_find_first`, `vitalis_regex_find_all_matches`, `vitalis_regex_captures_first`, `vitalis_regex_replace_first`, `vitalis_regex_replace_all_matches`, `vitalis_regex_split_by`
+
+#### Serialization
+- **`serialization.rs`** (~700 LOC, 35+ tests) — Multi-format serialization framework
+  - **JSON**: Recursive-descent parser and stringify (compact + pretty-print)
+  - **Base64**: RFC 4648 encode/decode
+  - **Hex**: Encode/decode
+  - **MessagePack**: Binary encode/decode for JSON values
+  - **Varint/LEB128**: Variable-length integer encoding
+  - **URL Encoding**: RFC 3986 percent-encoding
+  - **JSON Path**: Dot-notation path queries (`a.b.c`, array indexing)
+
+#### Property Testing
+- **`property_testing.rs`** (~520 LOC, 25+ tests) — QuickCheck-style property-based testing
+  - **PRNG**: Xorshift128+ with deterministic seeding (2^128-1 period)
+  - **Generators**: i64, f64, bool, string, vec, sorted vec with edge-case bias
+  - **Shrinking**: Binary search toward zero for counterexample minimization
+  - **Test Runner**: Configurable iterations, seed replay, counterexample reporting
+  - **Uniformity**: Chi-squared distribution test
+
+#### Data Structures
+- **`data_structures.rs`** (~640 LOC, 30+ tests) — Advanced data structures
+  - **B-Tree**: Configurable min degree, insert/search/update/in-order traversal
+  - **Skip List**: Probabilistic O(log n) search/insert with xorshift level selection
+  - **Ring Buffer**: Fixed-capacity circular deque, O(1) push/pop front+back
+  - **Union-Find**: Path compression + union by rank, ≈O(α(n)) amortized
+  - **Interval Tree**: Augmented BST, O(log n + k) overlap queries
+  - **LRU Cache**: O(1) get/put via HashMap + linked list indices
+
+#### Networking
+- **`networking.rs`** (~700 LOC, 30+ tests) — Protocol-level networking primitives
+  - **URL Parser**: RFC 3986 compliant (scheme, userinfo, host, port, path, query, fragment)
+  - **HTTP/1.1**: Request/response builder and parser with header support
+  - **HTTP/2**: Frame parser/builder (DATA, HEADERS, SETTINGS, PING, GOAWAY, etc.)
+  - **WebSocket**: RFC 6455 frame codec with masking support
+  - **DNS**: RFC 1035 packet builder/parser
+  - **TCP State Machine**: RFC 793 full state transition (SYN/ACK/FIN/TIME_WAIT)
+  - **IP Validation**: IPv4 and IPv6 address validation
+
+#### Entity-Component-System
+- **`ecs.rs`** (~500 LOC, 25+ tests) — Data-oriented ECS framework
+  - **Generational Entities**: Recycled entity slots with generation counters
+  - **Sparse Set Storage**: O(1) add/remove/get/has for components
+  - **Component Queries**: With/Without filter combinators
+  - **System Scheduling**: Priority-based system execution with dependency resolution
+  - **FFI**: World create/free, spawn/despawn, add/get/has component
+
+### Stats
+- **88 modules** | **~72,000 LOC** | **2,108 tests** | **310+ stdlib functions**
+
 ## [27.0.0] - 2026-07-03
 
 ### Added

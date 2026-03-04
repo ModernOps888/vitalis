@@ -349,6 +349,69 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "bench_percentile".into(),      params: vec![("data", IrType::Ptr), ("p", IrType::F64)],                       ret: IrType::F64,  runtime_name: "slang_bench_percentile".into() },
         BuiltinFn { name: "bench_ci95".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "slang_bench_ci95".into() },
         BuiltinFn { name: "bench_regression".into(),      params: vec![("old", IrType::Ptr), ("new", IrType::Ptr)],                      ret: IrType::Ptr,  runtime_name: "slang_bench_regression".into() },
+
+        // ── v30: Regex Engine ────────────────────────────────────────────────
+        BuiltinFn { name: "regex_match".into(),           params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                 ret: IrType::I64,  runtime_name: "vitalis_regex_is_match".into() },
+        BuiltinFn { name: "regex_find".into(),            params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                 ret: IrType::Ptr,  runtime_name: "vitalis_regex_find_first".into() },
+        BuiltinFn { name: "regex_find_all".into(),        params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                 ret: IrType::Ptr,  runtime_name: "vitalis_regex_find_all_matches".into() },
+        BuiltinFn { name: "regex_captures".into(),        params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                 ret: IrType::Ptr,  runtime_name: "vitalis_regex_captures_first".into() },
+        BuiltinFn { name: "regex_replace".into(),         params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr), ("rep", IrType::Ptr)], ret: IrType::Ptr, runtime_name: "vitalis_regex_replace_first".into() },
+        BuiltinFn { name: "regex_replace_all".into(),     params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr), ("rep", IrType::Ptr)], ret: IrType::Ptr, runtime_name: "vitalis_regex_replace_all_matches".into() },
+        BuiltinFn { name: "regex_split".into(),           params: vec![("pattern", IrType::Ptr), ("text", IrType::Ptr)],                 ret: IrType::Ptr,  runtime_name: "vitalis_regex_split_by".into() },
+
+        // ── v30: Serialization ───────────────────────────────────────────────
+        BuiltinFn { name: "json_parse".into(),            params: vec![("json", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_json_parse".into() },
+        BuiltinFn { name: "json_stringify".into(),        params: vec![("json", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_json_stringify".into() },
+        BuiltinFn { name: "json_get".into(),              params: vec![("json", IrType::Ptr), ("path", IrType::Ptr)],                    ret: IrType::Ptr,  runtime_name: "vitalis_json_get".into() },
+        BuiltinFn { name: "base64_encode".into(),         params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_ser_base64_encode".into() },
+        BuiltinFn { name: "base64_decode".into(),         params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_ser_base64_decode".into() },
+        BuiltinFn { name: "hex_encode".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_ser_hex_encode".into() },
+        BuiltinFn { name: "hex_decode".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_ser_hex_decode".into() },
+        BuiltinFn { name: "url_encode".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_ser_url_encode".into() },
+        BuiltinFn { name: "url_decode".into(),            params: vec![("data", IrType::Ptr)],                                           ret: IrType::Ptr,  runtime_name: "vitalis_ser_url_decode".into() },
+
+        // ── v30: Property Testing ────────────────────────────────────────────
+        BuiltinFn { name: "qc_gen_i64".into(),            params: vec![("seed", IrType::I64)],                                           ret: IrType::I64,  runtime_name: "vitalis_qc_gen_i64".into() },
+        BuiltinFn { name: "qc_gen_f64".into(),            params: vec![("seed", IrType::I64)],                                           ret: IrType::F64,  runtime_name: "vitalis_qc_gen_f64".into() },
+        BuiltinFn { name: "qc_gen_bool".into(),           params: vec![("seed", IrType::I64)],                                           ret: IrType::I64,  runtime_name: "vitalis_qc_gen_bool".into() },
+        BuiltinFn { name: "qc_shrink_i64".into(),         params: vec![("val", IrType::I64)],                                            ret: IrType::I64,  runtime_name: "vitalis_qc_shrink_i64".into() },
+        BuiltinFn { name: "qc_test_commutative".into(),   params: vec![("seed", IrType::I64), ("count", IrType::I64)],                  ret: IrType::I64,  runtime_name: "vitalis_qc_test_commutative_add".into() },
+        BuiltinFn { name: "qc_test_sort_idempotent".into(), params: vec![("seed", IrType::I64), ("count", IrType::I64)],                ret: IrType::I64,  runtime_name: "vitalis_qc_test_sort_idempotent".into() },
+        BuiltinFn { name: "qc_chi_squared".into(),        params: vec![("seed", IrType::I64), ("count", IrType::I64)],                  ret: IrType::F64,  runtime_name: "vitalis_qc_chi_squared".into() },
+
+        // ── v30: Data Structures ─────────────────────────────────────────────
+        BuiltinFn { name: "btree_create".into(),          params: vec![("min_degree", IrType::I64)],                                     ret: IrType::I64,  runtime_name: "vitalis_btree_create".into() },
+        BuiltinFn { name: "btree_insert".into(),          params: vec![("tree", IrType::I64), ("key", IrType::I64)],                     ret: IrType::I64,  runtime_name: "vitalis_btree_insert".into() },
+        BuiltinFn { name: "btree_search".into(),          params: vec![("tree", IrType::I64), ("key", IrType::I64)],                     ret: IrType::I64,  runtime_name: "vitalis_btree_search".into() },
+        BuiltinFn { name: "btree_len".into(),             params: vec![("tree", IrType::I64)],                                           ret: IrType::I64,  runtime_name: "vitalis_btree_len".into() },
+        BuiltinFn { name: "ringbuf_create".into(),        params: vec![("capacity", IrType::I64)],                                       ret: IrType::I64,  runtime_name: "vitalis_ringbuf_create".into() },
+        BuiltinFn { name: "ringbuf_push".into(),          params: vec![("buf", IrType::I64), ("val", IrType::I64)],                      ret: IrType::I64,  runtime_name: "vitalis_ringbuf_push_back".into() },
+        BuiltinFn { name: "ringbuf_pop".into(),           params: vec![("buf", IrType::I64)],                                            ret: IrType::I64,  runtime_name: "vitalis_ringbuf_pop_front".into() },
+        BuiltinFn { name: "uf_create".into(),             params: vec![("n", IrType::I64)],                                              ret: IrType::I64,  runtime_name: "vitalis_uf_create".into() },
+        BuiltinFn { name: "uf_union".into(),              params: vec![("uf", IrType::I64), ("a", IrType::I64), ("b", IrType::I64)],     ret: IrType::I64,  runtime_name: "vitalis_uf_union".into() },
+        BuiltinFn { name: "uf_find".into(),               params: vec![("uf", IrType::I64), ("x", IrType::I64)],                         ret: IrType::I64,  runtime_name: "vitalis_uf_find".into() },
+        BuiltinFn { name: "uf_connected".into(),          params: vec![("uf", IrType::I64), ("a", IrType::I64), ("b", IrType::I64)],     ret: IrType::I64,  runtime_name: "vitalis_uf_connected".into() },
+        BuiltinFn { name: "lru_create".into(),            params: vec![("capacity", IrType::I64)],                                       ret: IrType::I64,  runtime_name: "vitalis_lru_create".into() },
+        BuiltinFn { name: "lru_put".into(),               params: vec![("cache", IrType::I64), ("key", IrType::I64), ("val", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_lru_put".into() },
+        BuiltinFn { name: "lru_get".into(),               params: vec![("cache", IrType::I64), ("key", IrType::I64)],                    ret: IrType::I64,  runtime_name: "vitalis_lru_get".into() },
+
+        // ── v30: Networking ──────────────────────────────────────────────────
+        BuiltinFn { name: "url_parse".into(),             params: vec![("url", IrType::Ptr)],                                            ret: IrType::Ptr,  runtime_name: "vitalis_url_parse".into() },
+        BuiltinFn { name: "http_build_request".into(),    params: vec![("method", IrType::Ptr), ("path", IrType::Ptr), ("host", IrType::Ptr)], ret: IrType::Ptr, runtime_name: "vitalis_http_build_request".into() },
+        BuiltinFn { name: "http_parse_request".into(),    params: vec![("raw", IrType::Ptr)],                                            ret: IrType::Ptr,  runtime_name: "vitalis_http_parse_request".into() },
+        BuiltinFn { name: "is_valid_ipv4".into(),         params: vec![("addr", IrType::Ptr)],                                           ret: IrType::I64,  runtime_name: "vitalis_is_valid_ipv4".into() },
+        BuiltinFn { name: "is_valid_ipv6".into(),         params: vec![("addr", IrType::Ptr)],                                           ret: IrType::I64,  runtime_name: "vitalis_is_valid_ipv6".into() },
+        BuiltinFn { name: "parse_query_string".into(),    params: vec![("query", IrType::Ptr)],                                          ret: IrType::Ptr,  runtime_name: "vitalis_parse_query_string".into() },
+        BuiltinFn { name: "dns_build_query".into(),       params: vec![("name", IrType::Ptr), ("type", IrType::I64)],                    ret: IrType::Ptr,  runtime_name: "vitalis_dns_build_query".into() },
+
+        // ── v30: ECS ─────────────────────────────────────────────────────────
+        BuiltinFn { name: "ecs_world_create".into(),      params: vec![],                                                                 ret: IrType::I64,  runtime_name: "vitalis_ecs_world_create".into() },
+        BuiltinFn { name: "ecs_spawn".into(),             params: vec![("world", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_ecs_spawn".into() },
+        BuiltinFn { name: "ecs_despawn".into(),           params: vec![("world", IrType::I64), ("entity", IrType::I64)],                 ret: IrType::I64,  runtime_name: "vitalis_ecs_despawn".into() },
+        BuiltinFn { name: "ecs_add_component".into(),     params: vec![("world", IrType::I64), ("entity", IrType::I64), ("type", IrType::I64), ("val", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_ecs_add_component".into() },
+        BuiltinFn { name: "ecs_get_component".into(),     params: vec![("world", IrType::I64), ("entity", IrType::I64), ("type", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_ecs_get_component".into() },
+        BuiltinFn { name: "ecs_has_component".into(),     params: vec![("world", IrType::I64), ("entity", IrType::I64), ("type", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_ecs_has_component".into() },
+        BuiltinFn { name: "ecs_entity_count".into(),      params: vec![("world", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_ecs_entity_count".into() },
     ]
 }
 

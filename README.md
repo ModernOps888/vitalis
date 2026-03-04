@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1%2C931_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-68%2C200+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-2%2C108_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-72%2C000+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v29.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v30.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,25 +40,25 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**82**<br>
+**88**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**68,200+**<br>
+**72,000+**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**1,931**<br>
+**2,108**<br>
 <sub>Tests passing</sub>
 
 </td>
 <td width="25%" align="center">
 
-**260+**<br>
+**310+**<br>
 <sub>Stdlib functions</sub>
 
 </td>
@@ -257,7 +257,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 1,586 tests
+# Run all 2,108 tests
 cargo test
 
 # Compile and run a .sl file
@@ -635,7 +635,7 @@ mindmap
 
 ## 📐 Standard Library
 
-### 200+ Built-in Functions
+### 310+ Built-in Functions
 
 <details>
 <summary><b>🔢 Mathematics — 60+ functions</b></summary>
@@ -837,11 +837,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-1,931 tests across every compiler stage and all subsystems through v29:
+2,108 tests across every compiler stage and all subsystems through v30:
 
 ```
 $ cargo test
-test result: ok. 1931 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 2108 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -851,7 +851,7 @@ test result: ok. 1931 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Type checker | 60+ | Inference, generics, errors |
 | IR builder | 110+ | SSA, control flow, closures, traits |
 | Codegen (JIT) | 200+ | End-to-end compilation |
-| Runtime stdlib | 120+ | All 200+ functions |
+| Runtime stdlib | 120+ | All 310+ functions |
 | Evolution | 20+ | Register, evolve, rollback |
 | Domain modules | 80+ | Math, quantum, ML, crypto |
 | Async runtime | 15 | Executor, tasks, channels, futures |
@@ -895,6 +895,12 @@ test result: ok. 1931 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | Type classes & HKTs | 35 | Kinds, type classes, GADTs, type families, type-level naturals |
 | Build system | 25 | DAG, SHA-256 cache, work-stealing, critical path, topo sort |
 | Benchmarks | 25 | Welford stats, outlier detection, confidence intervals, regression |
+| Regex engine | 30 | Thompson NFA, Pike VM, character classes, quantifiers, anchors |
+| Serialization | 30 | JSON parse/stringify, Base64, Hex, MessagePack, Varint, URL encoding |
+| Property testing | 25 | QuickCheck, shrinking, Xorshift128+ PRNG, generators, assertions |
+| Data structures | 30 | B-Tree, Skip List, Ring Buffer, Union-Find, Interval Tree, LRU Cache |
+| Networking | 32 | URL parser, HTTP/1.1 & /2, WebSocket, DNS, TCP state machine, IP validation |
+| ECS | 30 | Generational entities, sparse set storage, component queries, system scheduling |
 
 <br>
 
@@ -909,7 +915,7 @@ vitalis/
 │   ├── types.rs              # Two-pass type checker with scope chains
 │   ├── ir.rs                 # SSA-form IR with 26+ instruction types
 │   ├── codegen.rs            # Cranelift JIT backend + 204 runtime functions
-│   ├── stdlib.rs             # 260+ built-in function registrations
+│   ├── stdlib.rs             # 310+ built-in function registrations
 │   ├── optimizer.rs          # IR optimization passes
 │   ├── bridge.rs             # extern "C" FFI for Python/C interop
 │   ├── main.rs               # CLI binary (vtc) with clap subcommands
@@ -994,7 +1000,14 @@ vitalis/
 │   ├── ffi_bindgen.rs        # FFI bindgen — C headers, TypeScript .d.ts, calling conventions, type marshal
 │   ├── type_classes.rs       # Type classes — kinds, HKTs, GADTs, type families, type-level naturals
 │   ├── build_system.rs       # Build system — build graph DAG, SHA-256 cache, work-stealing, critical path
-│   └── benchmark.rs          # Benchmarks — Welford stats, outlier detection, CI, regression testing
+│   ├── benchmark.rs          # Benchmarks — Welford stats, outlier detection, CI, regression testing
+│   │
+│   ├── regex_engine.rs       # Regex engine — Thompson NFA, Pike VM, O(n·m) guaranteed matching
+│   ├── serialization.rs      # Serialization — JSON, Base64, Hex, MessagePack, Varint, URL encoding
+│   ├── property_testing.rs   # Property testing — QuickCheck-style with shrinking, Xorshift128+ PRNG
+│   ├── data_structures.rs    # Data structures — B-Tree, Skip List, Ring Buffer, Union-Find, LRU Cache
+│   ├── networking.rs         # Networking — URL parser, HTTP/1.1 & /2, WebSocket, DNS, TCP state machine
+│   └── ecs.rs                # ECS — generational entities, sparse set storage, component queries, systems
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1201,7 +1214,30 @@ timeline
         : 30 new stdlib builtins (profiler_*, arena_*, pool_*, ffi_*, build_*, bench_*)
         : 1,931 tests passing · 82 modules · ~68,200 LOC
 
-    v30+ · The Future
+    v30 · Regex Engine, Serialization, Property Testing, Data Structures, Networking & ECS
+        : Thompson NFA + Pike VM regex engine with O(n·m) guaranteed matching (no backtracking)
+        : Character classes, quantifiers (greedy/lazy), anchors, alternation, capturing groups
+        : JSON parser/stringify with full spec compliance and pretty-printing
+        : Base64, Hex, URL encoding/decoding, Varint/LEB128, MessagePack binary format
+        : JSON path queries for nested data extraction
+        : QuickCheck-style property-based testing with automatic shrinking
+        : Xorshift128+ PRNG with seeded reproducibility, binary search shrink strategy
+        : B-Tree (order-configurable), Skip List (probabilistic O(log n)), Ring Buffer (fixed-capacity)
+        : Union-Find with path compression + union by rank, Interval Tree, LRU Cache
+        : URL parser (RFC 3986) with scheme, authority, path, query, fragment decomposition
+        : HTTP/1.1 request/response builder and parser with header management
+        : HTTP/2 frame codec (DATA, HEADERS, SETTINGS, PING, GOAWAY, WINDOW_UPDATE)
+        : WebSocket frame codec (RFC 6455) with masking, opcodes, fragmentation
+        : DNS packet builder/parser (RFC 1035) with A/AAAA/CNAME/MX/NS/SOA record types
+        : TCP state machine (RFC 793) with full 11-state lifecycle
+        : Entity-Component-System with generational entity IDs and recycling
+        : Sparse set storage with O(1) insert/remove/lookup per component type
+        : Component queries with With/Without filters for system iteration
+        : System scheduler with dependency-aware execution ordering
+        : 50 new stdlib builtins (regex_*, json_*, base64_*, btree_*, url_*, ecs_*)
+        : 2,108 tests passing · 88 modules · ~72,000 LOC
+
+    v31+ · The Future
         : WASM AOT target (compile .sl to standalone .wasm files)
         : WASM-WASI runtime support for file I/O and environment access
         : Package registry server + vitalis install + vulnerability scanning

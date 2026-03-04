@@ -93,7 +93,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ Modify-while-borrowed checks
 - ✅ 1,087 tests · 59 modules · 43,095 LOC
 
-### v24.0 — Effect Handlers & Pattern Exhaustiveness (Current Release)
+### v24.0 — Effect Handlers & Pattern Exhaustiveness
 - ✅ Algebraic effect handler system with `handle { } with { }` blocks
 - ✅ First-class continuations (resume/abort) within effect handlers
 - ✅ Handler stack with LIFO dispatch and nested handler frames
@@ -133,7 +133,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ Chart rendering (bar, line, pie, scatter, histogram, heatmap)
 - ✅ 1,765 tests · 76 modules · 62,700 LOC
 
-### v29.0 — Profiler, Memory Pools, FFI Bindgen, Type Classes, Build System & Benchmarks (Current Release)
+### v29.0 — Profiler, Memory Pools, FFI Bindgen, Type Classes, Build System & Benchmarks
 - ✅ Execution profiler with call graphs, flame graphs, PGO hints, hot-path detection
 - ✅ Advanced memory allocators (arena, pool, slab, buddy) with RC heap and cycle detection
 - ✅ Multi-language FFI bindgen — C headers, TypeScript .d.ts, calling conventions, type marshaling
@@ -142,46 +142,60 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 - ✅ Micro-benchmarking framework with outlier detection, confidence intervals, regression testing
 - ✅ 1,931 tests · 82 modules · ~68,200 LOC
 
+### v30.0 — Regex Engine, Serialization, Property Testing, Data Structures, Networking & ECS (Current Release)
+- ✅ Thompson NFA + Pike VM regex engine with O(n·m) guaranteed matching (no backtracking)
+- ✅ Character classes, quantifiers (greedy/lazy), anchors, alternation, capturing groups
+- ✅ JSON parser/stringify with full spec compliance; Base64, Hex, URL encoding, Varint/LEB128, MessagePack
+- ✅ JSON path queries for nested data extraction
+- ✅ QuickCheck-style property-based testing with automatic shrinking (Xorshift128+ PRNG, binary search shrink)
+- ✅ B-Tree, Skip List, Ring Buffer, Union-Find (path compression + union by rank), Interval Tree, LRU Cache
+- ✅ URL parser (RFC 3986), HTTP/1.1 request/response builder & parser, HTTP/2 frame codec
+- ✅ WebSocket frame codec (RFC 6455), DNS packet builder/parser (RFC 1035), TCP state machine (RFC 793)
+- ✅ IP address validation (IPv4/IPv6)
+- ✅ Entity-Component-System with generational entity IDs and sparse set storage (O(1) CRUD)
+- ✅ Component queries with With/Without filters, system scheduling with dependency ordering
+- ✅ 2,108 tests · 88 modules · ~72,000 LOC
+
 ---
 
 ## 📋 Planned
 
-### v30.0 — WASM AOT & WASI Runtime
+### v31.0 — WASM AOT & WASI Runtime
 - 📋 WASM AOT target — compile `.sl` → standalone `.wasm` files
 - 📋 WASM-WASI support for file I/O and environment access in WebAssembly
 - 📋 WASM component model integration for language interop
 - 📋 Browser runtime shim for running `.wasm` output in web environments
 - 📋 Size optimization passes for WASM output (dead code elimination, tree shaking)
 
-### v31.0 — Package Registry & Ecosystem
+### v32.0 — Package Registry & Ecosystem
 - 📋 Package registry server (`vitalis install <package>`)
 - 📋 Online package search, publishing, and version management
 - 📋 Dependency vulnerability scanning and advisory database
 - 📋 Lockfile pinning with reproducible builds
 - 📋 Package templating and scaffolding (`vtc new`)
 
-### v32.0 — Distributed Compilation & Remote Build
+### v33.0 — Distributed Compilation & Remote Build
 - 📋 Distributed compilation across networked nodes
 - 📋 Build server protocol for remote compilation offloading
 - 📋 Shared compilation cache across machines (content-addressed)
 - 📋 Build graph visualization and profiling (`vtc build --profile`)
 - 📋 Hermetic builds with sandboxed build environments
 
-### v33.0 — Formal Verification & Safety
+### v34.0 — Formal Verification & Safety
 - 📋 Verified compilation passes (proof-carrying code)
 - 📋 Formal verification integration for safety-critical code
 - 📋 Contract-based programming (pre/postconditions, invariants)
 - 📋 Symbolic execution engine for property checking
 - 📋 Certified compiler pass — provably correct optimizations
 
-### v34.0 — Advanced IDE & Tooling
+### v35.0 — Advanced IDE & Tooling
 - 📋 LSP v4 features (inlay hints, semantic tokens, call hierarchy)
 - 📋 IDE-native debugger integration with watch expressions
 - 📋 Profiler integration in IDE (flame graph visualization, hotspot highlighting)
 - 📋 Refactoring engine (rename, extract function, inline, move)
 - 📋 Code coverage reporting and visualization
 
-### v35.0+ — Research Frontier
+### v36.0+ — Research Frontier
 - 📋 Self-evolving optimizer passes via evolution engine
 - 📋 Auto-vectorization via SIMD intrinsics detection
 - 📋 Incremental type checking with demand-driven analysis
@@ -211,3 +225,4 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 | v27.0.0 | 2026-03-24 | 70 | 1,586 | ~57,196 | Concurrency, type inference, documentation |
 | v28.0.0 | 2026-03-31 | 76 | 1,765 | ~62,700 | Graphics engine, shaders, GUI, creative coding, visual nodes, charts |
 | v29.0.0 | 2026-04-07 | 82 | 1,931 | ~68,200 | Profiler, memory pools, FFI bindgen, type classes, build system, benchmarks |
+| v30.0.0 | 2026-04-14 | 88 | 2,108 | ~72,000 | Regex engine, serialization, property testing, data structures, networking, ECS |
