@@ -292,3 +292,19 @@ pub mod self_optimizer;
 // ── v36: Autonomous Agents & Reward Modeling (RLHF) ─────────────────
 pub mod autonomous_agent;
 pub mod reward_model;
+
+// ── v37: Differentiable & Probabilistic Programming ─────────────────
+pub mod differentiable;
+pub mod probabilistic;
+
+// ── v38: Reinforcement Learning & Simulation ────────────────────────
+pub mod rl_framework;
+pub mod simulation;
+
+// ── v39: Data Pipeline & Experiment Tracking ────────────────────────
+pub mod data_pipeline;
+pub mod experiment;
+
+// ── v40: Model Serving & AI Observability ───────────────────────────
+pub mod model_serving;
+pub mod ai_observability;

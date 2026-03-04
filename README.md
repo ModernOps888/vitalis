@@ -9,8 +9,8 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-2%2C376_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-80%2C000+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-2%2C509_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-100%2C000+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Version](https://img.shields.io/badge/v36.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
@@ -40,25 +40,25 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**101**<br>
+**110**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**80,000+**<br>
+**100,000+**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**2,376**<br>
+**2,509**<br>
 <sub>Tests passing</sub>
 
 </td>
 <td width="25%" align="center">
 
-**360+**<br>
+**380+**<br>
 <sub>Stdlib functions</sub>
 
 </td>

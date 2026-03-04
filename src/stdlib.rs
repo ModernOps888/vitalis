@@ -469,6 +469,55 @@ pub fn builtins() -> Vec<BuiltinFn> {
         BuiltinFn { name: "reward_create".into(),         params: vec![("dim", IrType::I64), ("lr", IrType::F64)],                       ret: IrType::I64,  runtime_name: "vitalis_reward_create".into() },
         BuiltinFn { name: "reward_score".into(),          params: vec![("id", IrType::I64), ("features", IrType::Ptr), ("n", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_reward_score".into() },
         BuiltinFn { name: "reward_free".into(),           params: vec![("id", IrType::I64)],                                             ret: IrType::I64,  runtime_name: "vitalis_reward_free".into() },
+
+        // ── v37: Differentiable Programming ──────────────────────────────────
+        BuiltinFn { name: "dual_new".into(),               params: vec![("val", IrType::F64), ("dot", IrType::F64)],                    ret: IrType::I64,  runtime_name: "vitalis_dual_new".into() },
+        BuiltinFn { name: "dual_mul".into(),               params: vec![("a", IrType::I64), ("b", IrType::I64)],                       ret: IrType::I64,  runtime_name: "vitalis_dual_mul".into() },
+        BuiltinFn { name: "forward_deriv".into(),          params: vec![("x", IrType::F64)],                                           ret: IrType::F64,  runtime_name: "vitalis_forward_deriv".into() },
+        BuiltinFn { name: "shape_broadcast_ok".into(),     params: vec![("a", IrType::I64), ("b", IrType::I64)],                       ret: IrType::I64,  runtime_name: "vitalis_shape_broadcast_ok".into() },
+
+        // ── v37: Probabilistic Programming ───────────────────────────────────
+        BuiltinFn { name: "prob_normal".into(),            params: vec![("mean", IrType::F64), ("std", IrType::F64)],                  ret: IrType::I64,  runtime_name: "vitalis_prob_normal".into() },
+        BuiltinFn { name: "prob_log_prob".into(),          params: vec![("id", IrType::I64), ("x", IrType::F64)],                      ret: IrType::F64,  runtime_name: "vitalis_prob_log_prob".into() },
+        BuiltinFn { name: "prob_sample".into(),            params: vec![("id", IrType::I64), ("seed", IrType::I64)],                   ret: IrType::F64,  runtime_name: "vitalis_prob_sample".into() },
+        BuiltinFn { name: "prob_free".into(),              params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_prob_free".into() },
+        BuiltinFn { name: "mcmc_normal_mean".into(),       params: vec![("observed", IrType::Ptr), ("n", IrType::I64)],                ret: IrType::F64,  runtime_name: "vitalis_mcmc_normal_mean".into() },
+
+        // ── v38: Reinforcement Learning ──────────────────────────────────────
+        BuiltinFn { name: "rl_create".into(),              params: vec![("n_states", IrType::I64), ("n_actions", IrType::I64)],        ret: IrType::I64,  runtime_name: "vitalis_rl_create".into() },
+        BuiltinFn { name: "rl_get_q".into(),               params: vec![("id", IrType::I64), ("state", IrType::I64), ("action", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_rl_get_q".into() },
+        BuiltinFn { name: "rl_update".into(),              params: vec![("id", IrType::I64), ("s", IrType::I64), ("a", IrType::I64), ("r", IrType::F64), ("sp", IrType::I64)], ret: IrType::I64, runtime_name: "vitalis_rl_update".into() },
+        BuiltinFn { name: "rl_free".into(),                params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_rl_free".into() },
+
+        // ── v38: Simulation Environments ─────────────────────────────────────
+        BuiltinFn { name: "sim_grid_new".into(),           params: vec![("w", IrType::I64), ("h", IrType::I64)],                       ret: IrType::I64,  runtime_name: "vitalis_sim_grid_new".into() },
+        BuiltinFn { name: "sim_grid_step".into(),          params: vec![("id", IrType::I64), ("action", IrType::I64)],                 ret: IrType::F64,  runtime_name: "vitalis_sim_grid_step".into() },
+        BuiltinFn { name: "sim_grid_reset".into(),         params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_sim_grid_reset".into() },
+        BuiltinFn { name: "sim_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_sim_free".into() },
+
+        // ── v39: Data Pipeline ───────────────────────────────────────────────
+        BuiltinFn { name: "data_create".into(),            params: vec![("n_samples", IrType::I64), ("n_features", IrType::I64)],      ret: IrType::I64,  runtime_name: "vitalis_data_create".into() },
+        BuiltinFn { name: "data_len".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_data_len".into() },
+        BuiltinFn { name: "data_parse_csv".into(),         params: vec![("csv_ptr", IrType::Ptr)],                                     ret: IrType::I64,  runtime_name: "vitalis_data_parse_csv".into() },
+        BuiltinFn { name: "data_free".into(),              params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_data_free".into() },
+
+        // ── v39: Experiment Tracking ─────────────────────────────────────────
+        BuiltinFn { name: "exp_create".into(),             params: vec![("name_ptr", IrType::Ptr)],                                    ret: IrType::I64,  runtime_name: "vitalis_exp_create".into() },
+        BuiltinFn { name: "exp_log_metric".into(),         params: vec![("id", IrType::I64), ("name_ptr", IrType::Ptr), ("val", IrType::F64)], ret: IrType::I64, runtime_name: "vitalis_exp_log_metric".into() },
+        BuiltinFn { name: "exp_get_metric".into(),         params: vec![("id", IrType::I64), ("name_ptr", IrType::Ptr)],               ret: IrType::F64,  runtime_name: "vitalis_exp_get_metric".into() },
+        BuiltinFn { name: "exp_complete".into(),           params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_exp_complete".into() },
+        BuiltinFn { name: "exp_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_exp_free".into() },
+
+        // ── v40: Model Serving ───────────────────────────────────────────────
+        BuiltinFn { name: "serve_create".into(),           params: vec![("name_ptr", IrType::Ptr)],                                    ret: IrType::I64,  runtime_name: "vitalis_serve_create".into() },
+        BuiltinFn { name: "serve_load_model".into(),       params: vec![("id", IrType::I64), ("name_ptr", IrType::Ptr)],               ret: IrType::I64,  runtime_name: "vitalis_serve_load_model".into() },
+        BuiltinFn { name: "serve_predict".into(),          params: vec![("id", IrType::I64), ("features", IrType::Ptr), ("n", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_serve_predict".into() },
+        BuiltinFn { name: "serve_free".into(),             params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_serve_free".into() },
+
+        // ── v40: AI Observability ────────────────────────────────────────────
+        BuiltinFn { name: "obs_create_drift".into(),       params: vec![("n_features", IrType::I64), ("threshold", IrType::F64)],      ret: IrType::I64,  runtime_name: "vitalis_obs_create_drift".into() },
+        BuiltinFn { name: "obs_check_drift".into(),        params: vec![("id", IrType::I64), ("data_ptr", IrType::Ptr), ("n_samples", IrType::I64), ("n_features", IrType::I64)], ret: IrType::F64, runtime_name: "vitalis_obs_check_drift".into() },
+        BuiltinFn { name: "obs_free".into(),               params: vec![("id", IrType::I64)],                                          ret: IrType::I64,  runtime_name: "vitalis_obs_free".into() },
     ]
 }
 

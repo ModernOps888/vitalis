@@ -340,12 +340,12 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ### Phase 4: AI-Native Language Semantics
 
-#### v37.0 — Differentiable & Probabilistic Programming
+#### v37.0 — Differentiable & Probabilistic Programming ✅
 > **Goal**: Make differentiation and probability first-class language concepts.
 > Not library calls — actual language semantics where the type system tracks gradients
 > and the compiler generates efficient gradient code automatically.
 
-- 📋 **`differentiable.rs`** — Language-level differentiable programming
+- ✅ **`differentiable.rs`** — Language-level differentiable programming
   - **`@differentiable` annotation**: Mark functions as differentiable, compiler generates backward pass
   - **Dual numbers**: Forward-mode AD via dual number arithmetic (`value + ε·derivative`)
   - **Differentiable control flow**: Differentiate through if/else (straight-through estimator), while loops (scan), recursion (implicit differentiation)
@@ -354,7 +354,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - Integration with `type_inference.rs` — infer gradient types from forward types
   - Integration with `effects.rs` — `Differentiable` as a capability effect
 
-- 📋 **`probabilistic.rs`** — Probabilistic programming primitives
+- ✅ **`probabilistic.rs`** — Probabilistic programming primitives
   - **Distribution types**: Normal, Bernoulli, Categorical, Dirichlet, Beta, Poisson as first-class values
   - **`sample` / `observe` / `condition`**: Probabilistic programming operators
   - **Inference engines**: MCMC (Metropolis-Hastings, HMC/NUTS), Variational Inference (ELBO + reparameterization trick)
@@ -363,11 +363,11 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Probabilistic model checking**: Verify probabilistic safety properties
   - Extend `probability.rs` distributions with sampling, log-probability, and gradient support
 
-#### v38.0 — Reinforcement Learning & Simulation
+#### v38.0 — Reinforcement Learning & Simulation ✅
 > **Goal**: Native RL types and simulation framework. Programs define environments,
 > agents learn policies, and the `@evolvable` system can use RL for code optimization.
 
-- 📋 **`rl_framework.rs`** — Reinforcement learning primitives
+- ✅ **`rl_framework.rs`** — Reinforcement learning primitives
   - **Environment protocol**: `State`, `Action`, `Reward`, `Done` types with `step()` / `reset()` interface
   - **Policy types**: ε-greedy, softmax, Gaussian (continuous), categorical (discrete)
   - **Value functions**: Q-table, linear function approximation, neural value network
@@ -377,7 +377,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - Integration with `evolution_advanced.rs` — evolutionary strategies as RL baselines
   - Integration with `autonomous_agent.rs` — RL agent optimizes code via environment interface
 
-- 📋 **`simulation.rs`** — Simulation environments for RL and testing
+- ✅ **`simulation.rs`** — Simulation environments for RL and testing
   - **Grid worlds**: Configurable maze, cliff walking, frozen lake (tabular RL benchmarks)
   - **Continuous control**: CartPole, inverted pendulum, point navigation (function approximation benchmarks)
   - **Code optimization environment**: State=IR, Action=optimization pass, Reward=speedup
@@ -388,11 +388,11 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ### Phase 5: Production AI Infrastructure
 
-#### v39.0 — Data Pipeline & Experiment Tracking
+#### v39.0 — Data Pipeline & Experiment Tracking ✅
 > **Goal**: Complete ML workflow — from raw data to trained model to deployed inference.
 > No dependency on external Python tools for the full AI lifecycle.
 
-- 📋 **`data_pipeline.rs`** — ML data loading and preprocessing
+- ✅ **`data_pipeline.rs`** — ML data loading and preprocessing
   - **Dataset abstraction**: `Dataset` trait with `len()`, `get(index)`, random access
   - **DataLoader**: Batching, shuffling, prefetching with configurable workers
   - **Transforms**: Normalize, one-hot encode, tokenize, augment (random crop, flip, noise)
@@ -400,7 +400,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Data formats**: CSV, TSV, JSON Lines, binary tensor format (memory-mapped)
   - **Train/val/test splitting**: Stratified splitting, k-fold cross-validation
 
-- 📋 **`experiment.rs`** — Experiment tracking and reproducibility
+- ✅ **`experiment.rs`** — Experiment tracking and reproducibility
   - **Run tracking**: Log hyperparameters, metrics (loss, accuracy, etc.), artifacts per experiment
   - **Metric history**: Time-series of training metrics with visualization data export
   - **Hyperparameter search**: Grid search, random search, Bayesian optimization (GP+EI)
@@ -408,11 +408,11 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Model registry**: Version models with metadata, promote candidates to production
   - **Comparison**: Tabular comparison of runs, statistical significance testing via `scoring.rs`
 
-#### v40.0 — Model Serving & AI Observability
+#### v40.0 — Model Serving & AI Observability ✅
 > **Goal**: Deploy trained models with monitoring, safety guardrails, and A/B testing.
 > The full loop from training to production to monitoring back to retraining.
 
-- 📋 **`model_serving.rs`** — Production inference serving
+- ✅ **`model_serving.rs`** — Production inference serving
   - **Model loading**: Weight deserialization, JIT warm-up, memory-mapped weights
   - **Batched request handling**: Dynamic batching with timeout-based flush
   - **Model versioning**: Serve multiple model versions, gradual traffic shifting
@@ -420,7 +420,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Edge deployment**: Quantized models for resource-constrained environments
   - Integration with `networking.rs` HTTP/2 for gRPC-style model endpoints
 
-- 📋 **`ai_observability.rs`** — AI model monitoring and safety
+- ✅ **`ai_observability.rs`** — AI model monitoring and safety
   - **Drift detection**: Kolmogorov-Smirnov, Population Stability Index (PSI), MMD for feature/prediction drift
   - **Fairness metrics**: Demographic parity, equalized odds, calibration across groups
   - **Explainability**: SHAP values (KernelSHAP), LIME-style local explanations, attention visualization
