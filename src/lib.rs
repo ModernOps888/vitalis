@@ -346,3 +346,39 @@ pub mod tiered_jit;
 // ── v50: Dependent Types & Proof Assistant ─────────────────────────
 pub mod dependent_types;
 pub mod proof_assistant;
+
+// ── v51: Time-Travel Debugging & Distributed Tracing ───────────────
+pub mod time_travel_debug;
+pub mod tracing;
+
+// ── v52: Package Registry v2 & Documentation Site Generator ────────
+pub mod registry_v2;
+pub mod doc_site;
+
+// ── v53: Notebook Kernel & Web Playground ──────────────────────────
+pub mod notebook;
+pub mod playground;
+
+// ── v54: Hardware Synthesis & FPGA Target ──────────────────────────
+pub mod hardware_synth;
+pub mod fpga_target;
+
+// ── v55: Embedded Systems & RTOS Kernel ────────────────────────────
+pub mod embedded;
+pub mod rtos;
+
+// ── v56: Cloud Deployment & Service Mesh ───────────────────────────
+pub mod cloud_deploy;
+pub mod service_mesh;
+
+// ── v57: LLM Compiler Assist & Error Recovery ─────────────────────
+pub mod llm_compiler;
+pub mod error_recovery;
+
+// ── v58: Computer Vision & Audio Processing ────────────────────────
+pub mod vision;
+pub mod audio;
+
+// ── v59: Certified Compiler & Abstract Interpretation ──────────────
+pub mod certified_compiler;
+pub mod abstract_interp;

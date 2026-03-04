@@ -627,7 +627,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 > best compiler. Time-travel debugging, a mature package ecosystem, and interactive
 > computing environments that rival Jupyter/Observable.
 
-#### v51.0 — Time-Travel Debugging & Structured Tracing 📋
+#### v51.0 — Time-Travel Debugging & Structured Tracing ✅
 > **Goal**: Record program execution and replay it forwards/backwards. Debug failures
 > by rewinding to the exact point where state diverged. Plus structured tracing for
 > production observability.
@@ -650,7 +650,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Log correlation**: Link structured logs to trace spans, severity filtering
   - ~20 tests · ~1,800 LOC each
 
-#### v52.0 — Package Ecosystem v2 & Documentation Site Generator 📋
+#### v52.0 — Package Ecosystem v2 & Documentation Site Generator ✅
 > **Goal**: A mature package ecosystem with security auditing, breaking change detection,
 > and a beautiful documentation site generator — the infrastructure that turns a language
 > into a platform.
@@ -672,7 +672,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Theme engine**: Configurable CSS themes, dark/light mode, syntax highlighting
   - ~20 tests · ~1,600 LOC each
 
-#### v53.0 — Interactive Computing & Web Playground 📋
+#### v53.0 — Interactive Computing & Web Playground ✅
 > **Goal**: A Jupyter-compatible notebook kernel and a web-based playground.
 > Scientists, educators, and explorers can use Vitalis interactively — with rich output,
 > inline visualization, and share-by-URL.
@@ -703,7 +703,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 > to serverless cloud functions. The same language, the same type safety, the same
 > borrow checker, from embedded firmware to Kubernetes pods.
 
-#### v54.0 — FPGA & Hardware Synthesis 📋
+#### v54.0 — FPGA & Hardware Synthesis ✅
 > **Goal**: High-level synthesis — compile a Vitalis subset to hardware description languages.
 > Write your algorithm once, deploy to FPGA or ASIC. This is where `tensor.rs` matmul
 > becomes a silicon accelerator.
@@ -725,7 +725,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Simulation testbench**: Auto-generate Verilog testbench from Vitalis test cases
   - ~20 tests · ~2,000 LOC each
 
-#### v55.0 — Bare-Metal & Embedded Systems 📋
+#### v55.0 — Bare-Metal & Embedded Systems ✅
 > **Goal**: Compile Vitalis to bare-metal targets — no OS, no allocator, no runtime.
 > Write firmware for ARM Cortex-M and RISC-V microcontrollers with full type safety
 > and borrow-checked peripheral access.
@@ -748,7 +748,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Static allocation**: All RTOS objects statically allocated at compile time (no malloc)
   - ~25 tests · ~1,800 LOC each
 
-#### v56.0 — Cloud-Native & Serverless Deployment 📋
+#### v56.0 — Cloud-Native & Serverless Deployment ✅
 > **Goal**: One command from source code to running in the cloud. Container images,
 > Kubernetes manifests, serverless functions — generated from Vitalis source with
 > the right configuration inferred from the code's effect annotations.
@@ -779,7 +779,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 > own correctness with mathematical proofs, and the final act — the compiler rewrites
 > itself in its own language. v60 is endgame.
 
-#### v57.0 — LLM-Assisted Compilation & Error Recovery 📋
+#### v57.0 — LLM-Assisted Compilation & Error Recovery ✅
 > **Goal**: Integrate language model intelligence directly into the compiler pipeline.
 > Not an external tool calling an API — the compiler itself uses learned models to
 > produce better errors, suggest fixes, and recover from parse failures gracefully.
@@ -802,7 +802,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Error budget**: Stop reporting after N errors per function to avoid overwhelming output
   - ~25 tests · ~1,800 LOC each
 
-#### v58.0 — Multi-Modal AI 📋
+#### v58.0 — Multi-Modal AI ✅
 > **Goal**: Vision and audio as first-class modalities in Vitalis's AI stack.
 > Combined with `transformer.rs` and `tensor.rs`, this enables multi-modal models
 > (image captioning, speech recognition, vision-language) natively.
@@ -826,7 +826,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Streaming pipeline**: Ring-buffer audio input, frame-by-frame processing, real-time inference
   - ~25 tests · ~2,000 LOC each
 
-#### v59.0 — Compiler Verification & Certified Compilation 📋
+#### v59.0 — Compiler Verification & Certified Compilation ✅
 > **Goal**: Prove that the compiler itself is correct. Translation validation checks
 > that optimization passes preserve semantics. Abstract interpretation catches entire
 > classes of bugs at compile time. This is CompCert-level ambition — in a self-hosting compiler.
@@ -988,13 +988,13 @@ IMPORTANT!: Make sure you copy the directory safely leaving the vitalis-oss as a
 | v48.0.0 | 2025-07-14 | 125 | 2,784 | ~126,000 | Polyhedral optimization, parallel runtime |
 | v49.0.0 | 2025-07-14 | 126 | 2,804 | ~129,000 | Tiered JIT, on-stack replacement |
 | v50.0.0 | 2025-07-14 | 128 | 2,859 | ~133,000 | Dependent types, proof assistant |
-| v51.0.0 | — | ~130 | ~2,975 | ~137,000 | Time-travel debugging, structured tracing |
-| v52.0.0 | — | ~132 | ~3,015 | ~140,000 | Package ecosystem v2, doc site generator |
-| v53.0.0 | — | ~134 | ~3,055 | ~143,000 | Notebook kernel, web playground |
-| v54.0.0 | — | ~136 | ~3,095 | ~147,000 | Hardware synthesis, FPGA target |
-| v55.0.0 | — | ~138 | ~3,145 | ~151,000 | Bare-metal embedded, RTOS kernel |
-| v56.0.0 | — | ~140 | ~3,185 | ~154,000 | Cloud-native deploy, service mesh |
-| v57.0.0 | — | ~142 | ~3,235 | ~158,000 | LLM-assisted compiler, error recovery |
-| v58.0.0 | — | ~144 | ~3,285 | ~162,000 | Computer vision, audio processing |
-| v59.0.0 | — | ~146 | ~3,345 | ~166,000 | Certified compilation, abstract interpretation |
+| v51.0.0 | 2025-07-17 | 130 | 2,899 | ~137,000 | Time-travel debugging, structured tracing |
+| v52.0.0 | 2025-07-17 | 132 | 2,935 | ~140,000 | Package ecosystem v2, doc site generator |
+| v53.0.0 | 2025-07-17 | 134 | 2,971 | ~143,000 | Notebook kernel, web playground |
+| v54.0.0 | 2025-07-17 | 136 | 3,011 | ~147,000 | Hardware synthesis, FPGA target |
+| v55.0.0 | 2025-07-17 | 138 | 3,051 | ~151,000 | Bare-metal embedded, RTOS kernel |
+| v56.0.0 | 2025-07-17 | 140 | 3,089 | ~154,000 | Cloud-native deploy, service mesh |
+| v57.0.0 | 2025-07-17 | 142 | 3,129 | ~158,000 | LLM-assisted compiler, error recovery |
+| v58.0.0 | 2025-07-17 | 144 | 3,169 | ~162,000 | Computer vision, audio processing |
+| v59.0.0 | 2025-07-17 | 146 | 3,184 | ~166,000 | Certified compilation, abstract interpretation |
 | v60.0.0 | — | ~149 | ~3,395 | ~170,000 | Self-hosting v2, meta-compiler |
