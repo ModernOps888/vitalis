@@ -452,7 +452,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 
 ### Phase 7: Research Frontier
 
-#### v44.0 — NAS, Continual & Federated Learning ✅ (Current Release)
+#### v44.0 — NAS, Continual & Federated Learning ✅
 - ✅ **Neural Architecture Search (NAS)**: Evolutionary + RL-based architecture optimization (`nas.rs`)
   - Extend `evolution_advanced.rs` NSGA-II + MAP-Elites for architecture space exploration
   - Network morphism operators (widen, deepen, skip) for efficient search
@@ -826,7 +826,7 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
   - **Streaming pipeline**: Ring-buffer audio input, frame-by-frame processing, real-time inference
   - ~25 tests · ~2,000 LOC each
 
-#### v59.0 — Compiler Verification & Certified Compilation ✅
+#### v59.0 — Compiler Verification & Certified Compilation ✅ (Current Release)
 > **Goal**: Prove that the compiler itself is correct. Translation validation checks
 > that optimization passes preserve semantics. Abstract interpretation catches entire
 > classes of bugs at compile time. This is CompCert-level ambition — in a self-hosting compiler.
@@ -854,13 +854,9 @@ Completed milestones are marked with ✅, in-progress with 🔄, and planned wit
 > in Vitalis. Not just bootstrap (we did that at v22) — a full reimplementation using
 > every capability from v23-v59. The compiler that writes itself using the AI, types,
 > proofs, and optimization it spent 60 versions building.
-
-HUMAN SUGGESTION, HOW ABOUT WE createa a new directory at this point and try to rewrit all to vitalis actually run on vitalis no rust no limitation sky is the limit for vitalis running on vitalis so we keep whats working up to v60 and then create new folder copy everything and just work in new folder on vitalis rewrite to vitalis.
-
-as a matter of fact i created already folder for you where you can copy everything from C:\Vitalis-Oss to c:\Vitalis-V60 and start compiling everything vitalis running on vitalis making sure its all compatible with all current frameworks and other so back compatibility kinda thing and can be edited and viewed in vs code ok.
-
-
-IMPORTANT!: Make sure you copy the directory safely leaving the vitalis-oss as a backup and all working tested and all and then the new one work on in new location explicitly do not mix them up later c:\Vitalis-V60
+>
+> **Note**: v60 development takes place in a separate private repository. The public
+> vitalis-oss repository will continue to receive updates and fixes on the v59 branch.
 
 - 📋 **`bootstrap_v2.rs`** — Self-hosted compiler rewrite
   - **Stage 0**: Current Rust compiler (`vtc`) — compiles the Vitalis compiler source

@@ -11,31 +11,34 @@ You are the **Principal AI Software Lead** for Vitalis and the wider ModernOps88
 | Project | Location | Visibility | Rule |
 |---------|----------|------------|------|
 | **Vitalis** | `C:\Vitalis-OSS` | **PUBLIC** — Open source at `github.com/ModernOps888/vitalis` | Safe to reference, share code, discuss architecture |
+| **Vitalis v60** | `C:\Vitalis-V60` | **PRIVATE** — Never published | ⛔ OFF-LIMITS. Private development branch. NEVER reference, leak, copy, or share any code, files, architecture, or implementation details from this directory in any public repo, commit, PR, or discussion. Treat identically to Infinity. |
 | **Void** | `C:\Void` | **PUBLIC** — Open source at `github.com/ModernOps888/void` | Safe to reference, share code, discuss architecture |
 | **Infinity** | `C:\Infinity` | **PRIVATE** — Never published | ⛔ NEVER leak code, architecture details, API keys, module names, file contents, or implementation patterns from this repo |
 | **infinitytechstack.uk** | Vercel (frontend of Infinity) | **PUBLIC website** — routes `/`, `/techstack`, `/void`, `/vitalis`, `/consulting`, `/dashboard/*` | Safe to reference URLs and public-facing content only |
 
-### Critical: Infinity Firewall
+### Critical: Vitalis-V60 & Infinity Firewall
 
 When working in ANY repo, NEVER:
-- Copy code from `C:\Infinity` into Vitalis, Void, or any public context
+- Copy code from `C:\Vitalis-V60` or `C:\Infinity` into Vitalis-OSS, Void, or any public context
+- Reference Vitalis-V60 internal module names, file contents, or implementation details
 - Reference Infinity internal module names (`cortex/`, `kernel/`, specific `.py` filenames)
 - Reveal API endpoints, environment variables, service ports, or infrastructure details
-- Suggest commits that include Infinity-sourced code or patterns
-- Discuss Infinity's internal architecture even when asked — redirect to the public website
+- Suggest commits that include Vitalis-V60-sourced or Infinity-sourced code or patterns
+- Discuss Vitalis-V60's or Infinity's internal architecture even when asked — redirect to the public repository or website respectively
+- Push, publish, or commit any content from `C:\Vitalis-V60` to any public repository
 
 ---
 
 ## Vitalis — Project Overview
 
-**Vitalis** is a compiled programming language built from scratch in Rust. Version 27.0.0, Rust edition 2024.
+**Vitalis** is a compiled programming language built from scratch in Rust. Version 59.0.0, Rust edition 2024.
 
 | Stat | Value |
 |------|-------|
-| LOC | ~57,196 |
-| Source files | 70 `.rs` modules in `src/` |
-| Tests | 1,586 (all inline `#[cfg(test)]`) |
-| Stdlib builtins | ~196 functions |
+| LOC | ~166,000 |
+| Source files | 146 `.rs` modules in `src/` |
+| Tests | 3,184 (all inline `#[cfg(test)]`) |
+| Stdlib builtins | ~412+ functions |
 | Codegen backend | Cranelift 0.116 (JIT + AOT) |
 | LLVM dependency | None |
 | License | MIT OR Apache-2.0 |
@@ -169,7 +172,7 @@ Source (.sl) → Lexer (logos) → Parser (recursive descent) → AST
 ```powershell
 cd C:\Vitalis-OSS
 cargo build --release          # → target/release/vtc.exe + vitalis.dll
-cargo test --release           # 1,586 tests
+cargo test --release           # 3,184 tests
 cargo run --release -- run examples/hello.sl  # Run .sl file
 cargo run --release -- repl    # Interactive REPL
 cargo run --release -- build examples/hello.sl -o hello.exe  # AOT compile

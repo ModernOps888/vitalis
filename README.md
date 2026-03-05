@@ -9,10 +9,10 @@
 ### The Self-Evolving Programming Language
 
 [![Rust](https://img.shields.io/badge/Rust-Edition_2024-b7410e?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Tests](https://img.shields.io/badge/Tests-2%2C627_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
-[![LOC](https://img.shields.io/badge/LOC-110%2C000+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
+[![Tests](https://img.shields.io/badge/Tests-3%2C184_Passing-00c853?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-suite)
+[![LOC](https://img.shields.io/badge/LOC-166%2C000+-blue?style=for-the-badge&logo=slickpic&logoColor=white)](#-architecture)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Version](https://img.shields.io/badge/v44.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
+[![Version](https://img.shields.io/badge/v59.0.0-purple?style=for-the-badge&logo=v&logoColor=white)](#-changelog)
 
 **A compiled language purpose-built for autonomous AI code evolution.**<br>
 Vitalis compiles to native machine code via Cranelift JIT and AOT, with first-class support for<br>
@@ -40,19 +40,19 @@ self-modifying programs, genetic code evolution, and real-time fitness tracking.
 <tr>
 <td width="25%" align="center">
 
-**117**<br>
+**146**<br>
 <sub>Source modules</sub>
 
 </td>
 <td width="25%" align="center">
 
-**110,000+**<br>
+**166,000+**<br>
 <sub>Lines of Rust</sub>
 
 </td>
 <td width="25%" align="center">
 
-**2,627**<br>
+**3,184**<br>
 <sub>Tests passing</sub>
 
 </td>
@@ -147,7 +147,7 @@ flowchart TB
 
 <br>
 
-### Module Map — 117 Modules
+### Module Map — 146 Modules
 
 Every source file has a single responsibility. The codebase is organized into **ten layers**:
 
@@ -389,6 +389,66 @@ Every source file has a single responsibility. The codebase is organized into **
 </tr>
 </table>
 
+<table>
+<tr><td colspan="4" align="center"><h4>🏗️ Systems Programming — 12 modules (v45–v49)</h4></td></tr>
+<tr>
+<td><code>gc.rs</code><br><sub>Tracing GC</sub></td>
+<td><code>green_threads.rs</code><br><sub>M:N threading</sub></td>
+<td><code>database.rs</code><br><sub>Embedded SQL DB</sub></td>
+<td><code>kv_store.rs</code><br><sub>LSM-Tree KV</sub></td>
+</tr>
+<tr>
+<td><code>consensus.rs</code><br><sub>Raft protocol</sub></td>
+<td><code>distributed_primitives.rs</code><br><sub>CRDTs, sagas</sub></td>
+<td><code>polyhedral.rs</code><br><sub>Loop optimizer</sub></td>
+<td><code>parallel_runtime.rs</code><br><sub>Thread pool</sub></td>
+</tr>
+<tr>
+<td><code>tiered_jit.rs</code><br><sub>3-tier JIT + OSR</sub></td>
+<td><code>dependent_types.rs</code><br><sub>Pi/Sigma types</sub></td>
+<td><code>proof_assistant.rs</code><br><sub>Tactic proofs</sub></td>
+<td></td>
+</tr>
+</table>
+
+<table>
+<tr><td colspan="4" align="center"><h4>🌍 Platform & DevEx — 10 modules (v51–v56)</h4></td></tr>
+<tr>
+<td><code>time_travel_debug.rs</code><br><sub>Record-replay</sub></td>
+<td><code>tracing.rs</code><br><sub>OpenTelemetry</sub></td>
+<td><code>registry_v2.rs</code><br><sub>Package ecosystem</sub></td>
+<td><code>doc_site.rs</code><br><sub>Doc site generator</sub></td>
+</tr>
+<tr>
+<td><code>notebook.rs</code><br><sub>Jupyter kernel</sub></td>
+<td><code>playground.rs</code><br><sub>Web playground</sub></td>
+<td><code>hardware_synth.rs</code><br><sub>HLS → RTL</sub></td>
+<td><code>fpga_target.rs</code><br><sub>FPGA backend</sub></td>
+</tr>
+<tr>
+<td><code>embedded.rs</code><br><sub>Bare-metal</sub></td>
+<td><code>rtos.rs</code><br><sub>RTOS kernel</sub></td>
+<td><code>cloud_deploy.rs</code><br><sub>Cloud-native</sub></td>
+<td><code>service_mesh.rs</code><br><sub>Service mesh</sub></td>
+</tr>
+</table>
+
+<table>
+<tr><td colspan="4" align="center"><h4>🤖 AI-Native Compiler — 6 modules (v57–v59)</h4></td></tr>
+<tr>
+<td><code>llm_compiler.rs</code><br><sub>LLM-assisted errors</sub></td>
+<td><code>error_recovery.rs</code><br><sub>Intelligent recovery</sub></td>
+<td><code>vision.rs</code><br><sub>Computer vision</sub></td>
+<td><code>audio.rs</code><br><sub>Audio processing</sub></td>
+</tr>
+<tr>
+<td><code>certified_compiler.rs</code><br><sub>Verified compilation</sub></td>
+<td><code>abstract_interp.rs</code><br><sub>Abstract interpretation</sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
 <br>
 
 ## 🚀 Quick Start
@@ -410,7 +470,7 @@ cd vitalis
 # Build compiler + DLL
 cargo build
 
-# Run all 2,627 tests
+# Run all 3,184 tests
 cargo test
 
 # Compile and run a .sl file
@@ -990,11 +1050,11 @@ flowchart TB
 
 ## 🧪 Test Suite
 
-2,627 tests across every compiler stage and all subsystems through v44:
+3,184 tests across every compiler stage and all subsystems through v59:
 
 ```
 $ cargo test
-test result: ok. 2627 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 3184 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 | Category | Count | Coverage |
@@ -1083,6 +1143,35 @@ test result: ok. 2627 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 | NAS | 15 | Neural architecture search, SuperNet, ENAS controller |
 | Continual learning | 15 | EWC, progressive nets, experience replay, curriculum |
 | Federated learning | 15 | FedAvg, differential privacy, gossip protocol |
+| Garbage collector | 20 | Tri-color mark-sweep, generational, write barriers, pinning |
+| Green threads | 20 | M:N threading, work-stealing, stackful coroutines, preemption |
+| Database engine | 25 | B+Tree pages, buffer pool, WAL, MVCC, SQL, transactions |
+| KV store | 25 | LSM-Tree, memtable, SSTs, leveled compaction, bloom filters |
+| Raft consensus | 20 | Leader election, log replication, snapshots, membership changes |
+| Distributed primitives | 20 | CRDTs, vector clocks, consistent hashing, circuit breaker, saga |
+| Polyhedral optimizer | 25 | Integer sets, dependence analysis, Pluto scheduling, tiling |
+| Parallel runtime | 25 | Thread pool, parallel for/reduce/scan, task graph, work-stealing |
+| Tiered JIT | 25 | Interpreter, baseline JIT, optimizing JIT, OSR, deoptimization |
+| Dependent types | 30 | Pi/Sigma types, propositional equality, indexed types, universes |
+| Proof assistant | 30 | Tactic language, proof search, certified programs |
+| Time-travel debugger | 20 | Record-replay, reverse stepping, trace diffing |
+| Structured tracing | 20 | Span-based instrumentation, OpenTelemetry, flame graphs |
+| Package ecosystem v2 | 20 | Publishing, SemVer enforcement, security advisories, yanking |
+| Doc site generator | 20 | API docs, search index, doctests, version switcher |
+| Notebook kernel | 20 | Jupyter wire protocol, cell execution, rich output |
+| Web playground | 20 | In-browser WASM, Monaco editor, share-by-URL |
+| Hardware synthesis | 20 | Vitalis→RTL, pipeline scheduling, FSM extraction |
+| FPGA target | 20 | Xilinx/Intel primitives, clock domains, constraints |
+| Bare-metal embedded | 25 | no_std, IVT, MMIO, HAL traits, Cortex-M/RISC-V |
+| RTOS kernel | 25 | Preemptive scheduler, semaphores, message queues, MPU |
+| Cloud deployment | 20 | OCI containers, Kubernetes manifests, serverless targets |
+| Service mesh | 20 | L7 proxy, load balancing, rate limiting, mTLS, canary |
+| LLM-assisted compiler | 25 | Natural language errors, fix suggestions, docstring gen |
+| Error recovery | 25 | Parser recovery, type error repair, cascading suppression |
+| Computer vision | 25 | Image I/O, convolution, feature extraction, detection, diffusion |
+| Audio processing | 25 | WAV I/O, FFT, mel-spectrogram, MFCC, CTC loss, vocoder |
+| Certified compiler | 25 | Translation validation, verified register alloc, refinement proofs |
+| Abstract interpretation | 30 | Interval/octagon domains, widening, taint analysis, alias analysis |
 
 <br>
 
@@ -1224,7 +1313,51 @@ vitalis/
 │   ├── ide_features.rs       # IDE features — refactoring, code coverage, call graphs, complexity
 │   ├── nas.rs                # NAS — neural architecture search, SuperNet, ENAS controller
 │   ├── continual_learning.rs # Continual learning — EWC, progressive nets, experience replay
-│   └── federated_learning.rs # Federated learning — FedAvg, differential privacy, gossip protocol
+│   ├── federated_learning.rs # Federated learning — FedAvg, differential privacy, gossip protocol
+│   │
+│   ├── gc.rs                 # Garbage collector — tri-color mark-sweep, generational, write barriers
+│   ├── green_threads.rs      # Green threads — M:N threading, work-stealing, stackful coroutines
+│   │
+│   ├── database.rs           # Database engine — B+Tree, buffer pool, WAL, MVCC, SQL, transactions
+│   ├── kv_store.rs           # KV store — LSM-Tree, memtable, SSTs, compaction, bloom filters
+│   │
+│   ├── consensus.rs          # Raft consensus — leader election, log replication, snapshots
+│   ├── distributed_primitives.rs # Distributed — CRDTs, vector clocks, consistent hashing, sagas
+│   │
+│   ├── polyhedral.rs         # Polyhedral optimizer — integer sets, Pluto scheduling, tiling
+│   ├── parallel_runtime.rs   # Parallel runtime — thread pool, parallel for/reduce, task graphs
+│   │
+│   ├── tiered_jit.rs         # Tiered JIT — interpreter, baseline, optimizing, OSR, deoptimization
+│   │
+│   ├── dependent_types.rs    # Dependent types — Pi/Sigma types, propositional equality, universes
+│   ├── proof_assistant.rs    # Proof assistant — tactic language, proof search, certified programs
+│   │
+│   ├── time_travel_debug.rs  # Time-travel debug — record-replay, reverse stepping, trace diffing
+│   ├── tracing.rs            # Structured tracing — spans, OpenTelemetry, flame graph export
+│   │
+│   ├── registry_v2.rs        # Package ecosystem v2 — publishing, SemVer enforcement, advisories
+│   ├── doc_site.rs           # Doc site generator — API docs, search index, doctests, versioning
+│   │
+│   ├── notebook.rs           # Notebook kernel — Jupyter wire protocol, cell execution, rich output
+│   ├── playground.rs         # Web playground — in-browser WASM, Monaco editor, share-by-URL
+│   │
+│   ├── hardware_synth.rs     # Hardware synthesis — Vitalis→RTL, pipeline scheduling, FSM extraction
+│   ├── fpga_target.rs        # FPGA target — Xilinx/Intel primitives, clock domains, constraints
+│   │
+│   ├── embedded.rs           # Bare-metal embedded — no_std, IVT, MMIO, HAL traits, Cortex-M/RISC-V
+│   ├── rtos.rs               # RTOS kernel — preemptive scheduler, semaphores, message queues, MPU
+│   │
+│   ├── cloud_deploy.rs       # Cloud deployment — OCI containers, Kubernetes, serverless targets
+│   ├── service_mesh.rs       # Service mesh — L7 proxy, load balancing, rate limiting, mTLS
+│   │
+│   ├── llm_compiler.rs       # LLM-assisted compiler — natural language errors, fix suggestions
+│   ├── error_recovery.rs     # Error recovery — parser recovery, type error repair, cascading suppression
+│   │
+│   ├── vision.rs             # Computer vision — image I/O, convolution, detection, diffusion
+│   ├── audio.rs              # Audio processing — WAV I/O, FFT, mel-spectrogram, MFCC, CTC loss
+│   │
+│   ├── certified_compiler.rs # Certified compiler — translation validation, verified codegen, proofs
+│   └── abstract_interp.rs    # Abstract interpretation — interval/octagon domains, taint, alias analysis
 │
 ├── examples/                 # .sl example programs
 ├── vitalis.py                # Python FFI wrapper (ctypes)
@@ -1502,6 +1635,55 @@ timeline
         : Continual learning (EWC, progressive nets, experience replay)
         : Federated learning (FedAvg, differential privacy, gossip)
         : 2,627 tests passing · 117 modules · 110,000+ LOC
+
+    v45–v47 · Systems Programming Foundation
+        : Tracing garbage collector (tri-color mark-sweep, generational, write barriers)
+        : Green threads with M:N work-stealing scheduler and stackful coroutines
+        : Embedded SQL database (B+Tree, WAL, MVCC, query planner, transactions)
+        : LSM-Tree key-value store (memtable, SSTs, leveled compaction, bloom filters)
+        : Raft consensus protocol (leader election, log replication, snapshots)
+        : Distributed primitives (CRDTs, vector clocks, consistent hashing, circuit breaker, sagas)
+        : 2,744 tests passing · 123 modules · ~122,000 LOC
+
+    v48–v50 · Advanced Compiler Technology
+        : Polyhedral loop optimisation (Pluto scheduling, tiling, auto-parallelisation)
+        : Parallel runtime (thread pool, parallel for/reduce/scan, task graph, work-stealing)
+        : Tiered JIT (interpreter → baseline → optimising, OSR, deoptimisation)
+        : Full dependent type system (Pi/Sigma types, universes, proof irrelevance)
+        : Interactive proof assistant (tactics, proof search, certified programs)
+        : 2,859 tests passing · 128 modules · ~133,000 LOC
+
+    v51–v53 · Developer Experience v2
+        : Time-travel debugging (record-replay, reverse stepping, trace diffing)
+        : Structured tracing (OpenTelemetry, span-based instrumentation)
+        : Package ecosystem v2 (publishing, SemVer enforcement, security advisories)
+        : Documentation site generator (API docs, search index, doctests, versioning)
+        : Jupyter-compatible notebook kernel (wire protocol, rich output)
+        : Web playground (in-browser WASM, Monaco editor, share-by-URL)
+        : 2,971 tests passing · 134 modules · ~143,000 LOC
+
+    v54–v56 · Hardware & Deployment Targets
+        : High-level hardware synthesis (Vitalis→RTL, pipeline scheduling, FSM extraction)
+        : FPGA backend (Xilinx/Intel, clock domain crossing, constraint generation)
+        : Bare-metal embedded (no_std, Cortex-M, RISC-V, IVT, MMIO, HAL traits)
+        : Minimal RTOS kernel (preemptive scheduler, semaphores, message queues, MPU)
+        : Cloud-native deployment (OCI containers, Kubernetes manifests, serverless)
+        : Service mesh primitives (L7 proxy, load balancing, mTLS, canary)
+        : 3,089 tests passing · 140 modules · ~154,000 LOC
+
+    v57–v58 · AI-Native Compiler Intelligence
+        : LLM-assisted compilation (natural language errors, fix suggestions, docstring gen)
+        : Advanced error recovery (parser recovery, type error repair, cascading suppression)
+        : Computer vision pipeline (image I/O, convolution, detection, diffusion primitives)
+        : Audio processing pipeline (WAV, FFT, mel-spectrogram, MFCC, CTC loss, vocoder)
+        : 3,169 tests passing · 144 modules · ~162,000 LOC
+
+    v59 · Compiler Verification & Certified Compilation (Current Release)
+        : Certified compilation passes (translation validation, verified register allocation)
+        : Correct-by-construction codegen with proof witnesses
+        : Abstract interpretation (interval/octagon domains, widening, taint analysis, alias analysis)
+        : Array bounds proven in-bounds at compile time (eliminate runtime checks)
+        : 3,184 tests passing · 146 modules · ~166,000 LOC
 ```
 
 <br>
